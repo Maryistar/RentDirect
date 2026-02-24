@@ -6,6 +6,7 @@ import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import chatRoutes from './api/routes/chat.routes.js';
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', usersRoutes);
 app.use('/api/v1/properties', propertiesRoutes);
 app.use('/api/v1', applicationsRoutes);
+app.use('/api/v1', chatRoutes);
 
 /* ================================
    ERROR HANDLER
@@ -60,18 +62,61 @@ app.use((err, req, res, next) => {
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
-io.of('/chat').on('connection', (socket) => {
-  console.log('socket connected', socket.id);
+import jwt from 'jsonwebtoken';
+import * as chatService from './services/chat.service.js';
 
-  socket.on('join', ({ conversationId }) => {
-    socket.join(`conv_${conversationId}`);
+const chatNamespace = io.of('/chat');
+
+// 🔐 Middleware para validar JWT en socket
+chatNamespace.use((socket, next) => {
+  try {
+    const token = socket.handshake.auth.token;
+
+    if (!token) {
+      return next(new Error('Unauthorized'));
+    }
+
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    socket.user = payload; // guardamos usuario en el socket
+    next();
+
+  } catch (err) {
+    next(new Error('Unauthorized'));
+  }
+});
+
+chatNamespace.on('connection', (socket) => {
+  console.log('User connected:', socket.user.id);
+
+  // Unirse a un chat
+  socket.on('join', ({ chatId }) => {
+    socket.join(`chat_${chatId}`);
   });
 
-  socket.on('message', (msg) => {
-    io.of('/chat')
-      .to(`conv_${msg.conversationId}`)
-      .emit('message', msg);
+  // Enviar mensaje
+  socket.on('sendMessage', async ({ chatId, message }) => {
+    try {
+
+      // Guardar en BD
+      await chatService.createMessage({
+        chatId,
+        senderId: socket.user.id,
+        message
+      });
+
+      // Emitir a la sala
+      chatNamespace.to(`chat_${chatId}`).emit('newMessage', {
+        chatId,
+        senderId: socket.user.id,
+        message,
+        createdAt: new Date()
+      });
+
+    } catch (err) {
+      console.error(err);
+    }
   });
+
 });
 
 /* ================================
