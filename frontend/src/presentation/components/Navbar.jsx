@@ -1,91 +1,147 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Home,
+  User,
+  LogOut,
+  FileText,
+  Building,
+  PlusCircle
+} from "lucide-react";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef();
+  const [user, setUser] = useState(null);
+  const menuRef = useRef(null);
+  const navigate = useNavigate();
 
-  // Cerrar al hacer click fuera
   useEffect(() => {
-    function handleClickOutside(event) {
+    const storedUser = localStorage.getItem("user");
+    setUser(storedUser ? JSON.parse(storedUser) : null);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsOpen(false);
       }
-    }
+    };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setUser(null);
+    setIsOpen(false);
+    navigate("/login");
+  };
+
+  const role = user?.role;
+
   return (
-    <nav className="bg-slate-900 text-white px-6 py-4 relative">
+    <nav className="bg-slate-900 text-white px-6 py-4 relative shadow-md">
       <div className="flex justify-between items-center">
-        <Link to="/" className="text-xl font-bold">
+        <Link to="/" className="text-xl font-bold tracking-wide hover:text-gray-300 transition">
           RentDirect
         </Link>
 
-        {/* Botón hamburguesa SIEMPRE visible */}
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="text-2xl hover:opacity-80 transition"
+            className="text-2xl hover:opacity-80 transition duration-200"
           >
             ☰
           </button>
 
-          {/* Dropdown flotante */}
           {isOpen && (
-  <div className="absolute right-0 mt-3 w-56 bg-white text-black rounded-xl shadow-xl p-4 flex flex-col gap-3 animate-fadeIn">
-    <Link
-      to="/"
-      onClick={() => setIsOpen(false)}
-      className="hover:text-blue-600"
-    >
-      Inicio
-    </Link>
+            <div className="absolute right-0 mt-4 w-64 bg-white text-gray-800 rounded-2xl shadow-2xl p-3 flex flex-col border border-gray-100 animate-dropdown">
 
-    <Link
-      to="/login"
-      onClick={() => setIsOpen(false)}
-      className="hover:text-blue-600"
-    >
-      Login
-    </Link>
+              {/* SIN SESIÓN */}
+              {!user && (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setIsOpen(false)}
+                    className="menu-item"
+                  >
+                    <User size={18} />
+                    Ingresa
+                  </Link>
 
-    <Link
-      to="/register"
-      onClick={() => setIsOpen(false)}
-      className="hover:text-blue-600"
-    >
-      Registro
-    </Link>
+                  <Link
+                    to="/register"
+                    onClick={() => setIsOpen(false)}
+                    className="menu-item"
+                  >
+                    <User size={18} />
+                    Regístrate
+                  </Link>
+                </>
+              )}
 
-    <Link
-      to="/profile"
-      onClick={() => setIsOpen(false)}
-      className="hover:text-blue-600"
-    >
-      Perfil
-    </Link>
+              {/* OWNER */}
+              {user && role === "owner" && (
+                <>
+                  <Link to="/" onClick={() => setIsOpen(false)} className="menu-item">
+                    <Home size={18} />
+                    Inicio
+                  </Link>
 
-    {/* Separador */}
-    <div className="border-t my-2"></div>
+                  <Link to="/mis-propiedades" onClick={() => setIsOpen(false)} className="menu-item">
+                    <Building size={18} />
+                    Mis propiedades
+                  </Link>
 
-    {/* Botón cerrar sesión */}
-    <button
-      onClick={() => {
-        // aquí luego pondremos la lógica real
-        console.log("Cerrar sesión");
-        setIsOpen(false);
-      }}
-      className="bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition font-medium"
-    >
-      Cerrar sesión
-    </button>
-  </div>
-)}
+                  <Link to="/publicar" onClick={() => setIsOpen(false)} className="menu-item">
+                    <PlusCircle size={18} />
+                    Publicar propiedad
+                  </Link>
+
+                  <Link to="/profile" onClick={() => setIsOpen(false)} className="menu-item">
+                    <User size={18} />
+                    Perfil
+                  </Link>
+
+                  <div className="border-t my-2"></div>
+
+                  <button onClick={handleLogout} className="menu-item-danger">
+                    <LogOut size={18} />
+                    Cerrar sesión
+                  </button>
+                </>
+              )}
+
+              {/* TENANT */}
+              {user && role === "tenant" && (
+                <>
+                  <Link to="/" onClick={() => setIsOpen(false)} className="menu-item">
+                    <Home size={18} />
+                    Inicio
+                  </Link>
+
+                  <Link to="/mis-aplicaciones" onClick={() => setIsOpen(false)} className="menu-item">
+                    <FileText size={18} />
+                    Mis aplicaciones
+                  </Link>
+
+                  <Link to="/profile" onClick={() => setIsOpen(false)} className="menu-item">
+                    <User size={18} />
+                    Perfil
+                  </Link>
+
+                  <div className="border-t my-2"></div>
+
+                  <button onClick={handleLogout} className="menu-item-danger">
+                    <LogOut size={18} />
+                    Cerrar sesión
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </nav>
