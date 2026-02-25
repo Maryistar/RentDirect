@@ -17,30 +17,7 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* Navegación */}
-        <div>
-          <h4 className="text-lg font-semibold text-white mb-4">
-            Enlaces
-          </h4>
-          <ul className="space-y-2 text-sm">
-            <li>
-              <Link to="/" className="hover:text-white transition">
-                Inicio
-              </Link>
-            </li>
-            <li>
-              <Link to="/my-properties" className="hover:text-white transition">
-                Mis Propiedades
-              </Link>
-            </li>
-            <li>
-              <Link to="/applications" className="hover:text-white transition">
-                Mis Aplicaciones
-              </Link>
-            </li>
-            
-          </ul>
-        </div>
+        
 
         {/* Contacto */}
         <div>
