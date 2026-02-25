@@ -7,7 +7,9 @@ export default function Register() {
   const [form, setForm] = useState({
     name: "",
     email: "",
+    cedula: "",
     password: "",
+    confirmPassword: "",
     role: "tenant",
   });
 
@@ -21,13 +23,23 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    // 🔥 VALIDACIÓN NUEVA
+    if (form.password !== form.confirmPassword) {
+      setError("Las contraseñas no coinciden");
+      return;
+    }
+
     setLoading(true);
 
     try {
+      // ⚠️ No enviamos confirmPassword al backend
+      const { confirmPassword, ...dataToSend } = form;
+
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(dataToSend),
       });
 
       const data = await res.json();
@@ -72,14 +84,13 @@ export default function Register() {
 
         <input
           name="cedula"
-          type="cedula"
-          placeholder="Cedula unica"
+          type="text"
+          placeholder="Cédula única"
           value={form.cedula}
           onChange={handleChange}
           required
           style={styles.input}
         />
-
 
         <input
           name="password"
@@ -89,6 +100,24 @@ export default function Register() {
           onChange={handleChange}
           required
           style={styles.input}
+        />
+
+        {/* NUEVO CAMPO */}
+        <input
+          name="confirmPassword"
+          type="password"
+          placeholder="Confirmar contraseña"
+          value={form.confirmPassword}
+          onChange={handleChange}
+          required
+          style={{
+            ...styles.input,
+            border:
+              form.confirmPassword &&
+              form.password !== form.confirmPassword
+                ? "1px solid #dc2626"
+                : "1px solid #21324bff",
+          }}
         />
 
         <select
@@ -123,7 +152,7 @@ export default function Register() {
 ========================= */
 const styles = {
   page: {
-    minHeight: "calc(100vh - 80px)", // deja visible la navbar
+    minHeight: "calc(100vh - 80px)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -149,6 +178,7 @@ const styles = {
     fontSize: "15px",
     borderRadius: "8px",
     border: "1px solid #21324bff",
+    transition: "0.2s ease",
   },
   button: {
     width: "100%",
@@ -156,6 +186,10 @@ const styles = {
     borderRadius: "999px",
     fontWeight: 600,
     marginTop: "10px",
+    backgroundColor: "#2563eb",
+    color: "white",
+    border: "none",
+    cursor: "pointer",
   },
   error: {
     color: "#dc2626",
