@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import chatRoutes from './api/routes/chat.routes.js';
+import rentalRoutes from './api/routes/rental.routes.js';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ import authRoutes from './api/routes/auth.routes.js';
 import usersRoutes from './api/routes/users.routes.js';
 import propertiesRoutes from './api/routes/properties.routes.js';
 import applicationsRoutes from './api/routes/applications.routes.js';
+
 
 const app = express();
 app.use(cors());
@@ -45,6 +47,7 @@ app.use('/api/v1/users', usersRoutes);
 app.use('/api/v1/properties', propertiesRoutes);
 app.use('/api/v1', applicationsRoutes);
 app.use('/api/v1', chatRoutes);
+app.use('/rental-records', rentalRoutes);
 
 /* ================================
    ERROR HANDLER
