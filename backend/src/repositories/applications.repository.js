@@ -95,7 +95,7 @@ export async function getApplicationsByProperty(propertyId) {
 // 🔹 Get application with owner
 export async function findApplicationWithOwner(applicationId) {
   const [[application]] = await db.query(
-    `SELECT a.id, a.status, a.property_id, p.owner_id
+    `SELECT a.id, a.status, a.property_id, a.tenant_id, p.owner_id
      FROM applications a
      JOIN properties p ON p.id = a.property_id
      WHERE a.id = ?`,
