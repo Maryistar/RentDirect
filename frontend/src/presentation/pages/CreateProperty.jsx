@@ -1,187 +1,381 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createProperty } from "../../infrastructure/api/properties";
+import { UploadCloud } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function CreateProperty() {
   const navigate = useNavigate();
+  const [step, setStep] = useState(1);
 
   const [title, setTitle] = useState("");
   const [address, setAddress] = useState("");
   const [price, setPrice] = useState("");
+  const [type, setType] = useState("Apartamento");
+  const [rooms, setRooms] = useState(1);
+  const [bathrooms, setBathrooms] = useState(1);
+  const [tags, setTags] = useState([]);
   const [description, setDescription] = useState("");
   const [images, setImages] = useState([]);
   const [preview, setPreview] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  function handleImages(e) {
-    const files = Array.from(e.target.files);
-    setImages(files);
+  const propertyTypes = ["Apartamento", "Casa", "Oficina", "Local"];
+  const availableTags = [
+    "Amoblado",
+    "Parqueadero",
+    "Mascotas",
+    "Balcón",
+    "Piscina",
+    "Ascensor",
+  ];
 
-    const previews = files.map(file => URL.createObjectURL(file));
-    setPreview(previews);
-  }
+  const formatCOP = (value) => {
+    const number = value.replace(/\D/g, "");
+    return new Intl.NumberFormat("es-CO").format(number);
+  };
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
+  const handlePriceChange = (e) => {
+    const raw = e.target.value.replace(/\D/g, "");
+    setPrice(formatCOP(raw));
+  };
+
+  const toggleTag = (tag) => {
+    setTags((prev) =>
+      prev.includes(tag)
+        ? prev.filter((t) => t !== tag)
+        : [...prev, tag]
+    );
+  };
+
+  async function handleSubmit() {
     setLoading(true);
-
     try {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("address", address);
-      formData.append("price", price);
+      formData.append("price", price.replace(/\./g, ""));
+      formData.append("type", type);
+      formData.append("rooms", rooms);
+      formData.append("bathrooms", bathrooms);
+      formData.append("tags", JSON.stringify(tags));
       formData.append("description", description);
-
-      images.forEach(img => formData.append("images", img));
+      images.forEach((img) => formData.append("images", img));
 
       await createProperty(formData);
-
-      alert("Propiedad creada con éxito 🏠✨");
       navigate("/my-properties");
     } catch (err) {
-      setError(err.message || "Error al crear la propiedad");
+      setError("Error al publicar");
     } finally {
       setLoading(false);
     }
   }
 
+  const progress = (step / 3) * 100;
+
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <center> <h1 style={styles.title}>Crear nueva propiedad</h1> </center>
-        <center> <p style={styles.subtitle}>
-          Completa la información para publicar tu propiedad
-        </p> </center>
+    <div className="min-h-screen bg-slate-100 py-16 px-6">
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16">
 
-        <form onSubmit={handleSubmit}>
-          <div style={styles.field}>
-            <label>Título</label>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ej: Apartamento moderno en el centro de la ciudad"
-              required
-            />
+        {/* FORM */}
+        <div className="bg-white p-10 rounded-3xl shadow-xl">
+
+          {/* PROGRESS */}
+          <div className="mb-8">
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-600 transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <p className="text-sm text-gray-500 mt-2">Paso {step} de 3</p>
           </div>
 
-          <div style={styles.field}>
-            <label>Dirección</label>
-            <input
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Ej: Calle 45 #12-30"
-            />
-          </div>
-          
-          <div style={styles.field}>
-            <label>Precio mensual</label>
-            <input
-              type="number"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              placeholder="Ej: 1200000"
-              required
-            />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -40 }}
+              transition={{ duration: 0.3 }}
+            >
+              {step === 1 && (
+                <StepOne
+                  title={title}
+                  setTitle={setTitle}
+                  address={address}
+                  setAddress={setAddress}
+                  price={price}
+                  handlePriceChange={handlePriceChange}
+                  type={type}
+                  setType={setType}
+                  propertyTypes={propertyTypes}
+                />
+              )}
+
+              {step === 2 && (
+                <StepTwo
+                  rooms={rooms}
+                  setRooms={setRooms}
+                  bathrooms={bathrooms}
+                  setBathrooms={setBathrooms}
+                  tags={tags}
+                  toggleTag={toggleTag}
+                  availableTags={availableTags}
+                />
+              )}
+
+              {step === 3 && (
+                <StepThree
+                  description={description}
+                  setDescription={setDescription}
+                  setImages={setImages}
+                  setPreview={setPreview}
+                  preview={preview}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+          {/* NAV BUTTONS */}
+          <div className="flex justify-between mt-10">
+            {step > 1 && (
+              <button
+                onClick={() => setStep(step - 1)}
+                className="px-6 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 transition"
+              >
+                Atrás
+              </button>
+            )}
+
+            {step < 3 ? (
+              <button
+                onClick={() => setStep(step + 1)}
+                className="ml-auto px-6 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition"
+              >
+                Siguiente
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={loading}
+                className="ml-auto px-6 py-2 rounded-xl bg-green-600 text-white hover:bg-green-700 transition"
+              >
+                {loading ? "Publicando..." : "Publicar"}
+              </button>
+            )}
           </div>
 
-          <div style={styles.field}>
-            <label>Descripción</label>
-            <textarea
-              rows={4}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe tu propiedad..."
-            />
-          </div>
+          {error && (
+            <p className="text-red-500 mt-4 text-sm">{error}</p>
+          )}
+        </div>
 
-          <div style={styles.field}>
-            <label>Imágenes</label>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImages}
-            />
-          </div>
+        {/* PREVIEW */}
+        <div className="hidden lg:block">
+          <div className="bg-white rounded-3xl shadow-xl p-8">
+            <h2 className="text-xl font-bold mb-6">Vista previa</h2>
 
-          {/* Preview imágenes */}
-          {preview.length > 0 && (
-            <div style={styles.previewGrid}>
-              {preview.map((src, i) => (
-                <img key={i} src={src} alt="preview" style={styles.previewImg} />
+            {preview[0] && (
+              <img
+                src={preview[0]}
+                alt="preview"
+                className="w-full h-56 object-cover rounded-2xl mb-6"
+              />
+            )}
+
+            <h3 className="text-2xl font-bold">{title || "Título propiedad"}</h3>
+            <p className="text-gray-500 mt-2">{address || "Dirección"}</p>
+
+            <p className="text-blue-600 text-xl font-semibold mt-4">
+              {price ? `$ ${price}` : "$ 0"}
+            </p>
+
+            <div className="flex gap-4 mt-4 text-sm text-gray-600">
+              <span>{rooms} hab</span>
+              <span>{bathrooms} baños</span>
+              <span>{type}</span>
+            </div>
+
+            <div className="flex flex-wrap gap-2 mt-4">
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs"
+                >
+                  {tag}
+                </span>
               ))}
             </div>
-          )}
 
-          {error && <p style={styles.error}>{error}</p>}
-
-          <button disabled={loading} style={styles.button}>
-            {loading ? "Publicando..." : "Publicar propiedad"}
-          </button>
-        </form>
+            <p className="text-gray-600 mt-6 text-sm">
+              {description || "Descripción de la propiedad..."}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-/* =======================
-   ESTILOS
-======================= */
+/* INPUT BASE */
+const inputClass =
+  "w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition";
 
-const styles = {
-  page: {
-    minHeight: "100vh",
-    background: "#f5f6fa",
-    padding: "40px 16px",
-  },
-  card: {
-    maxWidth: 600,
-    margin: "0 auto",
-    background: "#fff",
-    padding: 24,
-    borderRadius: 12,
-    boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-  },
-  title: {
-    marginBottom: 6,
-  },
-  subtitle: {
-    marginBottom: 20,
-    color: "#666",
-    fontSize: 14,
-  },
-  field: {
-    display: "flex",
-    flexDirection: "column",
-    marginBottom: 14,
-  },
-  previewGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
-    gap: 10,
-    marginBottom: 16,
-  },
-  previewImg: {
-    width: "100%",
-    height: 100,
-    objectFit: "cover",
-    borderRadius: 8,
-  },
-  button: {
-    width: "100%",
-    padding: 14,
-    marginTop: 10,
-    border: "none",
-    borderRadius: 8,
-    background: "#2563eb",
-    color: "#fff",
-    fontSize: 16,
-    cursor: "pointer",
-  },
-  error: {
-    color: "red",
-    marginBottom: 10,
-  },
-};
+/* STEP 1 */
+function StepOne({
+  title,
+  setTitle,
+  address,
+  setAddress,
+  price,
+  handlePriceChange,
+  type,
+  setType,
+  propertyTypes,
+}) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <label className="block mb-2 text-sm font-semibold">Título</label>
+        <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} />
+      </div>
+
+      <div>
+        <label className="block mb-2 text-sm font-semibold">Dirección</label>
+        <input className={inputClass} value={address} onChange={(e) => setAddress(e.target.value)} />
+      </div>
+
+      <div>
+        <label className="block mb-2 text-sm font-semibold">Precio mensual (COP)</label>
+        <input className={inputClass} value={price} onChange={handlePriceChange} />
+      </div>
+
+      <div>
+        <label className="block mb-2 text-sm font-semibold">Tipo de propiedad</label>
+        <select className={inputClass} value={type} onChange={(e) => setType(e.target.value)}>
+          {propertyTypes.map((t) => (
+            <option key={t}>{t}</option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+}
+
+/* STEP 2 */
+function StepTwo({
+  rooms,
+  setRooms,
+  bathrooms,
+  setBathrooms,
+  tags,
+  toggleTag,
+  availableTags,
+}) {
+  return (
+    <div className="space-y-8">
+      <div className="grid grid-cols-2 gap-6">
+        <div>
+          <label className="block mb-2 text-sm font-semibold">
+            Número de habitaciones
+          </label>
+          <input
+            type="number"
+            min="1"
+            className={inputClass}
+            value={rooms}
+            onChange={(e) => setRooms(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="block mb-2 text-sm font-semibold">
+            Número de baños
+          </label>
+          <input
+            type="number"
+            min="1"
+            className={inputClass}
+            value={bathrooms}
+            onChange={(e) => setBathrooms(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block mb-3 text-sm font-semibold">
+          Características
+        </label>
+        <div className="flex flex-wrap gap-3">
+          {availableTags.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => toggleTag(tag)}
+              className={`px-4 py-2 rounded-full text-sm transition ${
+                tags.includes(tag)
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 hover:bg-gray-300"
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* STEP 3 */
+function StepThree({
+  description,
+  setDescription,
+  setImages,
+  setPreview,
+  preview,
+}) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <label className="block mb-2 text-sm font-semibold">Descripción</label>
+        <textarea
+          rows="4"
+          className={inputClass}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="block mb-2 text-sm font-semibold">Imágenes</label>
+        <label className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-blue-500 transition block">
+          <UploadCloud className="mx-auto mb-2" />
+          Subir imágenes
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={(e) => {
+              const files = Array.from(e.target.files);
+              setImages(files);
+              setPreview(files.map((f) => URL.createObjectURL(f)));
+            }}
+            className="hidden"
+          />
+        </label>
+      </div>
+
+      {preview.length > 0 && (
+        <div className="grid grid-cols-3 gap-4">
+          {preview.map((src, i) => (
+            <img key={i} src={src} alt="preview" className="h-24 object-cover rounded-lg" />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
