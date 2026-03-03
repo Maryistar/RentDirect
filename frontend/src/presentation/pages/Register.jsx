@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import logo from "../../assets/logo-rentdirect.png";
 
 const API_URL = "http://localhost:4000/api/v1/auth/register";
 
 export default function Register() {
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -17,8 +20,7 @@ export default function Register() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [modalContent, setModalContent] = useState(null); // "terms" | "privacy"
-  const [animate, setAnimate] = useState(false);
+  const [modalContent, setModalContent] = useState(null);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -26,16 +28,6 @@ export default function Register() {
       ...form,
       [name]: type === "checkbox" ? checked : value,
     });
-  };
-
-  const handleAcceptFromModal = () => {
-    if (modalContent === "terms") {
-      setForm({ ...form, acceptTerms: true });
-    }
-    if (modalContent === "privacy") {
-      setForm({ ...form, acceptPrivacy: true });
-    }
-    setModalContent(null);
   };
 
   const handleSubmit = async (e) => {
@@ -55,8 +47,7 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const { confirmPassword, acceptTerms, acceptPrivacy, ...dataToSend } =
-        form;
+      const { confirmPassword, acceptTerms, acceptPrivacy, ...dataToSend } = form;
 
       const res = await fetch(API_URL, {
         method: "POST",
@@ -71,8 +62,8 @@ export default function Register() {
         return;
       }
 
-      alert("Registro exitoso 🎉");
       window.location.href = "/verify-email";
+
     } catch {
       setError("Error de conexión con el servidor");
     } finally {
@@ -88,273 +79,179 @@ export default function Register() {
   useEffect(() => {
     if (modalContent) {
       document.body.style.overflow = "hidden";
-      setTimeout(() => setAnimate(true), 10);
     } else {
       document.body.style.overflow = "auto";
-      setAnimate(false);
     }
   }, [modalContent]);
 
   return (
     <>
-      <div style={styles.page}>
-        <form onSubmit={handleSubmit} style={styles.card}>
-          <h2 style={styles.title}>Crear cuenta</h2>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
 
-          <input name="name" placeholder="Nombre completo" value={form.name} onChange={handleChange} required style={styles.input} />
-          <input name="email" type="email" placeholder="Correo electrónico" value={form.email} onChange={handleChange} required style={styles.input} />
-          <input name="cedula" type="text" placeholder="Cédula única" value={form.cedula} onChange={handleChange} required style={styles.input} />
-          <input name="password" type="password" placeholder="Contraseña" value={form.password} onChange={handleChange} required style={styles.input} />
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="w-full max-w-md bg-white p-10 rounded-3xl shadow-xl border border-gray-200"
+        >
 
-          <input
-            name="confirmPassword"
-            type="password"
-            placeholder="Confirmar contraseña"
-            value={form.confirmPassword}
-            onChange={handleChange}
-            required
-            style={{
-              ...styles.input,
-              border:
-                form.confirmPassword &&
-                form.password !== form.confirmPassword
-                  ? "1px solid #dc2626"
-                  : "1px solid #21324bff",
-            }}
-          />
-
-          <select name="role" value={form.role} onChange={handleChange} style={styles.input}>
-            <option value="tenant">Inquilino</option>
-            <option value="owner">Propietario</option>
-          </select>
-
-          {/* CHECKBOXES CORREGIDOS */}
-          <div style={styles.checkboxContainer}>
-            <label style={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                name="acceptTerms"
-                checked={form.acceptTerms}
-                onChange={handleChange}
-              />
-              Acepto los{" "}
-              <span
-                style={styles.linkText}
-                onClick={() => setModalContent("terms")}
-              >
-                Términos y Condiciones
-              </span>
-            </label>
-
-            <label style={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                name="acceptPrivacy"
-                checked={form.acceptPrivacy}
-                onChange={handleChange}
-              />
-              Acepto la{" "}
-              <span
-                style={styles.linkText}
-                onClick={() => setModalContent("privacy")}
-              >
-                Política de Privacidad
-              </span>
-            </label>
-          </div>
-
-          <button
-            disabled={loading || !isFormValid}
-            style={{
-              ...styles.button,
-              opacity: loading || !isFormValid ? 0.6 : 1,
-            }}
+          {/* Logo */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-col items-center mb-8"
           >
-            {loading ? "Registrando..." : "Registrarse"}
-          </button>
+            <motion.img
+              src={logo}
+              alt="Rent Direct Logo"
+              className="w-32 mb-4"
+              animate={{ y: [0, -4, 0] }}
+              transition={{ duration: 3, repeat: Infinity }}
+            />
+            <p className="text-gray-500 text-sm">
+              Crea tu cuenta en Rent Direct
+            </p>
+          </motion.div>
 
-          {error && <p style={styles.error}>{error}</p>}
+          <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+            Crear cuenta
+          </h2>
 
-          <p style={styles.footer}>
-            ¿Ya tienes cuenta?{" "}
-            <Link to="/login" style={styles.link}>
-              Inicia sesión
-            </Link>
-          </p>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-5">
+
+            <Input label="Nombre completo" name="name" value={form.name} onChange={handleChange} />
+            <Input label="Correo electrónico" name="email" type="email" value={form.email} onChange={handleChange} />
+            <Input label="Cédula" name="cedula" value={form.cedula} onChange={handleChange} />
+            <Input label="Contraseña" name="password" type="password" value={form.password} onChange={handleChange} />
+            <Input
+              label="Confirmar contraseña"
+              name="confirmPassword"
+              type="password"
+              value={form.confirmPassword}
+              onChange={handleChange}
+              error={form.confirmPassword && form.password !== form.confirmPassword}
+            />
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tipo de usuario
+              </label>
+              <select
+                name="role"
+                value={form.role}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-black focus:border-black outline-none"
+              >
+                <option value="tenant">Inquilino</option>
+                <option value="owner">Propietario</option>
+              </select>
+            </div>
+
+            {/* Checkboxes */}
+            <div className="space-y-3 text-sm">
+              <label className="flex gap-2 items-center">
+                <input type="checkbox" name="acceptTerms" checked={form.acceptTerms} onChange={handleChange} />
+                Acepto los{" "}
+                <span className="font-semibold text-black cursor-pointer underline" onClick={() => setModalContent("terms")}>
+                  Términos y Condiciones
+                </span>
+              </label>
+
+              <label className="flex gap-2 items-center">
+                <input type="checkbox" name="acceptPrivacy" checked={form.acceptPrivacy} onChange={handleChange} />
+                Acepto la{" "}
+                <span className="font-semibold text-black cursor-pointer underline" onClick={() => setModalContent("privacy")}>
+                  Política de Privacidad
+                </span>
+              </label>
+            </div>
+
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              whileHover={{ scale: 1.02 }}
+              disabled={loading || !isFormValid}
+              className="w-full py-3 rounded-xl font-semibold bg-black text-white disabled:opacity-60"
+            >
+              {loading ? "Registrando..." : "Registrarse"}
+            </motion.button>
+
+            {error && (
+              <p className="text-red-500 text-sm text-center">{error}</p>
+            )}
+
+            <p className="text-sm text-center text-gray-600 mt-4">
+              ¿Ya tienes cuenta?{" "}
+              <Link to="/login" className="font-semibold text-black hover:underline">
+                Inicia sesión
+              </Link>
+            </p>
+
+          </form>
+        </motion.div>
       </div>
 
       {/* MODAL */}
-      {modalContent && (
-        <div style={styles.modalOverlay} onClick={() => setModalContent(null)}>
-          <div
-            style={{
-              ...styles.modal,
-              transform: animate ? "scale(1)" : "scale(0.9)",
-              opacity: animate ? 1 : 0,
-            }}
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {modalContent && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex justify-center items-center z-50"
+            onClick={() => setModalContent(null)}
           >
-            <button style={styles.closeButton} onClick={() => setModalContent(null)}>
-              ✕
-            </button>
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="bg-white w-[90%] max-w-lg p-6 rounded-2xl shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-bold mb-4">
+                {modalContent === "terms"
+                  ? "Términos y Condiciones"
+                  : "Política de Privacidad"}
+              </h3>
 
-            <h3 style={{ marginBottom: "20px" }}>
-              {modalContent === "terms"
-                ? "Términos y Condiciones"
-                : "Política de Privacidad"}
-            </h3>
+              <p className="text-sm text-gray-600 leading-relaxed mb-6">
+                falta pergar contenido 
+              </p>
 
-            <div style={styles.modalContent}>
-              {modalContent === "terms" && (
-                <>
-                   <h1>
-                    1. Aceptación de los Términos
-                   </h1>
-                  <p>
-                    Al registrarse, acceder o utilizar la plataforma Rent Direct, el usuario declara haber leído, entendido y aceptado estos Términos y Condiciones de Uso.
-                    Si el usuario no está de acuerdo con alguna de las disposiciones aquí establecidas, deberá abstenerse de utilizar la plataforma.
-                  </p>
-
-                    <h1>
-                      2. Descripción del Servicio
-                    </h1>
-              
-                  <p>
-                   Rent Direct es una plataforma digital que facilita la conexión entre propietarios (owners) e inquilinos (tenants) para la publicación, búsqueda y solicitud de arriendo de propiedades.
-                  La plataforma actúa únicamente como intermediario tecnológico y no es parte directa de los contratos de arrendamiento que puedan celebrarse entre los usuarios.
-
-                  </p>
-
-                  <p>
-                    
-                  </p>
-
-                  <p>
-                
-                  </p>
-                </>
-              )}
-
-              {modalContent === "privacy" && (
-                <>
-                  <p>
-                   Tengo que encontrar la manera de pegar el texto y que se vea bien 
-                  </p>
-
-                  <p>
-                    
-                  </p>
-
-                  <p>
-                   
-                  </p>
-
-                  <p>
-                   
-                  </p>
-                </>
-              )}
-            </div>
-
-            <button style={styles.acceptButton} onClick={handleAcceptFromModal}>
-              Aceptar
-            </button>
-          </div>
-        </div>
-      )}
+              <button
+                onClick={() => {
+                  if (modalContent === "terms") {
+                    setForm({ ...form, acceptTerms: true });
+                  } else {
+                    setForm({ ...form, acceptPrivacy: true });
+                  }
+                  setModalContent(null);
+                }}
+                className="w-full py-2 rounded-lg bg-black text-white font-semibold"
+              >
+                Aceptar
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
 
-/* =========================
-   ESTILOS
-========================= */
-
-const styles = {
-  page: {
-    minHeight: "calc(100vh - 80px)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(228, 234, 240, 1)",
-  },
-  card: {
-    width: "100%",
-    maxWidth: 460,
-    padding: "50px",
-    background: "#ffffff",
-    borderRadius: "15px",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-  },
-  title: { textAlign: "center", marginBottom: "20px", fontWeight: 700 },
-  input: {
-    width: "100%",
-    marginBottom: "15px",
-    padding: "10px 12px",
-    fontSize: "15px",
-    borderRadius: "8px",
-    border: "1px solid #21324bff",
-  },
-  checkboxContainer: { marginTop: "10px", marginBottom: "10px", fontSize: "14px" },
-  checkboxLabel: { display: "flex", gap: "6px", alignItems: "center" },
-  linkText: { color: "#2563eb", fontWeight: 600, cursor: "pointer" },
-  button: {
-    width: "100%",
-    padding: "12px",
-    borderRadius: "999px",
-    fontWeight: 600,
-    marginTop: "10px",
-    backgroundColor: "#2563eb",
-    color: "white",
-    border: "none",
-  },
-  error: { color: "#dc2626", marginTop: "12px", textAlign: "center", fontSize: "14px" },
-  footer: { marginTop: "18px", textAlign: "center", fontSize: "14px" },
-  link: { color: "#2563eb", fontWeight: 600 },
-
-  modalOverlay: {
-    position: "fixed",
-    inset: 0,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  },
-  modal: {
-    background: "#fff",
-    width: "90%",
-    maxWidth: "600px",
-    maxHeight: "80vh",
-    overflowY: "auto",
-    borderRadius: "12px",
-    padding: "25px",
-    position: "relative",
-    transition: "all 0.25s ease",
-  },
-  closeButton: {
-    position: "absolute",
-    top: "10px",
-    right: "15px",
-    border: "none",
-    background: "transparent",
-    fontSize: "18px",
-    cursor: "pointer",
-  },
-  modalContent: {
-    fontSize: "14px",
-    lineHeight: "1.8",
-    marginBottom: "20px",
-  },
-  acceptButton: {
-    width: "100%",
-    padding: "10px",
-    borderRadius: "8px",
-    backgroundColor: "#16a34a",
-    color: "white",
-    border: "none",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-};
+function Input({ label, error, ...props }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        {label}
+      </label>
+      <input
+        {...props}
+        required
+        className={`w-full px-4 py-3 border rounded-xl outline-none transition 
+        ${error ? "border-red-500" : "border-gray-300"}
+        focus:ring-2 focus:ring-black focus:border-black`}
+      />
+    </div>
+  );
+}
