@@ -28,7 +28,6 @@ export default function Profile() {
         const data = await res.json();
         setUser(data);
         setEditForm({ name: data.name, email: data.email });
-
       } catch (err) {
         setError(err.message);
       } finally {
@@ -66,7 +65,31 @@ export default function Profile() {
         ...prev,
         avatar: data.url || prev.avatar,
       }));
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setPhotoLoading(false);
+    }
+  }
 
+  /* =========================
+     ELIMINAR FOTO
+  ========================= */
+  async function handleDeleteAvatar() {
+    try {
+      setPhotoLoading(true);
+
+      const res = await fetch(`${API_BASE}/users/me/avatar`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error("Error al eliminar imagen");
+
+      setUser((prev) => ({
+        ...prev,
+        avatar: null,
+      }));
     } catch (err) {
       alert(err.message);
     } finally {
@@ -77,27 +100,33 @@ export default function Profile() {
   /* =========================
      GUARDAR EDICIÓN
   ========================= */
-  async function handleSaveProfile() {
-    try {
-      const res = await fetch(`${API_BASE}/users/me`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(editForm),
-      });
 
-      if (!res.ok) throw new Error("Error al actualizar perfil");
+async function handleSaveProfile() {
+  try {
+    const res = await fetch(`${API_BASE}/users/me`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(editForm),
+    });
 
-      const data = await res.json();
-      setUser(data);
-      setEditOpen(false);
+    if (!res.ok) throw new Error("Error al actualizar perfil");
 
-    } catch (err) {
-      alert(err.message);
-    }
+    const data = await res.json();
+
+    // 🔥 MERGE EN VEZ DE REEMPLAZAR
+    setUser((prev) => ({
+      ...prev,
+      ...data,
+    }));
+
+    setEditOpen(false);
+  } catch (err) {
+    alert(err.message);
   }
+}
 
   if (loading) return <p className="p-6 text-center">Cargando perfil...</p>;
   if (error) return <p className="p-6 text-red-500 text-center">{error}</p>;
@@ -106,19 +135,17 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4">
-
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden"
       >
-
         {/* HEADER */}
         <div className="bg-gradient-to-r from-gray-900 to-gray-700 p-8 text-white">
-
           <div className="flex flex-col md:flex-row items-center gap-6">
-
-            <div className="relative">
+            <div className="relative w-36 h-36">
+              
+              {/* Avatar */}
               <motion.img
                 whileHover={{ scale: 1.05 }}
                 src={
@@ -130,8 +157,16 @@ export default function Profile() {
                 className="w-36 h-36 rounded-full object-cover border-4 border-white"
               />
 
-              <label className="absolute bottom-0 right-0 bg-black text-white text-xs px-3 py-1 rounded-full cursor-pointer">
-                {photoLoading ? "..." : "Editar"}
+              {/* Overlay Loader */}
+              {photoLoading && (
+                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                  <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
+
+              {/* Botón editar */}
+              <label className="absolute bottom-0 right-0 bg-black text-white text-xs px-3 py-1 rounded-full cursor-pointer hover:bg-gray-800 transition">
+                Cambiar
                 <input
                   type="file"
                   hidden
@@ -145,7 +180,7 @@ export default function Profile() {
               <h2 className="text-3xl font-bold">{user.name}</h2>
               <p className="text-gray-300">{user.email}</p>
 
-              <div className="flex gap-3 mt-4 justify-center md:justify-start">
+              <div className="flex gap-3 mt-4 justify-center md:justify-start flex-wrap">
                 <span className="px-4 py-1 rounded-full bg-white/20 text-sm">
                   {user.role === "owner" ? "Propietario" : "Inquilino"}
                 </span>
@@ -156,23 +191,29 @@ export default function Profile() {
                 >
                   Editar perfil
                 </button>
+
+                {/* Botón eliminar */}
+                {user.avatar && (
+                  <button
+                    onClick={handleDeleteAvatar}
+                    className="px-4 py-1 rounded-full bg-red-500 text-white text-sm hover:bg-red-600 transition"
+                  >
+                    Eliminar foto
+                  </button>
+                )}
               </div>
             </div>
-
           </div>
         </div>
 
         {/* CONTENIDO */}
         <div className="p-8 space-y-10">
-
           {/* SCORE */}
           <div className="bg-gray-50 p-6 rounded-2xl border shadow-sm">
             <h3 className="font-semibold mb-3">Score</h3>
-
             <div className="text-2xl font-bold mb-3">
               ⭐ {user.score ?? "--"}
             </div>
-
             <div className="w-full bg-gray-200 rounded-full h-3">
               <motion.div
                 initial={{ width: 0 }}
@@ -183,37 +224,9 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* ESTADÍSTICAS OWNER */}
-          {user.role === "owner" && (
-            <div className="bg-gray-50 p-6 rounded-2xl border shadow-sm">
-              <h3 className="font-semibold mb-4">Estadísticas</h3>
-
-              <div className="grid md:grid-cols-3 gap-4 text-center">
-                <div className="p-4 bg-white rounded-xl shadow">
-                  <p className="text-2xl font-bold">
-                    {user.properties?.length || 0}
-                  </p>
-                  <p className="text-gray-500 text-sm">
-                    Propiedades publicadas
-                  </p>
-                </div>
-
-                <div className="p-4 bg-white rounded-xl shadow">
-                  <p className="text-2xl font-bold">
-                    {user.reviews?.length || 0}
-                  </p>
-                  <p className="text-gray-500 text-sm">
-                    Reseñas recibidas
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* HISTORIAL */}
+          {/* ACTIVIDAD */}
           <div>
             <h3 className="font-semibold mb-4">Actividad reciente</h3>
-
             {user.activity && user.activity.length > 0 ? (
               <ul className="space-y-3">
                 {user.activity.map((a, i) => (
@@ -231,7 +244,6 @@ export default function Profile() {
               </p>
             )}
           </div>
-
         </div>
       </motion.div>
 
@@ -293,7 +305,6 @@ export default function Profile() {
           </motion.div>
         )}
       </AnimatePresence>
-
     </div>
   );
 }

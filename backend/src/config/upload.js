@@ -1,22 +1,44 @@
 import multer from "multer";
-import path from "path";
-import fs from "fs";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "./cloudinary.js";
 
-// Crear carpeta uploads si no existe
-const uploadPath = "uploads";
+/* =========================
+   STORAGE CLOUDINARY
+========================= */
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => {
+    // 🔥 Detectar tipo de subida
+    let folder = "rentdirect/misc";
 
-if (!fs.existsSync(uploadPath)) {
-  fs.mkdirSync(uploadPath);
-}
+    if (file.fieldname === "file") {
+      folder = "rentdirect/avatars";
+    }
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + path.extname(file.originalname);
-    cb(null, uniqueName);
+    if (file.fieldname === "document") {
+      folder = "rentdirect/documents";
+    }
+
+    return {
+      folder,
+      allowed_formats: ["jpg", "png", "jpeg", "pdf"],
+      transformation: [
+        {
+          width: 500,
+          height: 500,
+          crop: "limit",
+        },
+      ],
+    };
   },
 });
 
-export const upload = multer({ storage });
+/* =========================
+   EXPORT MULTER
+========================= */
+export const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB
+  },
+});

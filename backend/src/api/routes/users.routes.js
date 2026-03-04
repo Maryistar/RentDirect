@@ -3,6 +3,7 @@
 import express from 'express';
 import { getMe, updateMe, uploadDocumentHandler } from '../controllers/users.controller.js';
 import { authenticate } from '../../middlewares/auth.middleware.js';
+import { deleteAvatar } from "../controllers/users.controller.js";
 const router = express.Router();
 
 import { upload } from "../../config/upload.js";
@@ -18,5 +19,6 @@ router.post(
   upload.single("file"),
   uploadAvatar
 );
+router.delete("/me/avatar", authenticate, deleteAvatar);
 
 export default router;
