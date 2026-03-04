@@ -1,6 +1,9 @@
 import * as userRepository from '../repositories/users.repository.js';
 import { uploadFile } from './files.service.js';
 
+/* ================================
+   OBTENER USUARIO
+================================ */
 export async function getUserById(userId) {
   const user = await userRepository.findById(userId);
 
@@ -11,15 +14,20 @@ export async function getUserById(userId) {
   return user;
 }
 
+/* ================================
+   ACTUALIZAR PERFIL
+================================ */
 export async function updateUser(userId, data) {
-  const { name, phone } = data;
+  // Aquí puedes agregar validaciones futuras
 
-  // Aquí podrían ir reglas futuras
-  await userRepository.update(userId, name, phone);
+  await userRepository.update(userId, data);
 
-  return { message: 'updated' };
+  return await userRepository.findById(userId); // 🔥 devolvemos usuario actualizado
 }
 
+/* ================================
+   SUBIR DOCUMENTO
+================================ */
 export async function uploadUserDocument(userId, file, type) {
   if (!file) {
     throw new Error('No file');
