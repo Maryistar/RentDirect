@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../application/context/AuthContext";
 import {
   Home,
   User,
@@ -11,14 +12,9 @@ import {
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState(null);
   const menuRef = useRef(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    setUser(storedUser ? JSON.parse(storedUser) : null);
-  }, []);
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -32,9 +28,7 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    setUser(null);
+    logout();
     setIsOpen(false);
     navigate("/login");
   };
@@ -44,7 +38,10 @@ export default function Navbar() {
   return (
     <nav className="bg-slate-900 text-white px-6 py-4 relative shadow-md">
       <div className="flex justify-between items-center">
-        <Link to="/" className="text-xl font-bold tracking-wide hover:text-gray-300 transition">
+        <Link
+          to="/"
+          className="text-xl font-bold tracking-wide hover:text-gray-300 transition"
+        >
           RentDirect
         </Link>
 
@@ -57,32 +54,22 @@ export default function Navbar() {
           </button>
 
           {isOpen && (
-            <div className="absolute right-0 mt-4 w-64 bg-white text-gray-800 rounded-2xl shadow-2xl p-3 flex flex-col border border-gray-100 animate-dropdown">
+            <div className="absolute right-0 mt-4 w-64 bg-white text-gray-800 rounded-2xl shadow-2xl p-3 flex flex-col border border-gray-100">
 
-              {/* SIN SESIÓN */}
               {!user && (
                 <>
-                  <Link
-                    to="/login"
-                    onClick={() => setIsOpen(false)}
-                    className="menu-item"
-                  >
+                  <Link to="/login" onClick={() => setIsOpen(false)} className="menu-item">
                     <User size={18} />
                     Ingresa
                   </Link>
 
-                  <Link
-                    to="/register"
-                    onClick={() => setIsOpen(false)}
-                    className="menu-item"
-                  >
+                  <Link to="/register" onClick={() => setIsOpen(false)} className="menu-item">
                     <User size={18} />
                     Regístrate
                   </Link>
                 </>
               )}
 
-              {/* OWNER */}
               {user && role === "owner" && (
                 <>
                   <Link to="/" onClick={() => setIsOpen(false)} className="menu-item">
@@ -90,12 +77,12 @@ export default function Navbar() {
                     Inicio
                   </Link>
 
-                  <Link to="/mis-propiedades" onClick={() => setIsOpen(false)} className="menu-item">
+                  <Link to="/my-properties" onClick={() => setIsOpen(false)} className="menu-item">
                     <Building size={18} />
                     Mis propiedades
                   </Link>
 
-                  <Link to="/publicar" onClick={() => setIsOpen(false)} className="menu-item">
+                  <Link to="/create-property" onClick={() => setIsOpen(false)} className="menu-item">
                     <PlusCircle size={18} />
                     Publicar propiedad
                   </Link>
@@ -114,7 +101,6 @@ export default function Navbar() {
                 </>
               )}
 
-              {/* TENANT */}
               {user && role === "tenant" && (
                 <>
                   <Link to="/" onClick={() => setIsOpen(false)} className="menu-item">
@@ -122,7 +108,7 @@ export default function Navbar() {
                     Inicio
                   </Link>
 
-                  <Link to="/mis-aplicaciones" onClick={() => setIsOpen(false)} className="menu-item">
+                  <Link to="/my-applications" onClick={() => setIsOpen(false)} className="menu-item">
                     <FileText size={18} />
                     Mis aplicaciones
                   </Link>

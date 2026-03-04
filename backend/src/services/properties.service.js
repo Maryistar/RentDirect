@@ -3,22 +3,33 @@ import * as repo from '../repositories/properties.repository.js';
 // 🔹 Crear
 export async function createProperty(data, user, files) {
 
+  if (!user || (user.role !== 'owner' && user.role !== 'admin')) {
+    throw { status: 403, message: 'Forbidden' };
+  }
+
+  if (!data.title || !data.address || !data.price) {
+    throw { status: 400, message: 'Missing required fields' };
+  }
+
   // Guardar thumbnail (primera imagen)
   const thumbnail = files?.length
     ? `uploads/${files[0].filename}`
     : null;
 
-  // 1️⃣ Crear propiedad
   const propertyId = await repo.createProperty({
     ownerId: user.id,
     title: data.title,
-    description: data.description,
+    description: data.description || '',
     address: data.address,
     price: data.price,
+    type: data.type || 'Apartamento',
+    rooms: data.rooms || 1,
+    bathrooms: data.bathrooms || 1,
+    tags: data.tags || null,
     thumbnail
   });
 
-  // 2️⃣ Guardar imágenes en property_images
+  // 🔹 Guardar imágenes adicionales
   if (files && files.length > 0) {
     for (let i = 0; i < files.length; i++) {
       await repo.createPropertyImage({
@@ -39,10 +50,20 @@ export async function listAvailable() {
 
 // 🔹 Ver una propiedad
 export async function getProperty(id) {
+
   const property = await repo.findByIdWithImages(id);
 
   if (!property) {
     throw { status: 404, message: 'Property not found' };
+  }
+
+  // Convertir tags JSON string → array
+  if (property.tags) {
+    try {
+      property.tags = JSON.parse(property.tags);
+    } catch {
+      property.tags = [];
+    }
   }
 
   return property;
@@ -72,11 +93,15 @@ export async function updateProperty(id, data, user) {
   }
 
   await repo.updateProperty(id, {
-    title: data.title || property.title,
-    description: data.description || property.description,
-    address: data.address || property.address,
-    price: data.price || property.price,
-    status: data.status || property.status
+    title: data.title ?? property.title,
+    description: data.description ?? property.description,
+    address: data.address ?? property.address,
+    price: data.price ?? property.price,
+    status: data.status ?? property.status,
+    type: data.type ?? property.type,
+    rooms: data.rooms ?? property.rooms,
+    bathrooms: data.bathrooms ?? property.bathrooms,
+    tags: data.tags ?? property.tags
   });
 
   return { message: 'Property updated successfully' };
