@@ -45,6 +45,7 @@ app.use('/api/v1/users', usersRoutes);
 app.use('/api/v1/properties', propertiesRoutes);
 app.use('/api/v1', applicationsRoutes);
 app.use('/api/v1', chatRoutes);
+app.use("/uploads", express.static("uploads"));
 
 /* ================================
    ERROR HANDLER

@@ -1,3 +1,4 @@
+import * as usersRepository from "../../repositories/users.repository.js";
 import * as userService from '../../services/users.service.js';
 import multer from 'multer';
 
@@ -38,3 +39,26 @@ export function uploadDocumentHandler(req, res, next) {
     }
   });
 }
+
+export const uploadAvatar = async (req, res) => {
+  try {
+
+    console.log("REQ.FILE:", req.file);
+    console.log("REQ.USER:", req.user);
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No se envió archivo" });
+    }
+
+    const imageUrl = `http://localhost:4000/uploads/${req.file.filename}`;
+
+    // Actualizar en base de datos
+    await usersRepository.updateUserAvatar(req.user.id, imageUrl);
+
+    res.json({ url: imageUrl });
+
+  } catch (error) {
+    console.error("ERROR REAL:", error);
+    res.status(500).json({ message: "Error al subir imagen" });
+  }
+};

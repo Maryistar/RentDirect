@@ -22,3 +22,13 @@ export async function insertDocument(userId, type, url) {
     [userId, type, url, 'pending']
   );
 }
+
+export const updateUserAvatar = async (userId, avatarUrl) => {
+  const query = `
+    UPDATE users
+    SET avatar = ?
+    WHERE id = ?
+  `;
+
+  return db.query(query, [avatarUrl, userId]);
+};

@@ -52,7 +52,7 @@ export default function Profile() {
     try {
       setPhotoLoading(true);
 
-      const res = await fetch(`${API_BASE}/users/me/documents`, {
+      const res = await fetch(`${API_BASE}/users/me/avatar`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
