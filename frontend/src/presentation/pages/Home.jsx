@@ -40,7 +40,7 @@ export default function Home() {
         <div className="relative z-10 text-center text-white max-w-3xl px-4">
 
           <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            Encuentra tu próximo hogar sin intermediarios
+            Encuentra tu próximo hogar sin intermediarios8877677889
           </h1>
 
           <p className="mb-6 text-lg">
