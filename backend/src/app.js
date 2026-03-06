@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 import chatRoutes from './api/routes/chat.routes.js';
 import rentalRoutes from './api/routes/rental.routes.js';
 
-dotenv.config();
+dotenv.config({ path: './.env' });
 
 // Necesario para __dirname en ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -22,7 +22,14 @@ import applicationsRoutes from './api/routes/applications.routes.js';
 
 
 const app = express();
-app.use(cors());
+
+app.use(cors({
+  origin: "http://localhost:5173", // puerto de tu frontend
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
+
 app.use(bodyParser.json());
 
 /* ================================
@@ -48,6 +55,7 @@ app.use('/api/v1/properties', propertiesRoutes);
 app.use('/api/v1', applicationsRoutes);
 app.use('/api/v1', chatRoutes);
 app.use('/rental-records', rentalRoutes);
+
 
 /* ================================
    ERROR HANDLER

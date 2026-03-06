@@ -56,6 +56,7 @@ export default function Navbar() {
           {isOpen && (
             <div className="absolute right-0 mt-4 w-64 bg-white text-gray-800 rounded-2xl shadow-2xl p-3 flex flex-col border border-gray-100">
 
+              {/* SIN LOGIN */}
               {!user && (
                 <>
                   <Link to="/login" onClick={() => setIsOpen(false)} className="menu-item">
@@ -71,6 +72,7 @@ export default function Navbar() {
               )}
 
 
+              {/* OWNER */}
               {user && role === "owner" && (
                 <>
                   <Link to="/" onClick={() => setIsOpen(false)} className="menu-item">
@@ -108,11 +110,18 @@ export default function Navbar() {
                 </>
               )}
 
+              {/* TENANT */}
               {user && role === "tenant" && (
                 <>
                   <Link to="/" onClick={() => setIsOpen(false)} className="menu-item">
                     <Home size={18} />
                     Inicio
+                  </Link>
+
+                  {/* 🔥 NUEVO LINK DE PROPIEDADES */}
+                  <Link to="/properties" onClick={() => setIsOpen(false)} className="menu-item">
+                    <Building size={18} />
+                    Propiedades
                   </Link>
 
                   <Link to="/my-applications" onClick={() => setIsOpen(false)} className="menu-item">
@@ -138,6 +147,7 @@ export default function Navbar() {
                   </button>
                 </>
               )}
+
             </div>
           )}
         </div>
