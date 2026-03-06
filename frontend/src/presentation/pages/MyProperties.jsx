@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getMyProperties } from "../../infrastructure/api/properties";
 import {
   getApplicationsForProperty,
   updateApplicationStatus,
 } from "../../infrastructure/api/applications";
+import { startChat } from "../../infrastructure/api/chats";
 
 export default function MyProperties() {
+  const navigate = useNavigate();
+
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -46,6 +49,21 @@ export default function MyProperties() {
       loadProperties();
     } catch (err) {
       alert("Error al actualizar la aplicación");
+    }
+  }
+
+  // 🔥 ESTA ES LA FUNCIÓN NUEVA
+  async function handleStartChat(propertyId, tenantId, applicationId) {
+    try {
+      const chat = await startChat(propertyId, tenantId);
+
+      // Cambiamos estado a in_review cuando inicia conversación
+      await updateApplicationStatus(applicationId, "in_review");
+
+      navigate(`/chat/${chat.id}`);
+    } catch (error) {
+      console.error(error);
+      alert("Error al iniciar conversación");
     }
   }
 
@@ -178,7 +196,11 @@ export default function MyProperties() {
                           <div style={{ marginTop: 8 }}>
                             <button
                               onClick={() =>
-                                handleStatus(app.id, "in_review")
+                                handleStartChat(
+                                  property.id,
+                                  app.tenant_id,   // ⚠️ si no funciona revisamos el nombre
+                                  app.id
+                                )
                               }
                               style={{
                                 marginRight: 8,

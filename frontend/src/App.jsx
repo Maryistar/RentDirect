@@ -15,6 +15,7 @@ import MyProperties from "./presentation/pages/MyProperties";
 import MyApplications from "./presentation/pages/MyApplications";
 import CreateProperty from "./presentation/pages/CreateProperty";
 import Profile from "./presentation/pages/Profile";
+import Chat from "./presentation/pages/chat";
 
 export default function App() {
   const { user, token } = useAuth();
@@ -66,6 +67,22 @@ export default function App() {
         <Route
           path="/profile"
           element={token ? <Profile /> : <Navigate to="/login" />}
+        />
+
+        {/* CHAT LIST */}
+        <Route
+          path="/chat"
+          element={
+            token ? <Chat /> : <Navigate to="/login" />
+          }
+        />
+
+        {/* CHAT */}
+        <Route
+          path="/chat/:id"
+          element={
+            token ? <Chat /> : <Navigate to="/login" />
+          }
         />
 
         {/* CATCH ALL */}
