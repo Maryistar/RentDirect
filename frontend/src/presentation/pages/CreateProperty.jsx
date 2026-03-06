@@ -10,6 +10,7 @@ export default function CreateProperty() {
 
   const [title, setTitle] = useState("");
   const [address, setAddress] = useState("");
+  const [neighborhood, setNeighborhood] = useState("");
   const [price, setPrice] = useState("");
   const [type, setType] = useState("Apartamento");
   const [rooms, setRooms] = useState(1);
@@ -22,7 +23,33 @@ export default function CreateProperty() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const propertyTypes = ["Apartamento", "Casa", "Oficina", "Local"];
+  const propertyTypes = [
+    "Apartamento",
+    "Casa",
+    "Apartaestudio",
+    "Oficina",
+    "Local",
+    "Bodega",
+    "Finca",
+    "Habitacion",
+  ];
+
+  const medellinNeighborhoods = [
+    "El Poblado",
+    "Laureles",
+    "Envigado",
+    "Itagüi",
+    "Sabaneta",
+    "Bello",
+    "Robledo",
+    "Belén",
+    "Buenos Aires",
+    "Guayabal",
+    "Castilla",
+    "Aranjuez",
+    "Manrique",
+  ];
+
   const availableTags = [
     "Amoblado",
     "Parqueadero",
@@ -54,14 +81,19 @@ export default function CreateProperty() {
     setLoading(true);
     try {
       const formData = new FormData();
+
       formData.append("title", title);
-      formData.append("address", address);
+
+      const fullAddress = `${address}, ${neighborhood}`;
+      formData.append("address", fullAddress);
+
       formData.append("price", price.replace(/\./g, ""));
       formData.append("type", type);
       formData.append("rooms", rooms);
       formData.append("bathrooms", bathrooms);
       formData.append("tags", JSON.stringify(tags));
       formData.append("description", description);
+
       images.forEach((img) => formData.append("images", img));
 
       await createProperty(formData);
@@ -79,10 +111,8 @@ export default function CreateProperty() {
     <div className="min-h-screen bg-slate-100 py-16 px-6">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16">
 
-        {/* FORM */}
         <div className="bg-white p-10 rounded-3xl shadow-xl">
 
-          {/* PROGRESS */}
           <div className="mb-8">
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
               <div
@@ -107,6 +137,9 @@ export default function CreateProperty() {
                   setTitle={setTitle}
                   address={address}
                   setAddress={setAddress}
+                  neighborhood={neighborhood}
+                  setNeighborhood={setNeighborhood}
+                  neighborhoods={medellinNeighborhoods}
                   price={price}
                   handlePriceChange={handlePriceChange}
                   type={type}
@@ -139,7 +172,6 @@ export default function CreateProperty() {
             </motion.div>
           </AnimatePresence>
 
-          {/* NAV BUTTONS */}
           <div className="flex justify-between mt-10">
             {step > 1 && (
               <button
@@ -173,7 +205,6 @@ export default function CreateProperty() {
           )}
         </div>
 
-        {/* PREVIEW */}
         <div className="hidden lg:block">
           <div className="bg-white rounded-3xl shadow-xl p-8">
             <h2 className="text-xl font-bold mb-6">Vista previa</h2>
@@ -187,7 +218,10 @@ export default function CreateProperty() {
             )}
 
             <h3 className="text-2xl font-bold">{title || "Título propiedad"}</h3>
-            <p className="text-gray-500 mt-2">{address || "Dirección"}</p>
+
+            <p className="text-gray-500 mt-2">
+              {address || "Dirección"} {neighborhood && `- ${neighborhood}`}
+            </p>
 
             <p className="text-blue-600 text-xl font-semibold mt-4">
               {price ? `$ ${price}` : "$ 0"}
@@ -220,16 +254,17 @@ export default function CreateProperty() {
   );
 }
 
-/* INPUT BASE */
 const inputClass =
   "w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition";
 
-/* STEP 1 */
 function StepOne({
   title,
   setTitle,
   address,
   setAddress,
+  neighborhood,
+  setNeighborhood,
+  neighborhoods,
   price,
   handlePriceChange,
   type,
@@ -238,6 +273,7 @@ function StepOne({
 }) {
   return (
     <div className="space-y-6">
+
       <div>
         <label className="block mb-2 text-sm font-semibold">Título</label>
         <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -246,6 +282,20 @@ function StepOne({
       <div>
         <label className="block mb-2 text-sm font-semibold">Dirección</label>
         <input className={inputClass} value={address} onChange={(e) => setAddress(e.target.value)} />
+      </div>
+
+      <div>
+        <label className="block mb-2 text-sm font-semibold">Barrio</label>
+        <select
+          className={inputClass}
+          value={neighborhood}
+          onChange={(e) => setNeighborhood(e.target.value)}
+        >
+          <option value="">Seleccionar barrio</option>
+          {neighborhoods.map((n) => (
+            <option key={n}>{n}</option>
+          ))}
+        </select>
       </div>
 
       <div>
@@ -261,6 +311,7 @@ function StepOne({
           ))}
         </select>
       </div>
+
     </div>
   );
 }
@@ -340,6 +391,7 @@ function StepThree({
 }) {
   return (
     <div className="space-y-6">
+
       <div>
         <label className="block mb-2 text-sm font-semibold">Descripción</label>
         <textarea
