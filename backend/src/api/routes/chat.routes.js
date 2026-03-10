@@ -13,4 +13,8 @@ router.get('/chats', authenticate, chatController.getMyChats);
 // obtener mensajes de un chat
 router.get('/chats/:chatId/messages', authenticate, chatController.getMessages);
 
+// enviar mensaje
+router.post('/chats/messages', authenticate, chatController.sendMessage);
+
+
 export default router;

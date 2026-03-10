@@ -2,31 +2,26 @@ import * as chatRepo from '../repositories/chat.repository.js';
 import * as propertyRepo from '../repositories/properties.repository.js';
 import * as applicationRepo from '../repositories/applications.repository.js';
 
-// 🔹 Crear conversación (cuando el owner da clic en "Iniciar conversación")
 export async function startChat({ propertyId, ownerId, tenantId }) {
 
-  // 1️⃣ Validar que la propiedad exista y sea del owner
   const property = await propertyRepo.findPropertyById(propertyId);
 
   if (!property || property.owner_id !== ownerId) {
     throw { status: 403, message: 'You are not the owner of this property' };
   }
 
-  // 2️⃣ Validar que exista application
   const application = await applicationRepo.findExistingApplication(propertyId, tenantId);
 
   if (!application) {
     throw { status: 400, message: 'No application found for this tenant' };
   }
 
-  // 3️⃣ Verificar si ya existe chat
   const existing = await chatRepo.findExistingChat(propertyId, ownerId, tenantId);
 
   if (existing) {
     return existing;
   }
 
-  // 4️⃣ Crear chat
   const chatId = await chatRepo.createChat({
     propertyId,
     ownerId,

@@ -81,6 +81,7 @@ export default function Navbar() {
                 </>
               )}
 
+
               {/* OWNER */}
 
               {user && role === "owner" && (
@@ -103,6 +104,12 @@ export default function Navbar() {
                   <Link to="/profile" onClick={() => setIsOpen(false)} className="menu-item">
                     <User size={18} />
                     Perfil
+                  </Link>
+
+                  {/* LINK DE CHATS PARA OWNER */}
+                  <Link to="/chat" onClick={() => setIsOpen(false)} className="menu-item">
+                    <User size={18} />
+                    Chats
                   </Link>
 
                   <div className="border-t my-2"></div>
@@ -136,6 +143,11 @@ export default function Navbar() {
                   <Link to="/profile" onClick={() => setIsOpen(false)} className="menu-item">
                     <User size={18} />
                     Perfil
+                  </Link>
+
+                  <Link to="/chat" onClick={() => setIsOpen(false)} className="menu-item">
+                    <User size={18} />
+                    Chats
                   </Link>
 
                   <div className="border-t my-2"></div>

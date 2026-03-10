@@ -49,6 +49,8 @@ export async function createPropertyImage(data) {
   return result.insertId;
 }
 
+
+
 // 🔹 Buscar propiedad con imágenes
 export async function findByIdWithImages(id) {
   const [properties] = await db.query(
@@ -81,6 +83,14 @@ export async function getAllAvailable() {
   );
 
   return rows;
+}
+// 🔹 Property
+export async function findPropertyById(propertyId) {
+  const [[property]] = await db.query(
+    'SELECT id, status, owner_id FROM properties WHERE id = ?',
+    [propertyId]
+  );
+  return property;
 }
 
 // 🔹 Buscar por id

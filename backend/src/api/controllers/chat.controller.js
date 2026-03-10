@@ -54,3 +54,25 @@ export async function getMessages(req, res, next) {
     next(err);
   }
 }
+
+export async function sendMessage(req, res, next) {
+  try {
+
+    const { chatId, content } = req.body;
+
+    const senderId = req.user.id;
+
+    const messageId = await chatService.createMessage({
+      chatId,
+      senderId,
+      message: content
+    });
+
+    res.status(201).json({
+      id: messageId
+    });
+
+  } catch (err) {
+    next(err);
+  }
+}

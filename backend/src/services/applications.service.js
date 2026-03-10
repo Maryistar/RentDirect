@@ -1,9 +1,10 @@
 import * as repo from '../repositories/applications.repository.js';
+import * as propertyRepo from '../repositories/properties.repository.js';
 
 // 🔹 APPLY
 export async function applyToProperty(propertyId, tenantId, message) {
 
-  const property = await repo.findPropertyById(propertyId);
+  const property = await propertyRepo.findPropertyById(propertyId);
 
   if (!property) {
     throw { status: 404, message: 'Property not found' };
@@ -52,7 +53,7 @@ export async function listMyApplications(tenantId) {
 // 🔹 OWNER → LIST APPLICATIONS FOR A PROPERTY
 export async function listApplicationsForProperty(propertyId, user) {
 
-  const property = await repo.findPropertyById(propertyId);
+  const property = await propertyRepo.findPropertyById(propertyId);
 
   if (!property) {
     throw { status: 404, message: 'Property not found' };

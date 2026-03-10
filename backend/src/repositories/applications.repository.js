@@ -1,13 +1,5 @@
 import db from '../config/db.js';
 
-// 🔹 Property
-export async function findPropertyById(propertyId) {
-  const [[property]] = await db.query(
-    'SELECT id, status, owner_id FROM properties WHERE id = ?',
-    [propertyId]
-  );
-  return property;
-}
 
 // 🔹 User score
 export async function findUserScore(userId) {
