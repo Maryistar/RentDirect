@@ -11,12 +11,14 @@ import {
 } from "lucide-react";
 
 export default function Navbar() {
+
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   useEffect(() => {
+
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsOpen(false);
@@ -24,7 +26,9 @@ export default function Navbar() {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
+
     return () => document.removeEventListener("mousedown", handleClickOutside);
+
   }, []);
 
   const handleLogout = () => {
@@ -36,8 +40,11 @@ export default function Navbar() {
   const role = user?.role;
 
   return (
-    <nav className="bg-slate-900 text-white px-6 py-4 relative shadow-md">
+
+    <nav className="bg-slate-900 text-white px-6 py-4 relative shadow-md z-50">
+
       <div className="flex justify-between items-center">
+
         <Link
           to="/"
           className="text-xl font-bold tracking-wide hover:text-gray-300 transition"
@@ -46,6 +53,7 @@ export default function Navbar() {
         </Link>
 
         <div className="relative" ref={menuRef}>
+
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="text-2xl hover:opacity-80 transition duration-200"
@@ -54,9 +62,11 @@ export default function Navbar() {
           </button>
 
           {isOpen && (
-            <div className="absolute right-0 mt-4 w-64 bg-white text-gray-800 rounded-2xl shadow-2xl p-3 flex flex-col border border-gray-100">
+
+            <div className="absolute right-0 mt-4 w-64 bg-white text-gray-800 rounded-2xl shadow-2xl p-3 flex flex-col border border-gray-100 z-50">
 
               {/* SIN LOGIN */}
+
               {!user && (
                 <>
                   <Link to="/login" onClick={() => setIsOpen(false)} className="menu-item">
@@ -72,6 +82,7 @@ export default function Navbar() {
               )}
 
               {/* OWNER */}
+
               {user && role === "owner" && (
                 <>
                   <Link to="/" onClick={() => setIsOpen(false)} className="menu-item">
@@ -104,6 +115,7 @@ export default function Navbar() {
               )}
 
               {/* TENANT */}
+
               {user && role === "tenant" && (
                 <>
                   <Link to="/" onClick={() => setIsOpen(false)} className="menu-item">
@@ -111,7 +123,6 @@ export default function Navbar() {
                     Inicio
                   </Link>
 
-                  {/* 🔥 NUEVO LINK DE PROPIEDADES */}
                   <Link to="/properties" onClick={() => setIsOpen(false)} className="menu-item">
                     <Building size={18} />
                     Propiedades
@@ -137,9 +148,15 @@ export default function Navbar() {
               )}
 
             </div>
+
           )}
+
         </div>
+
       </div>
+
     </nav>
+
   );
+
 }
