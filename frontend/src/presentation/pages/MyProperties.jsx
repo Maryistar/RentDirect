@@ -1,13 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getMyProperties } from "../../infrastructure/api/properties";
+
+import {
+  getMyProperties,
+  deleteProperty
+} from "../../infrastructure/api/properties";
+
 import {
   getApplicationsForProperty,
   updateApplicationStatus,
 } from "../../infrastructure/api/applications";
+
 import { startChat } from "../../infrastructure/api/chats";
 
 export default function MyProperties() {
+
   const navigate = useNavigate();
 
   const [properties, setProperties] = useState([]);
@@ -20,20 +27,31 @@ export default function MyProperties() {
 
   async function loadProperties() {
     try {
+
       const data = await getMyProperties();
 
       const withApplications = await Promise.all(
         data.map(async (property) => {
           try {
+
             const apps = await getApplicationsForProperty(property.id);
-            return { ...property, applications: apps };
+
+            return {
+              ...property,
+              applications: apps,
+            };
+
           } catch {
-            return { ...property, applications: [] };
+            return {
+              ...property,
+              applications: [],
+            };
           }
         })
       );
 
       setProperties(withApplications);
+
     } catch (err) {
       console.error(err);
       setError("No se pudieron cargar tus propiedades");
@@ -43,31 +61,64 @@ export default function MyProperties() {
   }
 
   async function handleStatus(applicationId, status) {
+
     try {
+
       await updateApplicationStatus(applicationId, status);
+
       alert("Estado actualizado correctamente");
+
       loadProperties();
-    } catch (err) {
+
+    } catch {
       alert("Error al actualizar la aplicación");
     }
   }
 
-  // 🔥 ESTA ES LA FUNCIÓN NUEVA
   async function handleStartChat(propertyId, tenantId, applicationId) {
+
     try {
+
       const chat = await startChat(propertyId, tenantId);
 
-      // Cambiamos estado a in_review cuando inicia conversación
       await updateApplicationStatus(applicationId, "in_review");
 
       navigate(`/chat/${chat.id}`);
+
     } catch (error) {
       console.error(error);
       alert("Error al iniciar conversación");
     }
   }
 
+  async function handleDelete(propertyId) {
+
+    const confirmDelete = window.confirm(
+      "¿Seguro que deseas eliminar esta propiedad?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+
+      await deleteProperty(propertyId);
+
+      alert("Propiedad eliminada correctamente");
+
+      loadProperties();
+
+    } catch (error) {
+      console.error(error);
+      alert("Error al eliminar propiedad");
+    }
+  }
+
+  function handleEdit(propertyId) {
+    navigate(`/edit-property/${propertyId}`);
+  }
+
   function getVisualStatus(status) {
+
     if (
       status === "pending" ||
       status === "in_review" ||
@@ -89,10 +140,13 @@ export default function MyProperties() {
   }
 
   if (loading) return <p style={{ padding: 20 }}>Cargando propiedades...</p>;
+
   if (error) return <p style={{ padding: 20, color: "red" }}>{error}</p>;
 
   return (
+
     <div style={{ padding: 24, maxWidth: 1100, margin: "0 auto" }}>
+
       <h1 style={{ marginBottom: 20 }}>Mis Propiedades</h1>
 
       {properties.length === 0 && (
@@ -106,7 +160,9 @@ export default function MyProperties() {
           gap: 20,
         }}
       >
+
         {properties.map((property) => (
+
           <div
             key={property.id}
             style={{
@@ -116,6 +172,7 @@ export default function MyProperties() {
               background: "#fff",
             }}
           >
+
             {property.thumbnail ? (
               <img
                 src={`http://localhost:4000/${property.thumbnail}`}
@@ -142,17 +199,62 @@ export default function MyProperties() {
             )}
 
             <div style={{ padding: 14 }}>
+
               <h3>{property.title}</h3>
 
-              <p><strong>Dirección:</strong> {property.address}</p>
-              <p><strong>Precio:</strong> ${property.price}</p>
+              <p>
+                <strong>Dirección:</strong> {property.address}
+              </p>
+
+              <p>
+                <strong>Precio:</strong> ${property.price}
+              </p>
 
               <Link
                 to={`/properties/${property.id}`}
-                style={{ display: "inline-block", marginTop: 8, color: "#2563eb" }}
+                style={{
+                  display: "inline-block",
+                  marginTop: 8,
+                  color: "#2563eb"
+                }}
               >
                 Ver propiedad →
               </Link>
+
+              {/* BOTONES NUEVOS */}
+
+              <div style={{ marginTop: 10 }}>
+
+                <button
+                  onClick={() => handleEdit(property.id)}
+                  style={{
+                    marginRight: 10,
+                    padding: "6px 10px",
+                    background: "#2563eb",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 4,
+                    cursor: "pointer"
+                  }}
+                >
+                  Editar
+                </button>
+
+                <button
+                  onClick={() => handleDelete(property.id)}
+                  style={{
+                    padding: "6px 10px",
+                    background: "#dc2626",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 4,
+                    cursor: "pointer"
+                  }}
+                >
+                  Eliminar
+                </button>
+
+              </div>
 
               <div
                 style={{
@@ -161,17 +263,23 @@ export default function MyProperties() {
                   borderTop: "1px solid #eee",
                 }}
               >
+
                 <h4>Aplicaciones</h4>
 
                 {property.applications.length === 0 ? (
+
                   <p style={{ fontSize: 14, color: "#666" }}>
                     No hay aplicaciones aún
                   </p>
+
                 ) : (
+
                   property.applications.map((app) => {
+
                     const visual = getVisualStatus(app.status);
 
                     return (
+
                       <div
                         key={app.id}
                         style={{
@@ -182,23 +290,40 @@ export default function MyProperties() {
                           background: "#fafafa",
                         }}
                       >
-                        <p><strong>Usuario:</strong> {app.name || app.email}</p>
-                        <p><strong>Mensaje:</strong> {app.message || "Sin mensaje"}</p>
+
+                        {/* NOMBRE USUARIO */}
+
+                        <p>
+                          <strong>Usuario:</strong>{" "}
+                          {app.user_name || app.name || app.email || "Usuario"}
+                        </p>
+
+                        <p>
+                          <strong>Mensaje:</strong>{" "}
+                          {app.message || "Sin mensaje"}
+                        </p>
 
                         <p>
                           <strong>Estado:</strong>{" "}
-                          <span style={{ color: visual.color, fontWeight: "bold" }}>
+                          <span
+                            style={{
+                              color: visual.color,
+                              fontWeight: "bold"
+                            }}
+                          >
                             {visual.text}
                           </span>
                         </p>
 
                         {app.status === "pending" && (
+
                           <div style={{ marginTop: 8 }}>
+
                             <button
                               onClick={() =>
                                 handleStartChat(
                                   property.id,
-                                  app.tenant_id,   // ⚠️ si no funciona revisamos el nombre
+                                  app.tenant_id,
                                   app.id
                                 )
                               }
@@ -230,17 +355,31 @@ export default function MyProperties() {
                             >
                               Rechazar
                             </button>
+
                           </div>
+
                         )}
+
                       </div>
+
                     );
+
                   })
+
                 )}
+
               </div>
+
             </div>
+
           </div>
+
         ))}
+
       </div>
+
     </div>
+
   );
+
 }
