@@ -25,6 +25,7 @@ export default function Home() {
   };
 
   return (
+
     <div className="w-full">
 
       {/* HERO */}
@@ -35,6 +36,7 @@ export default function Home() {
             "url('https://cdn.prod.website-files.com/6565c5a84d3ef6316fbf310e/67f7014c39f3441d2410fd48_MEdellin.jpg')",
         }}
       >
+
         <div className="absolute inset-0 bg-black/50"></div>
 
         <div className="relative z-10 text-center text-white max-w-3xl px-4">
@@ -48,6 +50,7 @@ export default function Home() {
           </p>
 
           {/* BUSCADOR */}
+
           <div className="bg-white rounded-xl p-3 flex gap-2 items-center shadow-lg">
 
             <input
@@ -78,10 +81,13 @@ export default function Home() {
             </button>
 
           </div>
+
         </div>
+
       </section>
 
       {/* CATEGORÍAS */}
+
       <section className="py-16 px-6 max-w-6xl mx-auto">
 
         <h2 className="text-3xl font-bold mb-10 text-center">
@@ -115,56 +121,36 @@ export default function Home() {
           </Link>
 
         </div>
+
       </section>
 
-      {/* PROPIEDADES DESTACADAS */}
+      {/* EXPLORAR PROPIEDADES */}
+
       <section className="bg-gray-100 py-16 px-6">
 
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-5xl mx-auto text-center">
 
-          <h2 className="text-3xl font-bold mb-10 text-center">
-            Propiedades Destacadas
+          <h2 className="text-3xl font-bold mb-4">
+            Explora todas las propiedades disponibles
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <p className="text-gray-600 mb-8">
+            Encuentra apartamentos, casas y habitaciones disponibles para arrendar.
+          </p>
 
-            {[1,2,3].map((item) => (
-              <div
-                key={item}
-                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition"
-              >
-                <img
-                  src="https://images.unsplash.com/photo-1560185127-6ed189bf02f4"
-                  className="h-52 w-full object-cover"
-                />
-
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg">$900.000</h3>
-                  <p className="text-gray-600 text-sm">
-                    Apartamento en Medellín
-                  </p>
-                </div>
-              </div>
-            ))}
-
-          </div>
-
-          <div className="text-center mt-10">
-
-            <Link
-              to="/properties"
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
-            >
-              Ver todas las propiedades
-            </Link>
-
-          </div>
+          <Link
+            to="/properties"
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
+          >
+            Ver todas las propiedades
+          </Link>
 
         </div>
 
       </section>
 
       {/* COMO FUNCIONA */}
+
       <section className="py-16 px-6 max-w-6xl mx-auto">
 
         <h2 className="text-3xl font-bold mb-10 text-center">
@@ -202,6 +188,7 @@ export default function Home() {
       </section>
 
       {/* VENTAJAS */}
+
       <section className="bg-blue-50 py-16 px-6">
 
         <div className="max-w-6xl mx-auto text-center">
@@ -235,6 +222,7 @@ export default function Home() {
       </section>
 
       {/* CALL TO ACTION */}
+
       <section className="py-20 text-center bg-blue-600 text-white">
 
         <h2 className="text-3xl font-bold mb-4">

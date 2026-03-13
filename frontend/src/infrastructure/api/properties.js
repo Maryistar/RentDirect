@@ -7,14 +7,14 @@ export async function getProperties() {
 
   const res = await fetch(`${BASE_URL}/properties`);
 
-  if (!res.ok) {
-    throw new Error("Error al cargar propiedades");
-  }
-
   const data = await res.json();
 
-  // 👇 IMPORTANTE
+  if (!res.ok) {
+    throw new Error(data.message || "Error al cargar propiedades");
+  }
+
   return data.data || data;
+
 }
 
 /**
@@ -24,14 +24,14 @@ export async function getPropertyById(id) {
 
   const res = await fetch(`${BASE_URL}/properties/${id}`);
 
-  if (!res.ok) {
-    throw new Error("Error al cargar la propiedad");
-  }
-
   const data = await res.json();
 
-  // 👇 IMPORTANTE
+  if (!res.ok) {
+    throw new Error(data.message || "Error al cargar la propiedad");
+  }
+
   return data.data || data;
+
 }
 
 /**
@@ -47,13 +47,69 @@ export async function getMyProperties() {
     },
   });
 
-  if (!res.ok) throw new Error("Error al cargar propiedades");
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Error al cargar propiedades");
+  }
+
+  return data.data || data;
+
+}
+
+/**
+ * 🔐 OWNER – crear propiedad
+ */
+export async function createProperty(formData) {
+
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(`${BASE_URL}/properties`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
 
   const data = await res.json();
 
+  if (!res.ok) {
+    throw new Error(data.message || "Error al crear la propiedad");
+  }
+
   return data.data || data;
+
 }
 
+/**
+ * 🔐 OWNER – actualizar propiedad
+ */
+export async function updateProperty(id, formData) {
+
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(`${BASE_URL}/properties/${id}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Error al actualizar la propiedad");
+  }
+
+  return data.data || data;
+
+}
+
+/**
+ * 🔐 OWNER – eliminar propiedad
+ */
 export async function deleteProperty(propertyId) {
 
   const token = localStorage.getItem("token");
@@ -65,28 +121,10 @@ export async function deleteProperty(propertyId) {
     },
   });
 
-  if (!res.ok) throw new Error("Error al eliminar la propiedad");
-
-  return true;
-}
-
-export async function createProperty(formData) {
-
-  const token = localStorage.getItem("token");
-
-  const res = await fetch(`${BASE_URL}/properties`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    body: formData, // 👈 importante para Cloudinary
-  });
-
-  const data = await res.json();
-
   if (!res.ok) {
-    throw new Error(data.message || "Error al crear la propiedad");
+    throw new Error("Error al eliminar la propiedad");
   }
 
-  return data.data || data;
+  return true;
+
 }

@@ -1,11 +1,14 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { createProperty } from "../../infrastructure/api/properties";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { updateProperty, getPropertyById } from "../../infrastructure/api/properties";
 import { UploadCloud } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function CreateProperty() {
+export default function EditProperty() {
+
+  const { id } = useParams();
   const navigate = useNavigate();
+
   const [step, setStep] = useState(1);
 
   const [title, setTitle] = useState("");
@@ -17,6 +20,7 @@ export default function CreateProperty() {
   const [bathrooms, setBathrooms] = useState(1);
   const [tags, setTags] = useState([]);
   const [description, setDescription] = useState("");
+
   const [images, setImages] = useState([]);
   const [preview, setPreview] = useState([]);
 
@@ -29,7 +33,6 @@ export default function CreateProperty() {
     "Apartaestudio",
     "Oficina",
     "Local",
-    "Bodega",
     "Finca",
     "Habitacion",
     "Penthouse",
@@ -60,34 +63,74 @@ export default function CreateProperty() {
     "Ascensor",
   ];
 
+  useEffect(() => {
+
+    async function loadProperty() {
+
+      const property = await getPropertyById(id);
+
+      setTitle(property.title || "");
+      setDescription(property.description || "");
+      setRooms(property.rooms || 1);
+      setBathrooms(property.bathrooms || 1);
+      setType(property.type || "Apartamento");
+
+      if (property.address) {
+        const parts = property.address.split(",");
+        setAddress(parts[0] || "");
+        setNeighborhood(parts[1] || "");
+      }
+
+      if (property.price) {
+        setPrice(new Intl.NumberFormat("es-CO").format(property.price));
+      }
+
+      if (property.tags) {
+        setTags(property.tags);
+      }
+
+    }
+
+    loadProperty();
+
+  }, [id]);
+
   const formatCOP = (value) => {
+
     const number = value.replace(/\D/g, "");
     return new Intl.NumberFormat("es-CO").format(number);
+
   };
 
   const handlePriceChange = (e) => {
+
     const raw = e.target.value.replace(/\D/g, "");
     setPrice(formatCOP(raw));
+
   };
 
   const toggleTag = (tag) => {
+
     setTags((prev) =>
       prev.includes(tag)
         ? prev.filter((t) => t !== tag)
         : [...prev, tag]
     );
+
   };
 
   async function handleSubmit() {
+
     setLoading(true);
+
     try {
+
       const formData = new FormData();
 
-      formData.append("title", title);
-
       const fullAddress = `${address}, ${neighborhood}`;
-      formData.append("address", fullAddress);
 
+      formData.append("title", title);
+      formData.append("address", fullAddress);
       formData.append("price", price.replace(/\./g, ""));
       formData.append("type", type);
       formData.append("rooms", rooms);
@@ -97,34 +140,51 @@ export default function CreateProperty() {
 
       images.forEach((img) => formData.append("images", img));
 
-      await createProperty(formData);
+      await updateProperty(id, formData);
+
       navigate("/my-properties");
+
     } catch (err) {
-      setError("Error al publicar");
+
+      setError("Error al actualizar");
+
     } finally {
+
       setLoading(false);
+
     }
+
   }
 
   const progress = (step / 3) * 100;
 
   return (
+
     <div className="min-h-screen bg-slate-100 py-16 px-6">
+
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16">
 
         <div className="bg-white p-10 rounded-3xl shadow-xl">
 
           <div className="mb-8">
+
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+
               <div
                 className="h-full bg-blue-600 transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
+
             </div>
-            <p className="text-sm text-gray-500 mt-2">Paso {step} de 3</p>
+
+            <p className="text-sm text-gray-500 mt-2">
+              Paso {step} de 3
+            </p>
+
           </div>
 
           <AnimatePresence mode="wait">
+
             <motion.div
               key={step}
               initial={{ opacity: 0, x: 40 }}
@@ -132,7 +192,9 @@ export default function CreateProperty() {
               exit={{ opacity: 0, x: -40 }}
               transition={{ duration: 0.3 }}
             >
+
               {step === 1 && (
+
                 <StepOne
                   title={title}
                   setTitle={setTitle}
@@ -147,9 +209,11 @@ export default function CreateProperty() {
                   setType={setType}
                   propertyTypes={propertyTypes}
                 />
+
               )}
 
               {step === 2 && (
+
                 <StepTwo
                   rooms={rooms}
                   setRooms={setRooms}
@@ -159,9 +223,11 @@ export default function CreateProperty() {
                   toggleTag={toggleTag}
                   availableTags={availableTags}
                 />
+
               )}
 
               {step === 3 && (
+
                 <StepThree
                   description={description}
                   setDescription={setDescription}
@@ -169,11 +235,15 @@ export default function CreateProperty() {
                   setPreview={setPreview}
                   preview={preview}
                 />
+
               )}
+
             </motion.div>
+
           </AnimatePresence>
 
           <div className="flex justify-between mt-10">
+
             {step > 1 && (
               <button
                 onClick={() => setStep(step - 1)}
@@ -184,31 +254,43 @@ export default function CreateProperty() {
             )}
 
             {step < 3 ? (
+
               <button
                 onClick={() => setStep(step + 1)}
                 className="ml-auto px-6 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition"
               >
                 Siguiente
               </button>
+
             ) : (
+
               <button
                 onClick={handleSubmit}
                 disabled={loading}
                 className="ml-auto px-6 py-2 rounded-xl bg-green-600 text-white hover:bg-green-700 transition"
               >
-                {loading ? "Publicando..." : "Publicar"}
+                {loading ? "Guardando..." : "Guardar cambios"}
               </button>
+
             )}
+
           </div>
 
           {error && (
             <p className="text-red-500 mt-4 text-sm">{error}</p>
           )}
+
         </div>
 
+        {/* VISTA PREVIA */}
+
         <div className="hidden lg:block">
+
           <div className="bg-white rounded-3xl shadow-xl p-8">
-            <h2 className="text-xl font-bold mb-6">Vista previa</h2>
+
+            <h2 className="text-xl font-bold mb-6">
+              Vista previa
+            </h2>
 
             {preview[0] && (
               <img
@@ -218,7 +300,9 @@ export default function CreateProperty() {
               />
             )}
 
-            <h3 className="text-2xl font-bold">{title || "Título propiedad"}</h3>
+            <h3 className="text-2xl font-bold">
+              {title || "Título propiedad"}
+            </h3>
 
             <p className="text-gray-500 mt-2">
               {address || "Dirección"} {neighborhood && `- ${neighborhood}`}
@@ -248,15 +332,25 @@ export default function CreateProperty() {
             <p className="text-gray-600 mt-6 text-sm">
               {description || "Descripción de la propiedad..."}
             </p>
+
           </div>
+
         </div>
+
       </div>
+
     </div>
+
   );
+
 }
+
+/* INPUT STYLE */
 
 const inputClass =
   "w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition";
+
+/* STEP 1 */
 
 function StepOne({
   title,
@@ -272,28 +366,26 @@ function StepOne({
   setType,
   propertyTypes,
 }) {
+
   return (
+
     <div className="space-y-6">
 
       <div>
         <label className="block mb-2 text-sm font-semibold">Título</label>
-        <input className={inputClass} value={title} onChange={(e) => setTitle(e.target.value)} />
+        <input className={inputClass} value={title} onChange={(e)=>setTitle(e.target.value)} />
       </div>
 
       <div>
         <label className="block mb-2 text-sm font-semibold">Dirección</label>
-        <input className={inputClass} value={address} onChange={(e) => setAddress(e.target.value)} />
+        <input className={inputClass} value={address} onChange={(e)=>setAddress(e.target.value)} />
       </div>
 
       <div>
         <label className="block mb-2 text-sm font-semibold">Barrio</label>
-        <select
-          className={inputClass}
-          value={neighborhood}
-          onChange={(e) => setNeighborhood(e.target.value)}
-        >
+        <select className={inputClass} value={neighborhood} onChange={(e)=>setNeighborhood(e.target.value)}>
           <option value="">Seleccionar barrio</option>
-          {neighborhoods.map((n) => (
+          {neighborhoods.map((n)=>(
             <option key={n}>{n}</option>
           ))}
         </select>
@@ -306,129 +398,132 @@ function StepOne({
 
       <div>
         <label className="block mb-2 text-sm font-semibold">Tipo de propiedad</label>
-        <select className={inputClass} value={type} onChange={(e) => setType(e.target.value)}>
-          {propertyTypes.map((t) => (
+        <select className={inputClass} value={type} onChange={(e)=>setType(e.target.value)}>
+          {propertyTypes.map((t)=>(
             <option key={t}>{t}</option>
           ))}
         </select>
       </div>
 
     </div>
+
   );
+
 }
 
 /* STEP 2 */
-function StepTwo({
-  rooms,
-  setRooms,
-  bathrooms,
-  setBathrooms,
-  tags,
-  toggleTag,
-  availableTags,
-}) {
+
+function StepTwo({ rooms,setRooms,bathrooms,setBathrooms,tags,toggleTag,availableTags }) {
+
   return (
+
     <div className="space-y-8">
+
       <div className="grid grid-cols-2 gap-6">
+
         <div>
-          <label className="block mb-2 text-sm font-semibold">
-            Número de habitaciones
-          </label>
-          <input
-            type="number"
-            min="1"
-            className={inputClass}
-            value={rooms}
-            onChange={(e) => setRooms(e.target.value)}
-          />
+          <label className="block mb-2 text-sm font-semibold">Número de habitaciones</label>
+          <input type="number" min="1" className={inputClass} value={rooms} onChange={(e)=>setRooms(e.target.value)} />
         </div>
 
         <div>
-          <label className="block mb-2 text-sm font-semibold">
-            Número de baños
-          </label>
-          <input
-            type="number"
-            min="1"
-            className={inputClass}
-            value={bathrooms}
-            onChange={(e) => setBathrooms(e.target.value)}
-          />
+          <label className="block mb-2 text-sm font-semibold">Número de baños</label>
+          <input type="number" min="1" className={inputClass} value={bathrooms} onChange={(e)=>setBathrooms(e.target.value)} />
         </div>
+
       </div>
 
       <div>
+
         <label className="block mb-3 text-sm font-semibold">
           Características
         </label>
+
         <div className="flex flex-wrap gap-3">
-          {availableTags.map((tag) => (
+
+          {availableTags.map((tag)=>(
             <button
               key={tag}
               type="button"
-              onClick={() => toggleTag(tag)}
+              onClick={()=>toggleTag(tag)}
               className={`px-4 py-2 rounded-full text-sm transition ${
                 tags.includes(tag)
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200 hover:bg-gray-300"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 hover:bg-gray-300"
               }`}
             >
               {tag}
             </button>
           ))}
+
         </div>
+
       </div>
+
     </div>
+
   );
+
 }
 
 /* STEP 3 */
-function StepThree({
-  description,
-  setDescription,
-  setImages,
-  setPreview,
-  preview,
-}) {
+
+function StepThree({ description,setDescription,setImages,setPreview,preview }) {
+
   return (
+
     <div className="space-y-6">
 
       <div>
         <label className="block mb-2 text-sm font-semibold">Descripción</label>
-        <textarea
-          rows="4"
-          className={inputClass}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+        <textarea rows="4" className={inputClass} value={description} onChange={(e)=>setDescription(e.target.value)} />
       </div>
 
       <div>
-        <label className="block mb-2 text-sm font-semibold">Imágenes</label>
+
+        <label className="block mb-2 text-sm font-semibold">
+          Imágenes
+        </label>
+
         <label className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-blue-500 transition block">
-          <UploadCloud className="mx-auto mb-2" />
+
+          <UploadCloud className="mx-auto mb-2"/>
+
           Subir imágenes
+
           <input
             type="file"
             multiple
             accept="image/*"
-            onChange={(e) => {
-              const files = Array.from(e.target.files);
-              setImages(files);
-              setPreview(files.map((f) => URL.createObjectURL(f)));
-            }}
             className="hidden"
+            onChange={(e)=>{
+
+              const files = Array.from(e.target.files);
+
+              setImages(files);
+              setPreview(files.map((f)=>URL.createObjectURL(f)));
+
+            }}
           />
+
         </label>
+
       </div>
 
       {preview.length > 0 && (
+
         <div className="grid grid-cols-3 gap-4">
-          {preview.map((src, i) => (
-            <img key={i} src={src} alt="preview" className="h-24 object-cover rounded-lg" />
+
+          {preview.map((src,i)=>(
+            <img key={i} src={src} alt="preview" className="h-24 object-cover rounded-lg"/>
           ))}
+
         </div>
+
       )}
+
     </div>
+
   );
+
 }
