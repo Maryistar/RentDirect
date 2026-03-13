@@ -10,10 +10,14 @@ import {
   PlusCircle
 } from "lucide-react";
 
+import logo from "../../assets/logo.png";
+
 export default function Navbar() {
 
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef(null);
+
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
@@ -31,41 +35,91 @@ export default function Navbar() {
 
   }, []);
 
+  useEffect(() => {
+
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+
+  }, []);
+
   const handleLogout = () => {
+
     logout();
     setIsOpen(false);
     navigate("/login");
+
   };
 
   const role = user?.role;
 
   return (
 
-    <nav className="bg-slate-900 text-white px-6 py-4 relative shadow-md z-50">
+    <nav
+      className={`
+        fixed w-full top-0 left-0 z-50 transition-all duration-300
+        ${scrolled
+          ? "bg-white/80 backdrop-blur-md shadow-xl border-b border-gray-200"
+          : "bg-white shadow-lg"}
+        px-6 py-4
+      `}
+    >
 
       <div className="flex justify-between items-center">
 
+        {/* LOGO */}
+
         <Link
           to="/"
-          className="text-xl font-bold tracking-wide hover:text-gray-300 transition"
+          className="flex items-center gap-3 group"
         >
-          RentDirect
+
+          <img
+            src={logo}
+            alt="RentDirect logo"
+            className="w-9 h-9 object-contain animate-logoIntro transition"
+          />
+
+          <span className="
+            text-2xl md:text-3xl font-bold
+            text-blue-900
+            group-hover:text-blue-700
+            transition
+          ">
+            RentDirect
+          </span>
+
         </Link>
+
+        {/* MENU */}
 
         <div className="relative" ref={menuRef}>
 
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="text-2xl hover:opacity-80 transition duration-200"
+            className="text-2xl text-gray-700 hover:scale-110 transition"
           >
             ☰
           </button>
 
           {isOpen && (
 
-            <div className="absolute right-0 mt-4 w-64 bg-white text-gray-800 rounded-2xl shadow-2xl p-3 flex flex-col border border-gray-100 z-50">
-
-              {/* SIN LOGIN */}
+            <div
+              className="
+                absolute right-0 mt-4 w-64
+                bg-white text-gray-800
+                rounded-2xl
+                shadow-[0_20px_60px_-10px_rgba(0,0,0,0.25)]
+                p-3 flex flex-col
+                border border-gray-100
+                animate-menuOpen
+                z-50
+              "
+            >
 
               {!user && (
                 <>
@@ -80,9 +134,6 @@ export default function Navbar() {
                   </Link>
                 </>
               )}
-
-
-              {/* OWNER */}
 
               {user && role === "owner" && (
                 <>
@@ -106,7 +157,6 @@ export default function Navbar() {
                     Perfil
                   </Link>
 
-                  {/* LINK DE CHATS PARA OWNER */}
                   <Link to="/chat" onClick={() => setIsOpen(false)} className="menu-item">
                     <User size={18} />
                     Chats
@@ -120,8 +170,6 @@ export default function Navbar() {
                   </button>
                 </>
               )}
-
-              {/* TENANT */}
 
               {user && role === "tenant" && (
                 <>

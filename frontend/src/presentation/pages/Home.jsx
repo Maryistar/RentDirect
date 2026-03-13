@@ -5,13 +5,12 @@ import { Building, Home as HomeIcon, BedDouble, Search, Star, ShieldCheck } from
 export default function Home() {
 
   const navigate = useNavigate();
-
   const [search, setSearch] = useState("");
   const [type, setType] = useState("");
 
   const handleSearch = () => {
-    let url = "/properties";
 
+    let url = "/properties";
     const params = new URLSearchParams();
 
     if (search) params.append("search", search);
@@ -29,6 +28,7 @@ export default function Home() {
     <div className="w-full">
 
       {/* HERO */}
+
       <section
         className="relative h-[500px] bg-cover bg-center flex items-center justify-center"
         style={{
@@ -37,7 +37,7 @@ export default function Home() {
         }}
       >
 
-        <div className="absolute inset-0 bg-black/50"></div>
+        <div className="absolute inset-0 bg-black/55"></div>
 
         <div className="relative z-10 text-center text-white max-w-3xl px-4">
 
@@ -45,13 +45,13 @@ export default function Home() {
             Encuentra tu próximo hogar
           </h1>
 
-          <p className="mb-6 text-lg">
+          <p className="mb-6 text-lg text-gray-200">
             Explora apartamentos, casas y habitaciones directamente con propietarios.
           </p>
 
           {/* BUSCADOR */}
 
-          <div className="bg-white rounded-xl p-3 flex gap-2 items-center shadow-lg">
+          <div className="bg-white rounded-xl p-3 flex gap-2 items-center shadow-xl">
 
             <input
               type="text"
@@ -74,7 +74,7 @@ export default function Home() {
 
             <button
               onClick={handleSearch}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition"
+              className="bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-800 transition"
             >
               <Search size={18} />
               Buscar
@@ -98,25 +98,25 @@ export default function Home() {
 
           <Link
             to="/properties?type=apartment"
-            className="bg-white shadow-lg rounded-xl p-6 text-center hover:shadow-2xl transition"
+            className="bg-white shadow-md rounded-xl p-6 text-center hover:shadow-xl transition"
           >
-            <Building size={40} className="mx-auto mb-3 text-blue-600" />
+            <Building size={40} className="mx-auto mb-3 text-blue-700" />
             <h3 className="font-semibold text-lg">Apartamentos</h3>
           </Link>
 
           <Link
             to="/properties?type=house"
-            className="bg-white shadow-lg rounded-xl p-6 text-center hover:shadow-2xl transition"
+            className="bg-white shadow-md rounded-xl p-6 text-center hover:shadow-xl transition"
           >
-            <HomeIcon size={40} className="mx-auto mb-3 text-blue-600" />
+            <HomeIcon size={40} className="mx-auto mb-3 text-blue-700" />
             <h3 className="font-semibold text-lg">Casas</h3>
           </Link>
 
           <Link
             to="/properties?type=room"
-            className="bg-white shadow-lg rounded-xl p-6 text-center hover:shadow-2xl transition"
+            className="bg-white shadow-md rounded-xl p-6 text-center hover:shadow-xl transition"
           >
-            <BedDouble size={40} className="mx-auto mb-3 text-blue-600" />
+            <BedDouble size={40} className="mx-auto mb-3 text-blue-700" />
             <h3 className="font-semibold text-lg">Habitaciones</h3>
           </Link>
 
@@ -124,7 +124,7 @@ export default function Home() {
 
       </section>
 
-      {/* EXPLORAR PROPIEDADES */}
+      {/* EXPLORAR */}
 
       <section className="bg-gray-100 py-16 px-6">
 
@@ -140,7 +140,7 @@ export default function Home() {
 
           <Link
             to="/properties"
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
+            className="bg-blue-700 text-white px-6 py-3 rounded-lg hover:bg-blue-800 transition"
           >
             Ver todas las propiedades
           </Link>
@@ -160,7 +160,7 @@ export default function Home() {
         <div className="grid md:grid-cols-3 gap-10 text-center">
 
           <div>
-            <Search size={40} className="mx-auto mb-3 text-blue-600"/>
+            <Search size={40} className="mx-auto mb-3 text-blue-700"/>
             <h3 className="font-semibold">Explora propiedades</h3>
             <p className="text-gray-600 text-sm">
               Busca apartamentos y casas disponibles en tu ciudad.
@@ -168,7 +168,7 @@ export default function Home() {
           </div>
 
           <div>
-            <Star size={40} className="mx-auto mb-3 text-blue-600"/>
+            <Star size={40} className="mx-auto mb-3 text-blue-700"/>
             <h3 className="font-semibold">Aplica directamente</h3>
             <p className="text-gray-600 text-sm">
               Contacta directamente con el propietario.
@@ -176,7 +176,7 @@ export default function Home() {
           </div>
 
           <div>
-            <ShieldCheck size={40} className="mx-auto mb-3 text-blue-600"/>
+            <ShieldCheck size={40} className="mx-auto mb-3 text-blue-700"/>
             <h3 className="font-semibold">Renta sin intermediarios</h3>
             <p className="text-gray-600 text-sm">
               Sin comisiones ni trámites complicados.
@@ -189,7 +189,7 @@ export default function Home() {
 
       {/* VENTAJAS */}
 
-      <section className="bg-blue-50 py-16 px-6">
+      <section className="bg-gray-50 py-16 px-6">
 
         <div className="max-w-6xl mx-auto text-center">
 
@@ -221,21 +221,21 @@ export default function Home() {
 
       </section>
 
-      {/* CALL TO ACTION */}
+      {/* CTA */}
 
-      <section className="py-20 text-center bg-blue-600 text-white">
+      <section className="py-20 text-center bg-blue-800 text-white">
 
         <h2 className="text-3xl font-bold mb-4">
           ¿Tienes una propiedad para arrendar?
         </h2>
 
-        <p className="mb-6">
+        <p className="mb-6 text-blue-100">
           Publica tu primera propiedad gratis y encuentra inquilinos rápidamente.
         </p>
 
         <Link
           to="/create-property"
-          className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition"
+          className="bg-white text-blue-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition"
         >
           Publicar propiedad
         </Link>
