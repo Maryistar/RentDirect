@@ -15,6 +15,7 @@ import PropertyDetail from "./presentation/pages/PropertyDetail";
 import MyProperties from "./presentation/pages/MyProperties";
 import MyApplications from "./presentation/pages/MyApplications";
 import CreateProperty from "./presentation/pages/CreateProperty";
+import EditProperty from "./presentation/pages/EditProperty";
 import Profile from "./presentation/pages/Profile";
 import Chat from "./presentation/pages/chat";
 
@@ -79,6 +80,7 @@ export default function App() {
           }
         />
 
+        <Route path="/edit-property/:id" element={<EditProperty />} />
 
         {/* PERFIL */}
 
