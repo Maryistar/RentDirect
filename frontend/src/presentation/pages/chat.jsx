@@ -66,6 +66,15 @@ function Chat() {
 
     if (!text.trim()) return;
 
+    const newMessage = {
+      id: Date.now(),
+      sender_id: "yo",
+      message: text
+    };
+
+    // agregar mensaje instantáneamente
+    setMessages(prev => [...prev, newMessage]);
+
     try {
 
       await axios.post(
@@ -80,7 +89,6 @@ function Chat() {
       );
 
       setText("");
-      loadMessages();
 
     } catch (error) {
       console.error(error);
@@ -132,7 +140,7 @@ function Chat() {
 
               {messages.map(msg => (
                 <p key={msg.id}>
-                  <strong>{msg.sender_id}:</strong> {msg.content}
+                  <strong>{msg.name}:</strong> {msg.message}
                 </p>
               ))}
 
