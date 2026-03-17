@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const MyApplications = () => {
   const [applications, setApplications] = useState([]);
   const [activeTab, setActiveTab] = useState("EN_PROCESO");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchApplications();
@@ -10,20 +13,25 @@ const MyApplications = () => {
 
   const fetchApplications = async () => {
     try {
-      const response = await fetch("http://localhost:4000/api/v1/applications/me", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await fetch(
+        "http://localhost:4000/api/v1/applications/applications/me",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
       const data = await response.json();
-      setApplications(data);
+
+      setApplications(data.data || data);
+
     } catch (error) {
       console.error("Error cargando aplicaciones", error);
     }
   };
 
-  // 🔥 MAPEO DE ESTADOS DEL BACKEND AL FRONTEND
+  // 🔥 MAPEO DE ESTADOS
   const mapStatusToUI = (status) => {
     const s = status?.toLowerCase();
 
@@ -57,14 +65,18 @@ const MyApplications = () => {
 
   const handleWithdraw = async (id) => {
     try {
-      await fetch(`http://localhost:4000/api/v1/applications/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      await fetch(
+        `http://localhost:4000/api/v1/applications/applications/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
-      fetchApplications(); // refresca lista
+      fetchApplications();
+
     } catch (error) {
       console.error("Error al retirar solicitud", error);
     }
@@ -106,7 +118,7 @@ const MyApplications = () => {
             >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-medium">
-                  {app.propertyTitle}
+                  {app.propertyTitle || "Propiedad"}
                 </h3>
 
                 <span
@@ -119,19 +131,29 @@ const MyApplications = () => {
               </div>
 
               <p className="mb-2">
-                <strong>Mensaje:</strong> {app.message}
+                <strong>Mensaje:</strong> {app.message || "Sin mensaje"}
               </p>
 
               <p className="text-gray-500 text-sm mb-4">
                 Aplicado el{" "}
-                {new Date(app.createdAt).toLocaleDateString()}
+                {app.created_at
+                  ? new Date(app.created_at).toLocaleDateString()
+                  : "Fecha no disponible"}
               </p>
 
               <div className="flex justify-between items-center">
-                <button className="text-blue-600 font-medium hover:underline">
+
+                {/* 🔥 VER PROPIEDAD */}
+                <button
+                  onClick={() =>
+                    navigate(`/properties/${app.property_id}`)
+                  }
+                  className="text-blue-600 font-medium hover:underline"
+                >
                   Ver propiedad →
                 </button>
 
+                {/* 🔥 RETIRAR */}
                 {uiStatus === "EN_PROCESO" && (
                   <button
                     onClick={() => handleWithdraw(app.id)}
@@ -140,6 +162,7 @@ const MyApplications = () => {
                     Retirar
                   </button>
                 )}
+
               </div>
             </div>
           );
