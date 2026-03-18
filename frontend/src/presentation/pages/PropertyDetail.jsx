@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getPropertyById } from "../../infrastructure/api/properties";
+import { applyToProperty } from "../../infrastructure/api/applications";
 
 export default function PropertyDetail() {
 
@@ -9,6 +10,9 @@ export default function PropertyDetail() {
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [applying, setApplying] = useState(false);
+
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
 
@@ -17,10 +21,7 @@ export default function PropertyDetail() {
       try {
 
         const data = await getPropertyById(id);
-
-        // algunos backends devuelven {data: property}
         const propertyData = data.data || data;
-
         setProperty(propertyData);
 
       } catch (err) {
@@ -40,6 +41,28 @@ export default function PropertyDetail() {
 
   }, [id]);
 
+  async function handleApply() {
+
+    try {
+
+      setApplying(true);
+
+      await applyToProperty(property.id, "Estoy interesado en esta propiedad");
+
+      alert("Aplicación enviada ✅");
+
+    } catch (error) {
+
+      alert(error.message);
+
+    } finally {
+
+      setApplying(false);
+
+    }
+
+  }
+
   if (loading) return <p className="p-10">Cargando propiedad...</p>;
 
   if (error) return <p className="p-10 text-red-500">{error}</p>;
@@ -58,7 +81,6 @@ export default function PropertyDetail() {
       </Link>
 
       {/* IMAGENES */}
-
       <div className="grid md:grid-cols-2 gap-6 mb-8">
 
         {property.images && property.images.length > 0 ? (
@@ -88,9 +110,7 @@ export default function PropertyDetail() {
 
       </div>
 
-
       {/* INFO */}
-
       <h1 className="text-3xl font-bold mb-4">
         {property.title}
       </h1>
@@ -103,20 +123,13 @@ export default function PropertyDetail() {
         ${new Intl.NumberFormat("es-CO").format(property.price)}
       </p>
 
-
       <div className="flex gap-6 text-gray-700 mb-6">
-
         <span>🛏 {property.rooms} habitaciones</span>
-
         <span>🚿 {property.bathrooms} baños</span>
-
         <span>🏠 {property.type}</span>
-
       </div>
 
-
       {/* TAGS */}
-
       {property.tags && property.tags.length > 0 && (
 
         <div className="flex flex-wrap gap-2 mb-6">
@@ -136,12 +149,23 @@ export default function PropertyDetail() {
 
       )}
 
-
       {/* DESCRIPCION */}
-
       <p className="text-gray-700 leading-relaxed">
         {property.description}
       </p>
+
+      {/* 🔥 BOTÓN APLICAR */}
+      {user?.role === "tenant" && (
+
+        <button
+          onClick={handleApply}
+          disabled={applying}
+          className="mt-6 bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 disabled:opacity-50"
+        >
+          {applying ? "Aplicando..." : "Aplicar a propiedad"}
+        </button>
+
+      )}
 
     </div>
 

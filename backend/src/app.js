@@ -24,7 +24,7 @@ import applicationsRoutes from './api/routes/applications.routes.js';
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5173", // puerto de tu frontend
+  origin: ["http://localhost:5173", "http://localhost:5174"], // puerto de tu frontend
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,

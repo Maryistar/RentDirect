@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
+import { socket } from "../../socket";
 
 function Chat() {
 
@@ -59,21 +60,34 @@ function Chat() {
     loadMessages();
   }, [id]);
 
+  useEffect(() => {
+
+    if (id) {
+      socket.emit("join", { chatId: id });
+    }
+
+  }, [id]);
+
+  useEffect(() => {
+
+    socket.on("newMessage", (message) => {
+
+      setMessages(prev => [...prev, message]);
+
+    });
+
+    return () => {
+      socket.off("newMessage");
+    };
+
+  }, []);
+
   // enviar mensaje
   const sendMessage = async (e) => {
 
     e.preventDefault();
 
     if (!text.trim()) return;
-
-    const newMessage = {
-      id: Date.now(),
-      sender_id: "yo",
-      message: text
-    };
-
-    // agregar mensaje instantáneamente
-    setMessages(prev => [...prev, newMessage]);
 
     try {
 
@@ -87,6 +101,11 @@ function Chat() {
           headers: { Authorization: `Bearer ${token}` }
         }
       );
+
+      socket.emit("sendMessage", {
+        chatId: id,
+        message: text
+      });
 
       setText("");
 
