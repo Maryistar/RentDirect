@@ -6,7 +6,6 @@ const BASE_URL = "http://localhost:4000/api/v1";
 export async function getProperties() {
 
   const res = await fetch(`${BASE_URL}/properties`);
-
   const data = await res.json();
 
   if (!res.ok) {
@@ -14,7 +13,6 @@ export async function getProperties() {
   }
 
   return data.data || data;
-
 }
 
 /**
@@ -23,7 +21,6 @@ export async function getProperties() {
 export async function getPropertyById(id) {
 
   const res = await fetch(`${BASE_URL}/properties/${id}`);
-
   const data = await res.json();
 
   if (!res.ok) {
@@ -31,7 +28,6 @@ export async function getPropertyById(id) {
   }
 
   return data.data || data;
-
 }
 
 /**
@@ -54,7 +50,6 @@ export async function getMyProperties() {
   }
 
   return data.data || data;
-
 }
 
 /**
@@ -79,7 +74,6 @@ export async function createProperty(formData) {
   }
 
   return data.data || data;
-
 }
 
 /**
@@ -104,7 +98,6 @@ export async function updateProperty(id, formData) {
   }
 
   return data.data || data;
-
 }
 
 /**
@@ -126,5 +119,30 @@ export async function deleteProperty(propertyId) {
   }
 
   return true;
+}
 
+/**
+ * 🔥 TENANT – aplicar a una propiedad (CORREGIDO)
+ */
+export async function applyToProperty(propertyId) {
+
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(
+    `${BASE_URL}/applications/properties/${propertyId}/apply`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Error al aplicar");
+  }
+
+  return data;
 }

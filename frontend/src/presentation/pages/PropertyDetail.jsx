@@ -41,7 +41,7 @@ export default function PropertyDetail() {
 
   }, [id]);
 
-  async function handleApply() {
+  const handleApply = async () => {
 
     try {
 
@@ -49,7 +49,7 @@ export default function PropertyDetail() {
 
       await applyToProperty(property.id, "Estoy interesado en esta propiedad");
 
-      alert("Aplicación enviada ✅");
+      alert("✅ Aplicación enviada");
 
     } catch (error) {
 
@@ -61,12 +61,10 @@ export default function PropertyDetail() {
 
     }
 
-  }
+  };
 
   if (loading) return <p className="p-10">Cargando propiedad...</p>;
-
   if (error) return <p className="p-10 text-red-500">{error}</p>;
-
   if (!property) return <p className="p-10">Propiedad no encontrada</p>;
 
   return (
@@ -80,7 +78,7 @@ export default function PropertyDetail() {
         ← Volver a propiedades
       </Link>
 
-      {/* IMAGENES */}
+      {/* IMÁGENES */}
       <div className="grid md:grid-cols-2 gap-6 mb-8">
 
         {property.images && property.images.length > 0 ? (
@@ -149,12 +147,12 @@ export default function PropertyDetail() {
 
       )}
 
-      {/* DESCRIPCION */}
+      {/* DESCRIPCIÓN */}
       <p className="text-gray-700 leading-relaxed">
         {property.description}
       </p>
 
-      {/* 🔥 BOTÓN APLICAR */}
+      {/* BOTÓN APLICAR */}
       {user?.role === "tenant" && (
 
         <button

@@ -20,11 +20,10 @@ import usersRoutes from './api/routes/users.routes.js';
 import propertiesRoutes from './api/routes/properties.routes.js';
 import applicationsRoutes from './api/routes/applications.routes.js';
 
-
 const app = express();
 
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174"], // puerto de tu frontend
+  origin: ["http://localhost:5173", "http://localhost:5174"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
@@ -34,9 +33,7 @@ app.use(bodyParser.json());
 
 /* ================================
    SERVIR IMÁGENES LOCALES
-   ================================ */
-// Esto permite acceder desde el navegador a:
-// http://localhost:4000/uploads/nombre_imagen.jpg
+================================ */
 app.use(
   '/uploads',
   express.static(path.join(__dirname, '../uploads'))
@@ -44,7 +41,7 @@ app.use(
 
 /* ================================
    RUTAS
-   ================================ */
+================================ */
 
 // health check
 app.get('/health', (req, res) => res.json({ ok: true }));
@@ -52,14 +49,16 @@ app.get('/health', (req, res) => res.json({ ok: true }));
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', usersRoutes);
 app.use('/api/v1/properties', propertiesRoutes);
-app.use('/api/v1', applicationsRoutes);
-app.use('/api/v1', chatRoutes);
-app.use('/rental-records', rentalRoutes);
 
+/* 🔥 FIX AQUÍ */
+app.use('/api/v1/applications', applicationsRoutes);
+
+app.use('/api/v1/chat', chatRoutes);
+app.use('/api/v1/rental-records', rentalRoutes);
 
 /* ================================
    ERROR HANDLER
-   ================================ */
+================================ */
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(err.status || 500).json({
@@ -69,7 +68,7 @@ app.use((err, req, res, next) => {
 
 /* ================================
    SOCKET.IO
-   ================================ */
+================================ */
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 
@@ -78,7 +77,6 @@ import * as chatService from './services/chat.service.js';
 
 const chatNamespace = io.of('/chat');
 
-// 🔐 Middleware para validar JWT en socket
 chatNamespace.use((socket, next) => {
   try {
     const token = socket.handshake.auth.token;
@@ -88,7 +86,7 @@ chatNamespace.use((socket, next) => {
     }
 
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    socket.user = payload; // guardamos usuario en el socket
+    socket.user = payload;
     next();
 
   } catch (err) {
@@ -99,23 +97,19 @@ chatNamespace.use((socket, next) => {
 chatNamespace.on('connection', (socket) => {
   console.log('User connected:', socket.user.id);
 
-  // Unirse a un chat
   socket.on('join', ({ chatId }) => {
     socket.join(`chat_${chatId}`);
   });
 
-  // Enviar mensaje
   socket.on('sendMessage', async ({ chatId, message }) => {
     try {
 
-      // Guardar en BD
       await chatService.createMessage({
         chatId,
         senderId: socket.user.id,
         message
       });
 
-      // Emitir a la sala
       chatNamespace.to(`chat_${chatId}`).emit('newMessage', {
         chatId,
         senderId: socket.user.id,
@@ -132,7 +126,7 @@ chatNamespace.on('connection', (socket) => {
 
 /* ================================
    START SERVER
-   ================================ */
+================================ */
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, () =>
   console.log(`Server running on port ${PORT}`)
