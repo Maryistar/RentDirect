@@ -24,12 +24,44 @@ export async function findExistingChat(propertyId, ownerId, tenantId) {
   return rows[0];
 }
 
+// 🔹 🔥 NUEVA FUNCIÓN (NO EXISTÍA) → obtener chat por ID
+export async function getChatById(chatId) {
+  const [rows] = await pool.execute(
+    `
+    SELECT 
+      c.*,
+
+      -- 🔥 application
+      a.id AS applicationId,
+      a.status AS applicationStatus
+
+    FROM chats c
+
+    LEFT JOIN applications a
+      ON a.property_id = c.property_id
+      AND a.tenant_id = c.tenant_id
+
+    WHERE c.id = ?
+    `,
+    [chatId]
+  );
+
+  return rows[0];
+}
+
 // 🔹 Obtener chats del usuario
 export async function getUserChats(userId) {
   const [rows] = await pool.execute(
     `
     SELECT 
       c.id,
+      c.property_id,
+      c.owner_id,
+      c.tenant_id,
+
+      -- 🔥 applicationId
+      a.id AS applicationId,
+      a.status AS applicationStatus,
 
       -- nombre del otro usuario
       CASE 
@@ -44,6 +76,11 @@ export async function getUserChats(userId) {
       m.created_at AS lastMessageTime
 
     FROM chats c
+
+    -- 🔥 JOIN APPLICATIONS
+    LEFT JOIN applications a 
+      ON a.property_id = c.property_id 
+      AND a.tenant_id = c.tenant_id
 
     -- usuarios
     JOIN users u1 ON c.owner_id = u1.id

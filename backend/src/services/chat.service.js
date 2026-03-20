@@ -36,6 +36,22 @@ export async function startChat({ propertyId, ownerId, tenantId }) {
   };
 }
 
+export async function getChatInfo(chatId, userId) {
+
+  const chat = await chatRepo.getChatById(chatId);
+
+  if (!chat) {
+    throw { status: 404, message: 'Chat not found' };
+  }
+
+  // validar que pertenece al usuario
+  if (chat.owner_id !== userId && chat.tenant_id !== userId) {
+    throw { status: 403, message: 'Forbidden' };
+  }
+
+  return chat;
+}
+
 
 // 🔹 Obtener chats del usuario autenticado
 export async function getMyChats(userId) {

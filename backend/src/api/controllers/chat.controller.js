@@ -24,6 +24,20 @@ export async function startChat(req, res, next) {
   }
 }
 
+export async function getChatInfo(req, res, next) {
+  try {
+    const result = await chatService.getChatInfo(
+      req.params.chatId,
+      req.user.id
+    );
+
+    res.json(result);
+
+  } catch (err) {
+    next(err);
+  }
+}
+
 
 // 🔹 Obtener mis chats
 export async function getMyChats(req, res, next) {

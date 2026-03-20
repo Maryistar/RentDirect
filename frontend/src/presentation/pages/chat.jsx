@@ -10,6 +10,7 @@ function Chat() {
   const [chats, setChats] = useState([]);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
+  const [chatInfo, setChatInfo] = useState(null);
 
   const bottomRef = useRef(null);
 
@@ -27,6 +28,29 @@ function Chat() {
     });
 
   }, []);
+
+  // 🔹 cargar info del chat (application, etc)
+  const loadChatInfo = async () => {
+    if (!id) return;
+
+    try {
+      const res = await axios.get(
+        `http://localhost:4000/api/v1/chats/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      setChatInfo(res.data);
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    loadChatInfo();
+  }, [id]);
 
   // 🔹 cargar lista de chats
   const loadChats = async () => {
@@ -75,7 +99,7 @@ function Chat() {
     loadMessages();
   }, [id]);
 
-  // 🔹 unirse al chat correctamente
+  // 🔹 unirse al chat
   useEffect(() => {
 
     if (!id) return;
@@ -90,12 +114,11 @@ function Chat() {
 
   }, [id]);
 
-  // 🔹 escuchar mensajes en tiempo real (CORREGIDO)
+  // 🔹 escuchar mensajes en tiempo real
   useEffect(() => {
 
     const handleMessage = (message) => {
 
-      // ✅ SOLO mensajes del chat actual
       if (message.chatId == id) {
         setMessages(prev => [...prev, message]);
       }
@@ -115,7 +138,7 @@ function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 🔹 enviar mensaje (solo socket)
+  // 🔹 enviar mensaje
   const sendMessage = async (e) => {
 
     e.preventDefault();
@@ -128,7 +151,28 @@ function Chat() {
     });
 
     setText("");
+  };
 
+  // 🔹 aceptar inquilino
+  const handleAgree = async () => {
+    try {
+
+      await axios.put(
+        `http://localhost:4000/api/v1/applications/${chatInfo.applicationId}`,
+        { status: "agreed" },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      await loadChatInfo();
+      await loadChats();
+
+      alert("✅ Aplicación aceptada");
+
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -181,6 +225,13 @@ function Chat() {
           <>
             <h3>Chat #{id}</h3>
 
+            {/* 🔥 BOTÓN AGREED (SOLO CUANDO APLICA) */}
+            {chatInfo?.applicationStatus === "in_review" && (
+              <button onClick={handleAgree}>
+                Aceptar inquilino
+              </button>
+            )}
+
             <div
               style={{
                 border: "1px solid gray",
@@ -197,7 +248,6 @@ function Chat() {
                 </p>
               ))}
 
-              {/* 🔥 AUTO SCROLL */}
               <div ref={bottomRef}></div>
 
             </div>
