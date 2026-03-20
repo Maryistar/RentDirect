@@ -1,6 +1,7 @@
 import * as repo from '../repositories/applications.repository.js';
 import * as propertyRepo from '../repositories/properties.repository.js';
 
+
 // 🔹 APPLY
 export async function applyToProperty(propertyId, tenantId, message) {
 
@@ -35,7 +36,7 @@ export async function applyToProperty(propertyId, tenantId, message) {
 
   const applicationId = await repo.createApplication(
     propertyId,
-    tenantId,
+    tenantId,   // 🔥 IMPORTANTE (ya lo tenías bien)
     message
   );
 
@@ -45,10 +46,20 @@ export async function applyToProperty(propertyId, tenantId, message) {
   };
 }
 
+
 // 🔹 LIST MINE
 export async function listMyApplications(tenantId) {
-  return await repo.getApplicationsByTenant(tenantId);
+
+  const applications = await repo.getApplicationsByTenant(tenantId);
+
+  // 🔥 Asegura formato correcto para el frontend
+  return applications.map(app => ({
+    ...app,
+    propertyTitle: app.propertyTitle || app.title || "Propiedad",
+    created_at: app.created_at || app.createdAt || null
+  }));
 }
+
 
 // 🔹 OWNER → LIST APPLICATIONS FOR A PROPERTY
 export async function listApplicationsForProperty(propertyId, user) {
@@ -59,13 +70,14 @@ export async function listApplicationsForProperty(propertyId, user) {
     throw { status: 404, message: 'Property not found' };
   }
 
-  // Solo el dueño o admin pueden ver
+  // Solo dueño o admin
   if (user.role !== 'admin' && property.owner_id !== user.id) {
     throw { status: 403, message: 'Forbidden' };
   }
 
   return await repo.getApplicationsByProperty(propertyId);
 }
+
 
 // 🔹 UPDATE STATUS
 export async function updateApplicationStatus(applicationId, status, user) {
@@ -93,7 +105,7 @@ export async function updateApplicationStatus(applicationId, status, user) {
     rejected: []
   };
 
-  if (!validTransitions[application.status].includes(status)) {
+  if (!validTransitions[application.status]?.includes(status)) {
     throw {
       status: 400,
       message: `Cannot change status from ${application.status} to ${status}`
@@ -110,7 +122,7 @@ export async function updateApplicationStatus(applicationId, status, user) {
   return { message: 'Application updated successfully' };
 }
 
-// 🔹 WITHDRAW
+
 export async function withdrawApplication(applicationId, user) {
 
   const application = await repo.findApplicationWithOwner(applicationId);
@@ -119,7 +131,8 @@ export async function withdrawApplication(applicationId, user) {
     throw { status: 404, message: 'Application not found' };
   }
 
-  if (user.role !== 'admin' && application.owner_id !== user.id) {
+  // ✅ AHORA EL TENANT PUEDE RETIRAR SU PROPIA APLICACIÓN
+  if (user.role !== 'admin' && application.tenant_id !== user.id) {
     throw { status: 403, message: 'Forbidden' };
   }
 
