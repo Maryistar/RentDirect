@@ -14,7 +14,7 @@ const MyApplications = () => {
   const fetchApplications = async () => {
     try {
       const response = await fetch(
-        "http://localhost:4000/api/v1/applications/applications/me",
+        "http://localhost:4000/api/v1/applications/me", // ✅ FIX
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -24,14 +24,14 @@ const MyApplications = () => {
 
       const data = await response.json();
 
-      setApplications(data.data || data);
+      console.log("DATA BACKEND:", data); // 🔥 DEBUG
 
+      setApplications(data.data || data);
     } catch (error) {
       console.error("Error cargando aplicaciones", error);
     }
   };
 
-  // 🔥 MAPEO DE ESTADOS
   const mapStatusToUI = (status) => {
     const s = status?.toLowerCase();
 
@@ -66,7 +66,7 @@ const MyApplications = () => {
   const handleWithdraw = async (id) => {
     try {
       await fetch(
-        `http://localhost:4000/api/v1/applications/applications/${id}`,
+        `http://localhost:4000/api/v1/applications/${id}`, // ✅ FIX
         {
           method: "DELETE",
           headers: {
@@ -76,7 +76,6 @@ const MyApplications = () => {
       );
 
       fetchApplications();
-
     } catch (error) {
       console.error("Error al retirar solicitud", error);
     }
@@ -84,7 +83,6 @@ const MyApplications = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-
       <h1 className="text-3xl font-semibold mb-6">
         Mis aplicaciones
       </h1>
@@ -136,14 +134,12 @@ const MyApplications = () => {
 
               <p className="text-gray-500 text-sm mb-4">
                 Aplicado el{" "}
-                {app.created_at
-                  ? new Date(app.created_at).toLocaleDateString()
+                {app.createdAt
+                  ? new Date(app.createdAt).toLocaleDateString()
                   : "Fecha no disponible"}
               </p>
 
               <div className="flex justify-between items-center">
-
-                {/* 🔥 VER PROPIEDAD */}
                 <button
                   onClick={() =>
                     navigate(`/properties/${app.property_id}`)
@@ -153,7 +149,6 @@ const MyApplications = () => {
                   Ver propiedad →
                 </button>
 
-                {/* 🔥 RETIRAR */}
                 {uiStatus === "EN_PROCESO" && (
                   <button
                     onClick={() => handleWithdraw(app.id)}
@@ -162,7 +157,6 @@ const MyApplications = () => {
                     Retirar
                   </button>
                 )}
-
               </div>
             </div>
           );
