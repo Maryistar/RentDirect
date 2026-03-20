@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { socket } from "../../socket";
@@ -11,9 +11,11 @@ function Chat() {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
 
+  const bottomRef = useRef(null);
+
   const token = localStorage.getItem("token");
 
-  // cargar lista de chats
+  // 🔹 cargar lista de chats
   const loadChats = async () => {
     try {
 
@@ -31,7 +33,7 @@ function Chat() {
     }
   };
 
-  // cargar mensajes
+  // 🔹 cargar mensajes
   const loadMessages = async () => {
 
     if (!id) return;
@@ -60,6 +62,7 @@ function Chat() {
     loadMessages();
   }, [id]);
 
+  // 🔹 unirse al chat (socket)
   useEffect(() => {
 
     if (id) {
@@ -68,12 +71,11 @@ function Chat() {
 
   }, [id]);
 
+  // 🔹 escuchar mensajes en tiempo real
   useEffect(() => {
 
     socket.on("newMessage", (message) => {
-
       setMessages(prev => [...prev, message]);
-
     });
 
     return () => {
@@ -82,7 +84,12 @@ function Chat() {
 
   }, []);
 
-  // enviar mensaje
+  // 🔹 auto scroll
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // 🔹 enviar mensaje
   const sendMessage = async (e) => {
 
     e.preventDefault();
@@ -90,17 +97,6 @@ function Chat() {
     if (!text.trim()) return;
 
     try {
-
-      await axios.post(
-        `http://localhost:4000/api/v1/chats/messages`,
-        {
-          chatId: id,
-          content: text
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
 
       socket.emit("sendMessage", {
         chatId: id,
@@ -116,31 +112,48 @@ function Chat() {
 
   return (
 
-    <div style={{ display: "flex", height: "80vh" }}>
+    <div style={{ display: "flex", height: "100vh", paddingTop: "90px" }}>
 
-      {/* LISTA DE CHATS */}
+      {/* 🔹 LISTA DE CHATS */}
       <div
         style={{
           width: "300px",
           borderRight: "1px solid gray",
-          padding: "10px"
+          padding: "10px",
+          overflowY: "auto"
         }}
       >
 
         <h3>Chats</h3>
 
         {chats.map(chat => (
-          <div key={chat.id} style={{ marginBottom: "10px" }}>
+          <div key={chat.id} style={{ marginBottom: "15px" }}>
             <Link to={`/chat/${chat.id}`}>
-              Chat #{chat.id}
+
+              <strong>{chat.name}</strong><br />
+
+              <span style={{ color: "gray", fontSize: "12px" }}>
+                {chat.lastMessage || "Sin mensajes"}
+              </span>
+
+              <br />
+
+              <span style={{ float: "right", fontSize: "10px" }}>
+                {chat.lastMessageTime &&
+                  new Date(chat.lastMessageTime).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  })
+                }
+              </span>
+
             </Link>
           </div>
         ))}
 
       </div>
 
-
-      {/* MENSAJES */}
+      {/* 🔹 MENSAJES */}
       <div style={{ flex: 1, padding: "20px" }}>
 
         {id ? (
@@ -159,9 +172,12 @@ function Chat() {
 
               {messages.map(msg => (
                 <p key={msg.id}>
-                  <strong>{msg.name}:</strong> {msg.message}
+                  <strong>{msg.name || "Usuario"}:</strong> {msg.message}
                 </p>
               ))}
+
+              {/* 🔥 AUTO SCROLL */}
+              <div ref={bottomRef}></div>
 
             </div>
 

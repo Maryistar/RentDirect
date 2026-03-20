@@ -50,10 +50,9 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', usersRoutes);
 app.use('/api/v1/properties', propertiesRoutes);
 
-/* 🔥 FIX AQUÍ */
-app.use('/api/v1/applications', applicationsRoutes);
+app.use('/api/v1', applicationsRoutes); // ✅
+app.use('/api/v1', chatRoutes);         // ✅
 
-app.use('/api/v1/chat', chatRoutes);
 app.use('/api/v1/rental-records', rentalRoutes);
 
 /* ================================
