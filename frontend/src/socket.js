@@ -5,3 +5,4 @@ export const socket = io("http://localhost:4000/chat", {
     token: localStorage.getItem("token")
   }
 });
+

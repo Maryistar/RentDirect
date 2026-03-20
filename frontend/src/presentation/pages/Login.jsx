@@ -19,9 +19,20 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await login({ email, password });
+      const res = await login({ email, password });
+
+      // 🔥 POR SI QUIERES ASEGURAR (doble seguridad)
+      if (res?.user) {
+        localStorage.setItem("userId", res.user.id);
+        localStorage.setItem("userName", res.user.name);
+      }
+
+      console.log("LOGIN OK:", res); // 🔍 DEBUG
+
       navigate("/");
     } catch (err) {
+      console.error("LOGIN ERROR:", err);
+
       if (err.message?.includes("verify your email")) {
         setError("Tu cuenta no está verificada.");
       } else {
@@ -42,7 +53,7 @@ export default function Login() {
         className="w-full max-w-md bg-white p-10 rounded-3xl shadow-xl border border-gray-200"
       >
 
-        {/* Logo animado */}
+        {/* Logo */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -60,6 +71,7 @@ export default function Login() {
               ease: "easeInOut"
             }}
           />
+
           <p className="text-gray-500 text-sm">
             Bienvenido a Rent Direct
           </p>
@@ -71,6 +83,7 @@ export default function Login() {
 
         <form onSubmit={handleLogin} className="space-y-6">
 
+          {/* EMAIL */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Correo electrónico
@@ -84,6 +97,7 @@ export default function Login() {
             />
           </div>
 
+          {/* PASSWORD */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Contraseña
@@ -97,6 +111,7 @@ export default function Login() {
             />
           </div>
 
+          {/* BOTÓN */}
           <motion.button
             whileTap={{ scale: 0.97 }}
             whileHover={{ scale: 1.02 }}
@@ -107,6 +122,7 @@ export default function Login() {
             {loading ? "Entrando..." : "Entrar"}
           </motion.button>
 
+          {/* ERROR */}
           {error && (
             <div className="text-center">
               <p className="text-red-500 text-sm">{error}</p>
@@ -124,6 +140,7 @@ export default function Login() {
           )}
         </form>
 
+        {/* LINKS */}
         <div className="mt-8 text-sm text-center space-y-3 text-gray-600">
           <p>
             ¿Olvidaste tu contraseña?{" "}
