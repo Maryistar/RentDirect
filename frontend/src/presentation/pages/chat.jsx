@@ -75,7 +75,12 @@ function Chat() {
   useEffect(() => {
 
     socket.on("newMessage", (message) => {
-      setMessages(prev => [...prev, message]);
+
+      // 🔥 SOLO mensajes del chat actual
+      if (message.chatId == id) {
+        setMessages(prev => [...prev, message]);
+      }
+
     });
 
     return () => {
