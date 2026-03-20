@@ -15,6 +15,19 @@ function Chat() {
 
   const token = localStorage.getItem("token");
 
+  // 🔹 conectar socket
+  useEffect(() => {
+
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    socket.on("connect", () => {
+      console.log("✅ Conectado al socket:", socket.id);
+    });
+
+  }, []);
+
   // 🔹 cargar lista de chats
   const loadChats = async () => {
     try {
@@ -62,57 +75,60 @@ function Chat() {
     loadMessages();
   }, [id]);
 
-  // 🔹 unirse al chat (socket)
+  // 🔹 unirse al chat correctamente
   useEffect(() => {
 
-    if (id) {
+    if (!id) return;
+
+    if (socket.connected) {
       socket.emit("join", { chatId: id });
+    } else {
+      socket.on("connect", () => {
+        socket.emit("join", { chatId: id });
+      });
     }
 
   }, [id]);
 
-  // 🔹 escuchar mensajes en tiempo real
+  // 🔹 escuchar mensajes en tiempo real (CORREGIDO)
   useEffect(() => {
 
-    socket.on("newMessage", (message) => {
+    const handleMessage = (message) => {
 
-      // 🔥 SOLO mensajes del chat actual
+      // ✅ SOLO mensajes del chat actual
       if (message.chatId == id) {
         setMessages(prev => [...prev, message]);
       }
 
-    });
-
-    return () => {
-      socket.off("newMessage");
     };
 
-  }, []);
+    socket.on("newMessage", handleMessage);
+
+    return () => {
+      socket.off("newMessage", handleMessage);
+    };
+
+  }, [id]);
 
   // 🔹 auto scroll
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 🔹 enviar mensaje
+  // 🔹 enviar mensaje (solo socket)
   const sendMessage = async (e) => {
 
     e.preventDefault();
 
     if (!text.trim()) return;
 
-    try {
+    socket.emit("sendMessage", {
+      chatId: id,
+      message: text
+    });
 
-      socket.emit("sendMessage", {
-        chatId: id,
-        message: text
-      });
+    setText("");
 
-      setText("");
-
-    } catch (error) {
-      console.error(error);
-    }
   };
 
   return (
