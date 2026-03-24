@@ -279,7 +279,8 @@ function Chat() {
               </button>
             )}
 
-          
+            {/* crear contrato */}
+
             {isOwner && chatInfo?.applicationStatus === "agreed" && (
               <button
                 onClick={() => window.location.href = `/contract/${id}`}
