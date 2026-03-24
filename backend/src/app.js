@@ -6,19 +6,21 @@ import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
 import chatRoutes from './api/routes/chat.routes.js';
 import rentalRoutes from './api/routes/rental.routes.js';
-
-dotenv.config({ path: './.env' });
-
-// Necesario para __dirname en ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import contractsRoutes from './api/routes/contracts.routes.js';
 
 import authRoutes from './api/routes/auth.routes.js';
 import usersRoutes from './api/routes/users.routes.js';
 import propertiesRoutes from './api/routes/properties.routes.js';
 import applicationsRoutes from './api/routes/applications.routes.js';
+
+dotenv.config({ path: './.env' });
+
+// __dirname fix (ESM)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -32,7 +34,7 @@ app.use(cors({
 app.use(bodyParser.json());
 
 /* ================================
-   SERVIR IMÁGENES LOCALES
+   SERVIR ARCHIVOS (PDF / IMÁGENES)
 ================================ */
 app.use(
   '/uploads',
@@ -43,17 +45,18 @@ app.use(
    RUTAS
 ================================ */
 
-// health check
 app.get('/health', (req, res) => res.json({ ok: true }));
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', usersRoutes);
 app.use('/api/v1/properties', propertiesRoutes);
 
-app.use('/api/v1', applicationsRoutes); // ✅
-app.use('/api/v1', chatRoutes);         // ✅
+app.use('/api/v1', applicationsRoutes);
+app.use('/api/v1', chatRoutes);
 
 app.use('/api/v1/rental-records', rentalRoutes);
+app.use('/api/v1/contracts', contractsRoutes);
+app.use("/uploads", express.static(path.resolve("uploads")));
 
 /* ================================
    ERROR HANDLER
@@ -80,9 +83,7 @@ chatNamespace.use((socket, next) => {
   try {
     const token = socket.handshake.auth.token;
 
-    if (!token) {
-      return next(new Error('Unauthorized'));
-    }
+    if (!token) return next(new Error('Unauthorized'));
 
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     socket.user = payload;
@@ -120,7 +121,6 @@ chatNamespace.on('connection', (socket) => {
       console.error(err);
     }
   });
-
 });
 
 /* ================================

@@ -11,6 +11,9 @@ function Chat() {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [chatInfo, setChatInfo] = useState(null);
+  const user = JSON.parse(localStorage.getItem("user"));
+  const isOwner = user?.role === "owner";
+  const [contract, setContract] = useState(null);
 
   const bottomRef = useRef(null);
 
@@ -50,6 +53,28 @@ function Chat() {
 
   useEffect(() => {
     loadChatInfo();
+  }, [id]);
+
+  const loadContract = async () => {
+    if (!id) return;
+
+    try {
+      const res = await axios.get(
+        `http://localhost:4000/api/v1/contracts/chat/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      setContract(res.data);
+
+    } catch (error) {
+      console.log("No hay contrato aún");
+    }
+  };
+
+  useEffect(() => {
+    loadContract();
   }, [id]);
 
   // 🔹 cargar lista de chats
@@ -175,6 +200,28 @@ function Chat() {
     }
   };
 
+
+  const handleAcceptContract = async () => {
+    try {
+
+      await axios.put(
+        `http://localhost:4000/api/v1/contracts/${contract.id}/accept`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      alert("✅ Contrato aceptado");
+
+      await loadContract();
+
+    } catch (error) {
+      console.error(error);
+      alert("❌ Error al aceptar contrato");
+    }
+  };
+
   return (
 
     <div style={{ display: "flex", height: "100vh", paddingTop: "90px" }}>
@@ -226,10 +273,35 @@ function Chat() {
             <h3>Chat #{id}</h3>
 
             {/* 🔥 BOTÓN AGREED (SOLO CUANDO APLICA) */}
-            {chatInfo?.applicationStatus === "in_review" && (
+            {isOwner && chatInfo?.applicationStatus === "in_review" && (
               <button onClick={handleAgree}>
                 Aceptar inquilino
               </button>
+            )}
+
+          
+            {isOwner && chatInfo?.applicationStatus === "agreed" && (
+              <button
+                onClick={() => window.location.href = `/contract/${id}`}
+              >
+                Crear contrato
+              </button>
+            )}
+
+            {/* 🔥 VER CONTRATO (TENANT) */}
+            {!isOwner && contract && (
+              <div style={{ marginTop: "10px" }}>
+                <h4
+                  style={{ cursor: "pointer", color: "blue" }}
+                  onClick={() => window.open(`http://localhost:4000/api/v1/contracts/${contract.id}/pdf`)}
+                >
+                  📄 Descargar contrato
+                </h4>
+
+                <button onClick={handleAcceptContract}>
+                  Aceptar contrato
+                </button>
+              </div>
             )}
 
             <div

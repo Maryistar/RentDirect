@@ -18,6 +18,7 @@ import CreateProperty from "./presentation/pages/CreateProperty";
 import EditProperty from "./presentation/pages/EditProperty";
 import Profile from "./presentation/pages/Profile";
 import Chat from "./presentation/pages/chat";
+import ContractForm from "./presentation/pages/ContractForm";
 
 export default function App() {
 
@@ -26,6 +27,12 @@ export default function App() {
   return (
     <>
       <Navbar />
+
+      <div style={{ marginTop: "90px" }}>
+        <Routes>
+          {/* todas tus rutas */}
+        </Routes>
+      </div>
 
       <Routes>
 
@@ -46,6 +53,8 @@ export default function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route path="/verify-email" element={<VerifyEmail />} />
+
+        <Route path="/contract/:id" element={<ContractForm />} />
 
 
         {/* TENANT */}

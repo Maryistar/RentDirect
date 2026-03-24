@@ -163,3 +163,10 @@ export async function deleteProperty(id) {
     [id]
   );
 }
+
+export async function updateStatus(id, status) {
+  await db.query(
+    "UPDATE properties SET status = ? WHERE id = ?",
+    [status, id]
+  );
+}
