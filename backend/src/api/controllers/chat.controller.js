@@ -39,7 +39,7 @@ export async function getChatInfo(req, res, next) {
 }
 
 
-// 🔹 Obtener mis chats
+// 🔹 Obtener mis chats.....
 export async function getMyChats(req, res, next) {
   try {
     const userId = req.user.id;

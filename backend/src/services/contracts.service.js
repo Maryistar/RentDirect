@@ -48,30 +48,18 @@ export async function getContractByChat(chatId) {
 }
 
 export async function acceptContract(id, userId) {
-  try {
-    console.log("👉 ID:", id);
-    console.log("👉 USER:", userId);
+  const contract = await contractRepository.findById(id);
 
-    // 1. Buscar contrato
-    const contract = await contractRepository.findById(id);
-    console.log("📄 CONTRACT:", contract);
+  if (!contract) throw new Error("Contrato no encontrado");
 
-    if (!contract) {
-      throw new Error("Contrato no encontrado");
-    }
+  // 1️⃣ Actualizar contrato
+  await contractRepository.updateStatus(id, "active");
 
-    // 2. Actualizar estado
-    const result = await contractRepository.updateStatus(id, "active");
-    console.log("🧠 UPDATE RESULT:", result);
+  // 2️⃣ Actualizar propiedad a rented
+  await propertyRepository.updateStatus(contract.property_id, "rented");
 
-    // 3. Verificar cambio
-    const updated = await contractRepository.findById(id);
-    console.log("✅ UPDATED CONTRACT:", updated);
+  // 3️⃣ Opcional: rechazar otras aplicaciones
+  await applicationRepo.rejectOtherApplications(contract.property_id, contract.tenant_id);
 
-    return { message: "Contrato aceptado correctamente" };
-
-  } catch (error) {
-    console.error("🔥 ERROR SERVICE:", error);
-    throw error;
-  }
+  return { message: "Contrato aceptado y propiedad actualizada a rented" };
 }
