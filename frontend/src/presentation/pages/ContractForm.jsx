@@ -15,10 +15,30 @@ function ContractForm() {
 
   const token = localStorage.getItem("token");
 
+  /* 💰 FORMATO PESOS COLOMBIANOS */
+  const formatCOP = (value) => {
+    if (!value) return "";
+    return new Intl.NumberFormat("es-CO").format(value);
+  };
+
   const handleChange = (e) => {
+
+    const { name, value } = e.target;
+
+    if (name === "monthlyPrice") {
+      const numericValue = value.replace(/\D/g, ""); // solo números
+
+      setForm({
+        ...form,
+        monthlyPrice: numericValue
+      });
+
+      return;
+    }
+
     setForm({
       ...form,
-      [e.target.name]: e.target.value
+      [name]: value
     });
   };
 
@@ -26,11 +46,13 @@ function ContractForm() {
     e.preventDefault();
 
     try {
+
       await axios.post(
         "http://localhost:4000/api/v1/contracts",
         {
           chatId: id,
-          ...form
+          ...form,
+          monthlyPrice: Number(form.monthlyPrice)
         },
         {
           headers: {
@@ -55,34 +77,26 @@ function ContractForm() {
 
         <form onSubmit={handleSubmit} className="form">
 
-          {/* FECHA INICIO */}
+          {/* FECHAS */}
           <div className="inputGroup">
             <label className="labelTop">Fecha inicio</label>
-            <input
-              type="date"
-              name="startDate"
-              onChange={handleChange}
-              required
-            />
+            <input type="date" name="startDate" onChange={handleChange} required />
           </div>
 
-          {/* FECHA FIN */}
           <div className="inputGroup">
             <label className="labelTop">Fecha fin</label>
-            <input
-              type="date"
-              name="endDate"
-              onChange={handleChange}
-              required
-            />
+            <input type="date" name="endDate" onChange={handleChange} required />
           </div>
 
-          {/* PRECIO */}
-          <div className="inputGroup">
+          {/* 💰 PRECIO MEJORADO */}
+          <div className="inputGroup priceGroup">
+            <span className="currency">$</span>
             <input
-              type="number"
+              type="text"
               name="monthlyPrice"
+              value={formatCOP(form.monthlyPrice)}
               onChange={handleChange}
+              placeholder="0"
               required
             />
             <label>Precio mensual</label>
@@ -90,11 +104,7 @@ function ContractForm() {
 
           {/* TERMINOS */}
           <div className="inputGroup">
-            <textarea
-              name="terms"
-              onChange={handleChange}
-              required
-            />
+            <textarea name="terms" onChange={handleChange} required />
             <label>Términos del contrato</label>
           </div>
 
@@ -165,11 +175,28 @@ function ContractForm() {
           resize: none;
         }
 
-        /* LABEL NORMAL (FECHAS) */
         .labelTop {
           font-size: 12px;
           color: #666;
           margin-bottom: 5px;
+        }
+
+        /* 💰 PRECIO */
+        .priceGroup {
+          position: relative;
+        }
+
+        .currency {
+          position: absolute;
+          left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #4CAF50;
+          font-weight: bold;
+        }
+
+        .priceGroup input {
+          padding-left: 25px;
         }
 
         /* FLOATING LABEL */
