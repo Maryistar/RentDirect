@@ -13,42 +13,92 @@ export function generateContractPDF(contract) {
 
   doc.pipe(stream);
 
-  // 🔥 Título
-  doc.fontSize(18).text("CONTRATO DE ARRENDAMIENTO", { align: "center" });
+  // 🟦 TÍTULO
+  doc
+    .fontSize(18)
+    .text("CONTRATO DE ARRENDAMIENTO", { align: "center" });
+
   doc.moveDown(2);
 
-  // 🔹 Datos
   doc.fontSize(12);
 
-  doc.text(`Fecha inicio: ${contract.start_date}`);
-  doc.text(`Fecha fin: ${contract.end_date}`);
-  doc.text(`Valor mensual: $${contract.monthly_price}`);
-  doc.moveDown();
+  // 🟩 FORMATEAR FECHAS
+  const startDate = new Date(contract.start_date).toLocaleDateString("es-CO");
+  const endDate = new Date(contract.end_date).toLocaleDateString("es-CO");
 
-  // 🔥 Cálculo simple duración
+  // 🟩 CALCULAR DURACIÓN
   const start = new Date(contract.start_date);
   const end = new Date(contract.end_date);
-  const months = Math.round((end - start) / (1000 * 60 * 60 * 24 * 30));
+  const months = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24 * 30)));
 
-  doc.text(`Duración del contrato: ${months} meses`);
+  // 🟦 INFORMACIÓN GENERAL
+  doc.text(`Fecha de inicio: ${startDate}`);
+  doc.text(`Fecha de finalización: ${endDate}`);
+  doc.text(`Duración: ${months} meses`);
+  doc.text(`Canon mensual: $${contract.monthly_price}`);
+
   doc.moveDown();
 
-  // 🔹 Participantes (por ahora IDs)
-  doc.text(`Arrendador (Owner ID): ${contract.owner_id}`);
-  doc.text(`Arrendatario (Tenant ID): ${contract.tenant_id}`);
+  // 🟦 PARTICIPANTES (si luego haces JOIN aquí cambiará automático)
+  doc.text(`Arrendador: ${contract.owner_name || "Propietario"}`);
+  doc.text(`Arrendatario: ${contract.tenant_name || "Inquilino"}`);
+
   doc.moveDown();
 
-  // 🔥 Cláusulas PRO
-  doc.text("CLÁUSULAS:", { underline: true });
+  // 🟦 INMUEBLE
+  doc.text("INFORMACIÓN DEL INMUEBLE", { underline: true });
+  doc.moveDown(0.5);
+
+  doc.text(`Dirección: ${contract.property_address || "No especificada"}`);
+  doc.text(`Descripción: ${contract.property_description || "No especificada"}`);
+
   doc.moveDown();
 
-  doc.text("1. El inmueble se entrega en buen estado.");
-  doc.text("2. El arrendatario se compromete al pago puntual.");
-  doc.text("3. El contrato puede cancelarse con previo aviso de 30 días.");
-  doc.text("4. No se permite subarrendar sin autorización.");
+  // 🟦 PAGOS
+  doc.text("CONDICIONES ECONÓMICAS", { underline: true });
+  doc.moveDown(0.5);
+
+  doc.text(`Método de pago: ${contract.payment_method || "No especificado"}`);
+
+  let utilities = [];
+  try {
+    utilities = JSON.parse(contract.utilities || "[]");
+  } catch (e) {}
+
+  doc.text(`Servicios incluidos: ${utilities.length ? utilities.join(", ") : "Ninguno"}`);
+
   doc.moveDown();
 
-  doc.text(`Estado actual: ${contract.status}`);
+  // 🟦 CLÁUSULAS
+  doc.text("CLÁUSULAS", { underline: true });
+  doc.moveDown(0.5);
+
+  doc.text(`1. Uso del inmueble: ${contract.use_clause || "El inmueble será destinado para vivienda."}`);
+  doc.text(`2. Reparaciones: ${contract.repairs_clause || "Las reparaciones por uso normal serán asumidas por el arrendador."}`);
+  doc.text(`3. Terminación: ${contract.termination_clause || "El contrato podrá terminarse con previo aviso de 30 días."}`);
+
+  doc.moveDown();
+
+  // 🟦 EXTRA
+  doc.text("OTROS TÉRMINOS", { underline: true });
+  doc.moveDown(0.5);
+
+  doc.text(contract.terms || "No hay términos adicionales.");
+
+  doc.moveDown(2);
+
+  // 🟦 FIRMAS
+  doc.text("____________________________");
+  doc.text("Firma Arrendador");
+
+  doc.moveDown();
+
+  doc.text("____________________________");
+  doc.text("Firma Arrendatario");
+
+  doc.moveDown();
+
+  doc.text(`Estado del contrato: ${contract.status}`);
 
   doc.end();
 

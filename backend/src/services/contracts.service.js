@@ -6,6 +6,7 @@ import * as propertyRepository from "../repositories/properties.repository.js";
 import { generateContractPDF } from "../utils/pdf.js";
 import fs from "fs";
 import path from "path";
+import * as userRepository from "../repositories/users.repository.js";
 
 
 
@@ -31,14 +32,36 @@ export async function createContract(data, userId) {
     throw { status: 403, message: 'Only owner can create contract' };
   }
 
+  // 🔥 Obtener datos reales
+  const property = await propertyRepository.findById(chat.property_id);
+  const owner = await userRepository.findById(chat.owner_id);
+  const tenant = await userRepository.findById(chat.tenant_id);
+
   return await contractRepository.createContract({
     chatId: data.chatId,
     propertyId: chat.property_id,
     ownerId: chat.owner_id,
     tenantId: chat.tenant_id,
+
     startDate: data.startDate,
     endDate: data.endDate,
-    monthlyPrice: data.monthlyPrice,
+
+    // 🔥 AUTOMÁTICO
+    monthlyPrice: property.price,
+    propertyAddress: property.address,
+    propertyDescription: property.description,
+
+    // 🔥 nombres reales (esto lo usará el PDF)
+    ownerName: owner.name,
+    tenantName: tenant.name,
+
+    paymentMethod: data.paymentMethod,
+    utilities: JSON.stringify(data.utilities),
+
+    useClause: data.use,
+    repairsClause: data.repairs,
+    terminationClause: data.termination,
+
     terms: data.terms
   });
 }
