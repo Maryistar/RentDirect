@@ -52,14 +52,38 @@ export async function acceptContract(id, userId) {
 
   if (!contract) throw new Error("Contrato no encontrado");
 
-  // 1️⃣ Actualizar contrato
+  // 1️⃣ Activar contrato
   await contractRepository.updateStatus(id, "active");
 
-  // 2️⃣ Actualizar propiedad a rented
+  // 2️⃣ Propiedad a rented
   await propertyRepository.updateStatus(contract.property_id, "rented");
 
-  // 3️⃣ Opcional: rechazar otras aplicaciones
-  await applicationRepo.rejectOtherApplications(contract.property_id, contract.tenant_id);
+  // 3️⃣ Aplicaciones
+  const application = await applicationRepo.findExistingApplication(
+    contract.property_id,
+    contract.tenant_id
+  );
 
-  return { message: "Contrato aceptado y propiedad actualizada a rented" };
+  if (application) {
+    await applicationRepo.rejectOtherApplications(
+      contract.property_id,
+      application.id
+    );
+  }
+
+  // 🔥 4️⃣ GENERAR PDF UNA SOLA VEZ
+  const pdf = generateContractPDF(contract);
+
+  await documentRepository.createDocument({
+    contract_id: contract.id,
+    user_id: contract.tenant_id, // 🔥 CLAVE
+    url: `http://localhost:4000/${pdf.filePath.replace(/\\/g, "/")}`,
+    type: "contract"
+  });
+
+  return { message: "Contrato aceptado con PDF generado" };
+}
+
+export async function getContractById(id) {
+  return await contractRepository.findById(id);
 }

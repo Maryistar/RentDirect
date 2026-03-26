@@ -7,6 +7,6 @@ const router = Router();
 router.post('/', authenticate, controller.create);
 router.get("/chat/:chatId", controller.getByChat);
 router.put("/:id/accept", authenticate, controller.accept);
-
+router.get("/:id/pdf", controller.downloadPDF);
 
 export default router;

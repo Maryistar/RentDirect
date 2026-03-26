@@ -1,4 +1,5 @@
 import * as contractService from '../../services/contracts.service.js';
+import * as documentRepository from '../../repositories/documents.repository.js';
 
 export async function create(req, res) {
   try {
@@ -59,6 +60,30 @@ export async function accept(req, res) {
 
     res.status(error.status || 500).json({
       message: error.message || "Error al aceptar contrato"
+    });
+  }
+}
+
+export async function downloadPDF(req, res) {
+  try {
+
+    const { id } = req.params;
+
+    const document = await documentRepository.findByContractId(id);
+
+    if (!document) {
+      return res.status(404).json({ message: "Documento no encontrado" });
+    }
+
+    const filePath = document.url.replace("http://localhost:4000/", "");
+
+    res.download(filePath);
+
+  } catch (error) {
+    console.error("💥 ERROR PDF:", error);
+
+    res.status(500).json({
+      message: "Error descargando PDF"
     });
   }
 }

@@ -57,3 +57,13 @@ export async function findById(id) {
   );
   return rows[0];
 }
+
+export async function findExistingContract(propertyId, tenantId) {
+  const [rows] = await db.query(
+    `SELECT id FROM contracts 
+     WHERE property_id = ? AND tenant_id = ?`,
+    [propertyId, tenantId]
+  );
+
+  return rows[0];
+}
