@@ -3,6 +3,12 @@ import { loginService } from "../services/authService";
 
 const AuthContext = createContext();
 
+const googleLogin = (data) => {
+  localStorage.setItem("token", data.token);
+  localStorage.setItem("user", JSON.stringify(data.user));
+  setUser(data.user);
+};
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
