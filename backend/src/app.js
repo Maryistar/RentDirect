@@ -111,10 +111,12 @@ chatNamespace.on('connection', (socket) => {
       });
 
       chatNamespace.to(`chat_${chatId}`).emit('newMessage', {
+        id: messageId,
         chatId,
         senderId: socket.user.id,
         message,
-        createdAt: new Date()
+        createdAt: new Date(),
+        name: user.name
       });
 
     } catch (err) {

@@ -19,116 +19,73 @@ function Chat() {
 
   const token = localStorage.getItem("token");
 
-  // 🔹 conectar socket
   useEffect(() => {
-
-    if (!socket.connected) {
-      socket.connect();
-    }
-
+    if (!socket.connected) socket.connect();
     socket.on("connect", () => {
-      console.log("✅ Conectado al socket:", socket.id);
+      console.log("✅ Conectado:", socket.id);
     });
-
   }, []);
 
-  // 🔹 cargar info del chat (application, etc)
   const loadChatInfo = async () => {
     if (!id) return;
-
     try {
       const res = await axios.get(
         `http://localhost:4000/api/v1/chats/${id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
       setChatInfo(res.data);
-
     } catch (error) {
       console.error(error);
     }
   };
 
-  useEffect(() => {
-    loadChatInfo();
-  }, [id]);
+  useEffect(() => { loadChatInfo(); }, [id]);
 
   const loadContract = async () => {
     if (!id) return;
-
     try {
       const res = await axios.get(
         `http://localhost:4000/api/v1/contracts/chat/${id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
       setContract(res.data);
-
-    } catch (error) {
+    } catch {
       console.log("No hay contrato aún");
     }
   };
 
-  useEffect(() => {
-    loadContract();
-  }, [id]);
+  useEffect(() => { loadContract(); }, [id]);
 
-  // 🔹 cargar lista de chats
   const loadChats = async () => {
     try {
-
       const res = await axios.get(
         "http://localhost:4000/api/v1/chats",
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
       setChats(res.data);
-
     } catch (error) {
       console.error(error);
     }
   };
 
-  // 🔹 cargar mensajes
   const loadMessages = async () => {
-
     if (!id) return;
-
     try {
-
       const res = await axios.get(
         `http://localhost:4000/api/v1/chats/${id}/messages`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
       setMessages(res.data);
-
     } catch (error) {
       console.error(error);
     }
   };
 
-  useEffect(() => {
-    loadChats();
-  }, []);
+  useEffect(() => { loadChats(); }, []);
+  useEffect(() => { loadMessages(); }, [id]);
 
   useEffect(() => {
-    loadMessages();
-  }, [id]);
-
-  // 🔹 unirse al chat
-  useEffect(() => {
-
     if (!id) return;
-
     if (socket.connected) {
       socket.emit("join", { chatId: id });
     } else {
@@ -136,86 +93,78 @@ function Chat() {
         socket.emit("join", { chatId: id });
       });
     }
-
   }, [id]);
 
-  // 🔹 escuchar mensajes en tiempo real
   useEffect(() => {
-
     const handleMessage = (message) => {
 
-      if (message.chatId == id) {
-        setMessages(prev => [...prev, message]);
-      }
+  if (message.chatId == id) {
+    setMessages(prev => [...prev, message]);
+  }
 
-    };
+};
 
     socket.on("newMessage", handleMessage);
-
-    return () => {
-      socket.off("newMessage", handleMessage);
-    };
+    return () => socket.off("newMessage", handleMessage);
 
   }, [id]);
 
-  // 🔹 auto scroll
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // 🔹 enviar mensaje
-  const sendMessage = async (e) => {
+  const sendMessage = (e) => {
 
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!text.trim()) return;
+  if (!text.trim()) return;
 
-    socket.emit("sendMessage", {
-      chatId: id,
-      message: text
-    });
-
-    setText("");
+  const newMessage = {
+    id: Date.now(), // temporal
+    chatId: id,
+    message: text,
+    sender_id: user?.id,
+    name: user?.name
   };
 
-  // 🔹 aceptar inquilino
+  // 🔥 1. MOSTRAR INMEDIATAMENTE
+  setMessages(prev => [...prev, newMessage]);
+
+  // 🔥 2. ENVIAR AL SOCKET
+  socket.emit("sendMessage", {
+    chatId: id,
+    message: text,
+    sender_id: user?.id,
+    name: user?.name
+  });
+
+  setText("");
+};
+
   const handleAgree = async () => {
     try {
-
       await axios.put(
         `http://localhost:4000/api/v1/applications/${chatInfo.applicationId}`,
         { status: "agreed" },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
       await loadChatInfo();
       await loadChats();
-
       alert("✅ Aplicación aceptada");
-
     } catch (err) {
       console.error(err);
     }
   };
 
-
   const handleAcceptContract = async () => {
     try {
-
       await axios.put(
         `http://localhost:4000/api/v1/contracts/${contract.id}/accept`,
         {},
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
       alert("✅ Contrato aceptado");
-
       await loadContract();
-
     } catch (error) {
       console.error(error);
       alert("❌ Error al aceptar contrato");
@@ -224,125 +173,166 @@ function Chat() {
 
   return (
 
-    <div style={{ display: "flex", height: "100vh", paddingTop: "90px" }}>
+    <div style={{ display: "flex", height: "100vh", paddingTop: "90px", background: "#eef2f7" }}>
 
-      {/* 🔹 LISTA DE CHATS */}
-      <div
-        style={{
-          width: "300px",
-          borderRight: "1px solid gray",
-          padding: "10px",
-          overflowY: "auto"
-        }}
-      >
-
+      {/* SIDEBAR */}
+      <div style={{
+        width: "300px",
+        background: "#fff",
+        borderRight: "1px solid #ddd",
+        padding: "15px",
+        overflowY: "auto"
+      }}>
         <h3>Chats</h3>
 
         {chats.map(chat => (
-          <div key={chat.id} style={{ marginBottom: "15px" }}>
-            <Link to={`/chat/${chat.id}`}>
-
+          <Link key={chat.id} to={`/chat/${chat.id}`} style={{ textDecoration: "none" }}>
+            <div style={{
+              padding: "10px",
+              borderRadius: "10px",
+              marginBottom: "10px",
+              transition: "0.2s",
+              color: "#000"
+            }}
+              onMouseEnter={e => e.currentTarget.style.background = "#f1f1f1"}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+            >
               <strong>{chat.name}</strong><br />
-
-              <span style={{ color: "gray", fontSize: "12px" }}>
+              <span style={{ fontSize: "12px", color: "gray" }}>
                 {chat.lastMessage || "Sin mensajes"}
               </span>
-
-              <br />
-
-              <span style={{ float: "right", fontSize: "10px" }}>
-                {chat.lastMessageTime &&
-                  new Date(chat.lastMessageTime).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit"
-                  })
-                }
-              </span>
-
-            </Link>
-          </div>
+            </div>
+          </Link>
         ))}
-
       </div>
 
-      {/* 🔹 MENSAJES */}
-      <div style={{ flex: 1, padding: "20px" }}>
+      {/* CHAT */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
         {id ? (
           <>
-            <h3>Chat #{id}</h3>
+            {/* HEADER + BOTONES */}
+            <div style={{
+              padding: "15px",
+              borderBottom: "1px solid #ddd",
+              background: "#fff",
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px"
+            }}>
+              <h3>Chat #{id}</h3>
 
-            {/* 🔥 BOTÓN AGREED (SOLO CUANDO APLICA) */}
-            {isOwner && chatInfo?.applicationStatus === "in_review" && (
-              <button onClick={handleAgree}>
-                Aceptar inquilino
-              </button>
-            )}
-
-            {/* crear contrato */}
-
-            {isOwner && chatInfo?.applicationStatus === "agreed" && (
-              <button
-                onClick={() => window.location.href = `/contract/${id}`}
-              >
-                Crear contrato
-              </button>
-            )}
-
-            {/* 🔥 VER CONTRATO (TENANT) */}
-            {!isOwner && contract && (
-              <div style={{ marginTop: "10px" }}>
-                <h4
-                  style={{ cursor: "pointer", color: "blue" }}
-                  onClick={() => window.open(`http://localhost:4000/api/v1/contracts/${contract.id}/pdf`)}
-                >
-                  📄 Descargar contrato
-                </h4>
-
-                <button onClick={handleAcceptContract}>
-                  Aceptar contrato
+              {isOwner && chatInfo?.applicationStatus === "in_review" && (
+                <button onClick={handleAgree} style={btnGreen}>
+                  Aceptar inquilino
                 </button>
-              </div>
-            )}
+              )}
 
-            <div
-              style={{
-                border: "1px solid gray",
-                height: "400px",
-                overflowY: "auto",
-                padding: "10px",
-                marginBottom: "10px"
-              }}
-            >
+              {isOwner && chatInfo?.applicationStatus === "agreed" && (
+                <button
+                  onClick={() => window.location.href = `/contract/${id}`}
+                  style={btnBlue}
+                >
+                  Crear contrato
+                </button>
+              )}
 
-              {messages.map(msg => (
-                <p key={msg.id}>
-                  <strong>{msg.name || "Usuario"}:</strong> {msg.message}
-                </p>
-              ))}
+              {!isOwner && contract && (
+                <div>
+                  <h4
+                    style={{ cursor: "pointer", color: "#2196F3" }}
+                    onClick={() =>
+                      window.open(`http://localhost:4000/api/v1/contracts/${contract.id}/pdf`)
+                    }
+                  >
+                    📄 Descargar contrato
+                  </h4>
 
-              <div ref={bottomRef}></div>
-
+                  <button onClick={handleAcceptContract} style={btnGreen}>
+                    Aceptar contrato
+                  </button>
+                </div>
+              )}
             </div>
 
-            <form onSubmit={sendMessage}>
+            {/* MENSAJES */}
+            <div style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: "20px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px"
+            }}>
 
+              {messages.map(msg => {
+                const isMe =
+                  msg.sender_id === user?.id ||
+                  msg.senderId === user?.id ||
+                  msg.userId === user?.id;
+
+                return (
+                  <div key={msg.id} style={{
+                    display: "flex",
+                    justifyContent: isMe ? "flex-end" : "flex-start",
+                    animation: "fadeIn 0.3s"
+                  }}>
+                    <div style={{
+                      background: isMe ? "#4CAF50" : "#fff",
+                      color: isMe ? "#fff" : "#000",
+                      padding: "10px 15px",
+                      borderRadius: "15px",
+                      maxWidth: "60%",
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
+                    }}>
+                      <div style={{ fontSize: "11px", opacity: 0.7 }}>
+                        {msg.name || msg.username || msg.userName || "Usuario"}
+                      </div>
+                      {msg.message}
+                    </div>
+                  </div>
+                );
+              })}
+
+              <div ref={bottomRef}></div>
+            </div>
+
+            {/* INPUT */}
+            <form onSubmit={sendMessage} style={{
+              display: "flex",
+              padding: "10px",
+              background: "#fff",
+              borderTop: "1px solid #ddd"
+            }}>
               <input
-                type="text"
                 value={text}
-                placeholder="Escribe un mensaje..."
                 onChange={(e) => setText(e.target.value)}
-                style={{ width: "80%", marginRight: "10px" }}
+                placeholder="Escribe un mensaje..."
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  borderRadius: "20px",
+                  border: "1px solid #ccc"
+                }}
               />
 
-              <button type="submit">
+              <button type="submit" style={btnGreen}>
                 Enviar
               </button>
-
             </form>
+
+            <style>
+              {`
+                @keyframes fadeIn {
+                  from { opacity: 0; transform: translateY(10px); }
+                  to { opacity: 1; transform: translateY(0); }
+                }
+              `}
+            </style>
+
           </>
         ) : (
-          <p>Selecciona un chat</p>
+          <p style={{ padding: "20px" }}>Selecciona un chat</p>
         )}
 
       </div>
@@ -350,5 +340,25 @@ function Chat() {
     </div>
   );
 }
+
+const btnGreen = {
+  background: "#4CAF50",
+  color: "#fff",
+  border: "none",
+  padding: "8px 12px",
+  borderRadius: "8px",
+  cursor: "pointer",
+  marginTop: "5px"
+};
+
+const btnBlue = {
+  background: "#2196F3",
+  color: "#fff",
+  border: "none",
+  padding: "8px 12px",
+  borderRadius: "8px",
+  cursor: "pointer",
+  marginTop: "5px"
+};
 
 export default Chat;
