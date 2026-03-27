@@ -4,21 +4,20 @@ import axios from "axios";
 import { socket } from "../../socket";
 
 function Chat() {
-
   const { id } = useParams();
 
   const [chats, setChats] = useState([]);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [chatInfo, setChatInfo] = useState(null);
-  const user = JSON.parse(localStorage.getItem("user"));
-  const isOwner = user?.role === "owner";
   const [contract, setContract] = useState(null);
 
   const bottomRef = useRef(null);
-
+  const user = JSON.parse(localStorage.getItem("user"));
+  const isOwner = user?.role === "owner";
   const token = localStorage.getItem("token");
 
+  // SOCKET
   useEffect(() => {
     if (!socket.connected) socket.connect();
     socket.on("connect", () => {
@@ -26,6 +25,7 @@ function Chat() {
     });
   }, []);
 
+  // CARGA CHAT, MENSAJES, CHATS Y CONTRATO
   const loadChatInfo = async () => {
     if (!id) return;
     try {
@@ -34,12 +34,10 @@ function Chat() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setChatInfo(res.data);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
     }
   };
-
-  useEffect(() => { loadChatInfo(); }, [id]);
 
   const loadContract = async () => {
     if (!id) return;
@@ -54,8 +52,6 @@ function Chat() {
     }
   };
 
-  useEffect(() => { loadContract(); }, [id]);
-
   const loadChats = async () => {
     try {
       const res = await axios.get(
@@ -63,8 +59,8 @@ function Chat() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setChats(res.data);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -76,14 +72,17 @@ function Chat() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setMessages(res.data);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
   useEffect(() => { loadChats(); }, []);
   useEffect(() => { loadMessages(); }, [id]);
+  useEffect(() => { loadChatInfo(); }, [id]);
+  useEffect(() => { loadContract(); }, [id]);
 
+  // JOIN CHAT
   useEffect(() => {
     if (!id) return;
     if (socket.connected) {
@@ -95,52 +94,50 @@ function Chat() {
     }
   }, [id]);
 
+  // ESCUCHAR MENSAJES
   useEffect(() => {
     const handleMessage = (message) => {
-
-  if (message.chatId == id) {
-    setMessages(prev => [...prev, message]);
-  }
-
-};
+      if (message.chatId == id) {
+        setMessages(prev => [...prev, message]);
+      }
+    };
 
     socket.on("newMessage", handleMessage);
     return () => socket.off("newMessage", handleMessage);
-
   }, [id]);
 
+  // AUTO SCROLL
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // ENVIAR MENSAJE
   const sendMessage = (e) => {
+    e.preventDefault();
+    if (!text.trim()) return;
 
-  e.preventDefault();
+    const newMessage = {
+      id: Date.now(), // temporal único
+      chatId: id,
+      message: text,
+      sender_id: user?.id,
+      name: user?.name,
+      createdAt: new Date().toISOString()
+    };
 
-  if (!text.trim()) return;
+    setMessages(prev => [...prev, newMessage]);
 
-  const newMessage = {
-    id: Date.now(), // temporal
-    chatId: id,
-    message: text,
-    sender_id: user?.id,
-    name: user?.name
+    socket.emit("sendMessage", {
+      chatId: id,
+      message: text,
+      sender_id: user?.id,
+      name: user?.name
+    });
+
+    setText("");
   };
 
-  // 🔥 1. MOSTRAR INMEDIATAMENTE
-  setMessages(prev => [...prev, newMessage]);
-
-  // 🔥 2. ENVIAR AL SOCKET
-  socket.emit("sendMessage", {
-    chatId: id,
-    message: text,
-    sender_id: user?.id,
-    name: user?.name
-  });
-
-  setText("");
-};
-
+  // BOTONES
   const handleAgree = async () => {
     try {
       await axios.put(
@@ -165,14 +162,13 @@ function Chat() {
       );
       alert("✅ Contrato aceptado");
       await loadContract();
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       alert("❌ Error al aceptar contrato");
     }
   };
 
   return (
-
     <div style={{ display: "flex", height: "100vh", paddingTop: "90px", background: "#eef2f7" }}>
 
       {/* SIDEBAR */}
@@ -184,7 +180,6 @@ function Chat() {
         overflowY: "auto"
       }}>
         <h3>Chats</h3>
-
         {chats.map(chat => (
           <Link key={chat.id} to={`/chat/${chat.id}`} style={{ textDecoration: "none" }}>
             <div style={{
@@ -208,7 +203,6 @@ function Chat() {
 
       {/* CHAT */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-
         {id ? (
           <>
             {/* HEADER + BOTONES */}
@@ -223,34 +217,24 @@ function Chat() {
               <h3>Chat #{id}</h3>
 
               {isOwner && chatInfo?.applicationStatus === "in_review" && (
-                <button onClick={handleAgree} style={btnGreen}>
-                  Aceptar inquilino
-                </button>
+                <button onClick={handleAgree} style={btnGreen}>Aceptar inquilino</button>
               )}
 
               {isOwner && chatInfo?.applicationStatus === "agreed" && (
-                <button
-                  onClick={() => window.location.href = `/contract/${id}`}
-                  style={btnBlue}
-                >
+                <button onClick={() => window.location.href = `/contract/${id}`} style={btnBlue}>
                   Crear contrato
                 </button>
               )}
 
               {!isOwner && contract && (
                 <div>
-                  <h4
-                    style={{ cursor: "pointer", color: "#2196F3" }}
-                    onClick={() =>
-                      window.open(`http://localhost:4000/api/v1/contracts/${contract.id}/pdf`)
-                    }
-                  >
+                  <h4 style={{ cursor: "pointer", color: "#2196F3" }}
+                      onClick={() =>
+                        window.open(`http://localhost:4000/api/v1/contracts/${contract.id}/pdf`)
+                      }>
                     📄 Descargar contrato
                   </h4>
-
-                  <button onClick={handleAcceptContract} style={btnGreen}>
-                    Aceptar contrato
-                  </button>
+                  <button onClick={handleAcceptContract} style={btnGreen}>Aceptar contrato</button>
                 </div>
               )}
             </div>
@@ -264,15 +248,10 @@ function Chat() {
               flexDirection: "column",
               gap: "10px"
             }}>
-
-              {messages.map(msg => {
-                const isMe =
-                  msg.sender_id === user?.id ||
-                  msg.senderId === user?.id ||
-                  msg.userId === user?.id;
-
+              {messages.map((msg, index) => {
+                const isMe = msg.sender_id === user?.id || msg.senderId === user?.id || msg.userId === user?.id;
                 return (
-                  <div key={msg.id} style={{
+                  <div key={`${msg.id || index}-${msg.createdAt || Date.now()}-${index}`} style={{
                     display: "flex",
                     justifyContent: isMe ? "flex-end" : "flex-start",
                     animation: "fadeIn 0.3s"
@@ -293,7 +272,6 @@ function Chat() {
                   </div>
                 );
               })}
-
               <div ref={bottomRef}></div>
             </div>
 
@@ -315,28 +293,20 @@ function Chat() {
                   border: "1px solid #ccc"
                 }}
               />
-
-              <button type="submit" style={btnGreen}>
-                Enviar
-              </button>
+              <button type="submit" style={btnGreen}>Enviar</button>
             </form>
 
-            <style>
-              {`
-                @keyframes fadeIn {
-                  from { opacity: 0; transform: translateY(10px); }
-                  to { opacity: 1; transform: translateY(0); }
-                }
-              `}
-            </style>
-
+            <style>{`
+              @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+              }
+            `}</style>
           </>
         ) : (
           <p style={{ padding: "20px" }}>Selecciona un chat</p>
         )}
-
       </div>
-
     </div>
   );
 }
