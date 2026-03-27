@@ -9,30 +9,31 @@ function ContractForm() {
   const [form, setForm] = useState({
     startDate: "",
     endDate: "",
-    monthlyPrice: "",
-    terms: ""
+    paymentMethod: "Transferencia",
+    utilities: [],
+    use: "",
+    repairs: "",
+    termination: "",
+    terms: "",
+    monthlyPrice: ""
   });
 
   const token = localStorage.getItem("token");
 
-  /* 💰 FORMATO PESOS COLOMBIANOS */
   const formatCOP = (value) => {
     if (!value) return "";
     return new Intl.NumberFormat("es-CO").format(value);
   };
 
   const handleChange = (e) => {
-
     const { name, value } = e.target;
 
     if (name === "monthlyPrice") {
-      const numericValue = value.replace(/\D/g, ""); // solo números
-
+      const numericValue = value.replace(/\D/g, "");
       setForm({
         ...form,
         monthlyPrice: numericValue
       });
-
       return;
     }
 
@@ -42,11 +43,26 @@ function ContractForm() {
     });
   };
 
+  const handleCheckbox = (e) => {
+    const { value, checked } = e.target;
+
+    if (checked) {
+      setForm({
+        ...form,
+        utilities: [...form.utilities, value]
+      });
+    } else {
+      setForm({
+        ...form,
+        utilities: form.utilities.filter((u) => u !== value)
+      });
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-
       await axios.post(
         "http://localhost:4000/api/v1/contracts",
         {
@@ -62,7 +78,6 @@ function ContractForm() {
       );
 
       alert("Contrato creado 🔥");
-
     } catch (error) {
       console.error(error);
     }
@@ -88,7 +103,7 @@ function ContractForm() {
             <input type="date" name="endDate" onChange={handleChange} required />
           </div>
 
-          {/* 💰 PRECIO MEJORADO */}
+          {/* 💰 PRECIO */}
           <div className="inputGroup priceGroup">
             <span className="currency">$</span>
             <input
@@ -100,6 +115,32 @@ function ContractForm() {
               required
             />
             <label>Precio mensual</label>
+          </div>
+
+          {/* MÉTODO DE PAGO */}
+          <div className="inputGroup">
+            <select name="paymentMethod" onChange={handleChange}>
+              <option>Transferencia</option>
+              <option>Efectivo</option>
+            </select>
+          </div>
+
+          {/* SERVICIOS */}
+          <div className="inputGroup">
+            <label>Servicios incluidos</label>
+            <div>
+              <label><input type="checkbox" value="Agua" onChange={handleCheckbox} /> Agua</label>
+              <label><input type="checkbox" value="Luz" onChange={handleCheckbox} /> Luz</label>
+              <label><input type="checkbox" value="Gas" onChange={handleCheckbox} /> Gas</label>
+              <label><input type="checkbox" value="Administración" onChange={handleCheckbox} /> Administración</label>
+            </div>
+          </div>
+
+          {/* CLÁUSULAS */}
+          <div className="inputGroup">
+            <textarea name="use" placeholder="Uso del inmueble" onChange={handleChange} />
+            <textarea name="repairs" placeholder="Reparaciones" onChange={handleChange} />
+            <textarea name="termination" placeholder="Terminación anticipada" onChange={handleChange} />
           </div>
 
           {/* TERMINOS */}
@@ -117,7 +158,6 @@ function ContractForm() {
       </div>
 
       <style>{`
-
         .container {
           height: 100vh;
           display: flex;
@@ -132,12 +172,10 @@ function ContractForm() {
           border-radius: 20px;
           background: #ffffff;
           box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-          animation: fadeInUp 0.5s ease;
         }
 
         .title {
           text-align: center;
-          color: #333;
           margin-bottom: 20px;
         }
 
@@ -147,78 +185,12 @@ function ContractForm() {
           gap: 20px;
         }
 
-        .inputGroup {
-          display: flex;
-          flex-direction: column;
-          position: relative;
-        }
-
         .inputGroup input,
-        .inputGroup textarea {
-          width: 100%;
+        .inputGroup textarea,
+        .inputGroup select {
           padding: 12px;
-          border: 1px solid #ddd;
           border-radius: 10px;
-          outline: none;
-          font-size: 14px;
-          transition: 0.3s;
-        }
-
-        .inputGroup input:focus,
-        .inputGroup textarea:focus {
-          border-color: #4CAF50;
-          box-shadow: 0 0 0 3px rgba(76,175,80,0.1);
-        }
-
-        .inputGroup textarea {
-          min-height: 80px;
-          resize: none;
-        }
-
-        .labelTop {
-          font-size: 12px;
-          color: #666;
-          margin-bottom: 5px;
-        }
-
-        /* 💰 PRECIO */
-        .priceGroup {
-          position: relative;
-        }
-
-        .currency {
-          position: absolute;
-          left: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          color: #4CAF50;
-          font-weight: bold;
-        }
-
-        .priceGroup input {
-          padding-left: 25px;
-        }
-
-        /* FLOATING LABEL */
-        .inputGroup label:not(.labelTop) {
-          position: absolute;
-          top: 50%;
-          left: 12px;
-          transform: translateY(-50%);
-          background: white;
-          padding: 0 5px;
-          color: #777;
-          font-size: 13px;
-          transition: 0.3s;
-        }
-
-        .inputGroup input:focus + label,
-        .inputGroup input:valid + label,
-        .inputGroup textarea:focus + label,
-        .inputGroup textarea:valid + label {
-          top: -8px;
-          font-size: 11px;
-          color: #4CAF50;
+          border: 1px solid #ddd;
         }
 
         .btn {
@@ -229,25 +201,7 @@ function ContractForm() {
           color: white;
           font-weight: bold;
           cursor: pointer;
-          transition: 0.3s;
         }
-
-        .btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-        }
-
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
       `}</style>
 
     </div>

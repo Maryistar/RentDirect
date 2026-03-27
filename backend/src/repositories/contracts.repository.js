@@ -10,13 +10,38 @@ export async function createContract(data) {
     startDate,
     endDate,
     monthlyPrice,
+
+    paymentMethod,
+    propertyAddress,
+    propertyDescription,
+    utilities,
+    useClause,
+    repairsClause,
+    terminationClause,
+
     terms
   } = data;
 
   const [result] = await db.query(
     `INSERT INTO contracts
-     (chat_id, property_id, owner_id, tenant_id, start_date, end_date, monthly_price, terms)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+   (
+     chat_id,
+     property_id,
+     owner_id,
+     tenant_id,
+     start_date,
+     end_date,
+     monthly_price,
+     payment_method,
+     property_address,
+     property_description,
+     utilities,
+     use_clause,
+     repairs_clause,
+     termination_clause,
+     terms
+   )
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       chatId,
       propertyId,
@@ -25,6 +50,13 @@ export async function createContract(data) {
       startDate,
       endDate,
       monthlyPrice,
+      paymentMethod,
+      propertyAddress,
+      propertyDescription,
+      utilities,
+      useClause,
+      repairsClause,
+      terminationClause,
       terms
     ]
   );
@@ -55,5 +87,15 @@ export async function findById(id) {
     "SELECT * FROM contracts WHERE id = ?",
     [id]
   );
+  return rows[0];
+}
+
+export async function findExistingContract(propertyId, tenantId) {
+  const [rows] = await db.query(
+    `SELECT id FROM contracts 
+     WHERE property_id = ? AND tenant_id = ?`,
+    [propertyId, tenantId]
+  );
+
   return rows[0];
 }

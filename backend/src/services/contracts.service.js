@@ -6,6 +6,7 @@ import * as propertyRepository from "../repositories/properties.repository.js";
 import { generateContractPDF } from "../utils/pdf.js";
 import fs from "fs";
 import path from "path";
+import * as userRepository from "../repositories/users.repository.js";
 
 
 
@@ -31,14 +32,36 @@ export async function createContract(data, userId) {
     throw { status: 403, message: 'Only owner can create contract' };
   }
 
+  // 🔥 Obtener datos reales
+  const property = await propertyRepository.findById(chat.property_id);
+  const owner = await userRepository.findById(chat.owner_id);
+  const tenant = await userRepository.findById(chat.tenant_id);
+
   return await contractRepository.createContract({
     chatId: data.chatId,
     propertyId: chat.property_id,
     ownerId: chat.owner_id,
     tenantId: chat.tenant_id,
+
     startDate: data.startDate,
     endDate: data.endDate,
-    monthlyPrice: data.monthlyPrice,
+
+    // 🔥 AUTOMÁTICO
+    monthlyPrice: property.price,
+    propertyAddress: property.address,
+    propertyDescription: property.description,
+
+    // 🔥 nombres reales (esto lo usará el PDF)
+    ownerName: owner.name,
+    tenantName: tenant.name,
+
+    paymentMethod: data.paymentMethod,
+    utilities: JSON.stringify(data.utilities),
+
+    useClause: data.use,
+    repairsClause: data.repairs,
+    terminationClause: data.termination,
+
     terms: data.terms
   });
 }
@@ -48,30 +71,42 @@ export async function getContractByChat(chatId) {
 }
 
 export async function acceptContract(id, userId) {
-  try {
-    console.log("👉 ID:", id);
-    console.log("👉 USER:", userId);
+  const contract = await contractRepository.findById(id);
 
-    // 1. Buscar contrato
-    const contract = await contractRepository.findById(id);
-    console.log("📄 CONTRACT:", contract);
+  if (!contract) throw new Error("Contrato no encontrado");
 
-    if (!contract) {
-      throw new Error("Contrato no encontrado");
-    }
+  // 1️⃣ Activar contrato
+  await contractRepository.updateStatus(id, "active");
 
-    // 2. Actualizar estado
-    const result = await contractRepository.updateStatus(id, "active");
-    console.log("🧠 UPDATE RESULT:", result);
+  // 2️⃣ Propiedad a rented
+  await propertyRepository.updateStatus(contract.property_id, "rented");
 
-    // 3. Verificar cambio
-    const updated = await contractRepository.findById(id);
-    console.log("✅ UPDATED CONTRACT:", updated);
+  // 3️⃣ Aplicaciones
+  const application = await applicationRepo.findExistingApplication(
+    contract.property_id,
+    contract.tenant_id
+  );
 
-    return { message: "Contrato aceptado correctamente" };
-
-  } catch (error) {
-    console.error("🔥 ERROR SERVICE:", error);
-    throw error;
+  if (application) {
+    await applicationRepo.rejectOtherApplications(
+      contract.property_id,
+      application.id
+    );
   }
+
+  // 🔥 4️⃣ GENERAR PDF UNA SOLA VEZ
+  const pdf = generateContractPDF(contract);
+
+  await documentRepository.createDocument({
+    contract_id: contract.id,
+    user_id: contract.tenant_id, // 🔥 CLAVE
+    url: `http://localhost:4000/${pdf.filePath.replace(/\\/g, "/")}`,
+    type: "contract"
+  });
+
+  return { message: "Contrato aceptado con PDF generado" };
+}
+
+export async function getContractById(id) {
+  return await contractRepository.findById(id);
 }
