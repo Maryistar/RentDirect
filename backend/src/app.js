@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
+
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -20,16 +21,20 @@ import authRoutes from "./api/routes/auth.routes.js";
 
 import * as chatService from './services/chat.service.js';
 
-
-
-//  FIX __dirname
+// ================================
+// FIX __dirname
+// ================================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-//  CREAR APP
+// ================================
+// CREAR APP
+// ================================
 const app = express();
 
-//  MIDDLEWARES
+// ================================
+// MIDDLEWARES
+// ================================
 app.use(cors({
   origin: ["http://localhost:5173", "http://localhost:5174"],
   methods: ["GET", "POST", "PUT", "DELETE"],
@@ -39,7 +44,9 @@ app.use(cors({
 
 app.use(bodyParser.json());
 
-// 🔥 ARCHIVOS ESTÁTICOS
+// ================================
+// ARCHIVOS ESTÁTICOS
+// ================================
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use("/uploads", express.static(path.resolve("uploads")));
 
@@ -70,10 +77,19 @@ app.use((err, req, res, next) => {
 // SOCKET.IO
 // ================================
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
 
+const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
+
+// 🔥 namespace correcto
 const chatNamespace = io.of('/chat');
 
+// 🔐 auth middleware
 chatNamespace.use((socket, next) => {
   try {
     const token = socket.handshake.auth.token;
@@ -82,20 +98,24 @@ chatNamespace.use((socket, next) => {
 
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     socket.user = payload;
-    next();
 
+    next();
   } catch (err) {
     next(new Error('Unauthorized'));
   }
 });
 
+// 🔌 conexión
 chatNamespace.on('connection', (socket) => {
-  console.log('User connected:', socket.user.id);
+  console.log('✅ User connected:', socket.user.id);
 
+  // 🔹 JOIN
   socket.on('join', ({ chatId }) => {
+    console.log("📡 JOIN:", chatId);
     socket.join(`chat_${chatId}`);
   });
 
+  // 🔹 SEND MESSAGE
   socket.on('sendMessage', async ({ chatId, message }) => {
     try {
 
@@ -108,7 +128,7 @@ chatNamespace.on('connection', (socket) => {
       chatNamespace.to(`chat_${chatId}`).emit('newMessage', {
         id: newMessage.id,
         chatId,
-        senderId: socket.user.id,
+        sender_id: socket.user.id, // 🔥 importante mismo nombre frontend
         message,
         createdAt: new Date(),
         name: newMessage.name
@@ -118,12 +138,17 @@ chatNamespace.on('connection', (socket) => {
       console.error(err);
     }
   });
+
+  socket.on("disconnect", () => {
+    console.log("❌ Usuario desconectado:", socket.user.id);
+  });
 });
 
 // ================================
 // START SERVER
 // ================================
 const PORT = process.env.PORT || 4000;
-server.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
+
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
