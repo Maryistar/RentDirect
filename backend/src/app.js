@@ -1,9 +1,11 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import http from 'http';
 import { Server } from 'socket.io';
-import dotenv from 'dotenv';
+
 import path from 'path';
 import { fileURLToPath } from 'url';
 import jwt from 'jsonwebtoken';
@@ -18,17 +20,16 @@ import authRoutes from "./api/routes/auth.routes.js";
 
 import * as chatService from './services/chat.service.js';
 
-// 🔥 CONFIG ENV PRIMERO
-dotenv.config({ path: './.env' });
 
-// 🔥 FIX __dirname
+
+//  FIX __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 🔥 CREAR APP
+//  CREAR APP
 const app = express();
 
-// 🔥 MIDDLEWARES
+//  MIDDLEWARES
 app.use(cors({
   origin: ["http://localhost:5173", "http://localhost:5174"],
   methods: ["GET", "POST", "PUT", "DELETE"],
