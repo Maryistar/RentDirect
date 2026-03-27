@@ -1,6 +1,6 @@
 import * as usersRepository from "../../repositories/users.repository.js";
-import * as userService from '../../services/users.service.js';
-import multer from 'multer';
+import * as userService from "../../services/users.service.js";
+import multer from "multer";
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -9,28 +9,52 @@ const upload = multer({ storage: multer.memoryStorage() });
 ========================= */
 export async function getMe(req, res, next) {
   try {
+    console.log("REQ.USER:", req.user);
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        message: "No autorizado - token inválido",
+      });
+    }
+
     const user = await userService.getUserById(req.user.id);
-    res.json(user);
+
+    console.log("USER SERVICE:", user);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Usuario no encontrado",
+      });
+    }
+
+    return res.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      phone: user.phone,
+      description: user.description,
+      score: user.score || 0,
+      status: user.status,
+      created_at: user.created_at,
+    });
   } catch (err) {
+    console.error("ERROR getMe:", err);
     next(err);
   }
 }
 
 /* =========================
    ACTUALIZAR PERFIL
-   🔥 CAMBIO AQUÍ
 ========================= */
 export async function updateMe(req, res, next) {
   try {
-    // 1️⃣ Actualizar usuario
     await userService.updateUser(req.user.id, req.body);
 
-    // 2️⃣ 🔥 Buscar usuario completo actualizado
     const updatedUser = await userService.getUserById(req.user.id);
 
-    // 3️⃣ Devolver TODO el usuario actualizado
     res.json(updatedUser);
-
   } catch (err) {
     next(err);
   }
@@ -40,14 +64,16 @@ export async function updateMe(req, res, next) {
    SUBIR DOCUMENTO
 ========================= */
 export function uploadDocumentHandler(req, res, next) {
-  upload.single('document')(req, res, async function (err) {
+  upload.single("document")(req, res, async function (err) {
     if (err) return next(err);
+
     try {
       const result = await userService.uploadUserDocument(
         req.user.id,
         req.file,
         req.body.type
       );
+
       res.status(201).json(result);
     } catch (err) {
       next(err);
@@ -69,23 +95,23 @@ export const uploadAvatar = async (req, res) => {
 
     const imageUrl = req.file.path;
 
-    // Actualizar en base de datos
     await usersRepository.updateUserAvatar(req.user.id, imageUrl);
 
     res.json({ url: imageUrl });
-
   } catch (error) {
     console.error("ERROR REAL:", error);
     res.status(500).json({ message: "Error al subir imagen" });
   }
 };
 
+/* =========================
+   ELIMINAR AVATAR
+========================= */
 export const deleteAvatar = async (req, res) => {
   try {
     await usersRepository.updateUserAvatar(req.user.id, null);
 
     res.json({ message: "Avatar eliminado correctamente" });
-
   } catch (error) {
     console.error("ERROR ELIMINANDO:", error);
     res.status(500).json({ message: "Error al eliminar avatar" });

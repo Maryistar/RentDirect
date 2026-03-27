@@ -3,7 +3,8 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 
 function ContractForm() {
-  const { id } = useParams(); // chatId
+
+  const { id } = useParams();
 
   const [form, setForm] = useState({
     startDate: "",
@@ -13,13 +14,28 @@ function ContractForm() {
     use: "",
     repairs: "",
     termination: "",
-    terms: ""
+    terms: "",
+    monthlyPrice: ""
   });
 
   const token = localStorage.getItem("token");
 
+  const formatCOP = (value) => {
+    if (!value) return "";
+    return new Intl.NumberFormat("es-CO").format(value);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    if (name === "monthlyPrice") {
+      const numericValue = value.replace(/\D/g, "");
+      setForm({
+        ...form,
+        monthlyPrice: numericValue
+      });
+      return;
+    }
 
     setForm({
       ...form,
@@ -51,7 +67,8 @@ function ContractForm() {
         "http://localhost:4000/api/v1/contracts",
         {
           chatId: id,
-          ...form
+          ...form,
+          monthlyPrice: Number(form.monthlyPrice)
         },
         {
           headers: {
@@ -67,96 +84,126 @@ function ContractForm() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-2xl shadow">
+    <div className="container">
 
-      <h2 className="text-2xl font-bold mb-4">Crear contrato</h2>
+      <div className="card">
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+        <h2 className="title">📄 Crear contrato</h2>
 
-        {/* FECHAS */}
-        <div>
-          <h3 className="font-semibold">Duración</h3>
-          <input
-            type="date"
-            name="startDate"
-            onChange={handleChange}
-            className="input"
-          />
-          <input
-            type="date"
-            name="endDate"
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="form">
 
-        {/* MÉTODO DE PAGO */}
-        <div>
-          <h3 className="font-semibold">Método de pago</h3>
-          <select
-            name="paymentMethod"
-            onChange={handleChange}
-            className="input"
-          >
-            <option>Transferencia</option>
-            <option>Efectivo</option>
-          </select>
-        </div>
+          {/* FECHAS */}
+          <div className="inputGroup">
+            <label className="labelTop">Fecha inicio</label>
+            <input type="date" name="startDate" onChange={handleChange} required />
+          </div>
 
-        {/* SERVICIOS */}
-        <div>
-          <h3 className="font-semibold">Servicios incluidos</h3>
-          <label><input type="checkbox" value="Agua" onChange={handleCheckbox} /> Agua</label>
-          <label><input type="checkbox" value="Luz" onChange={handleCheckbox} /> Luz</label>
-          <label><input type="checkbox" value="Gas" onChange={handleCheckbox} /> Gas</label>
-          <label><input type="checkbox" value="Administración" onChange={handleCheckbox} /> Administración</label>
-        </div>
+          <div className="inputGroup">
+            <label className="labelTop">Fecha fin</label>
+            <input type="date" name="endDate" onChange={handleChange} required />
+          </div>
 
-        {/* CLÁUSULAS */}
-        <div>
-          <h3 className="font-semibold">Cláusulas</h3>
+          {/* 💰 PRECIO */}
+          <div className="inputGroup priceGroup">
+            <span className="currency">$</span>
+            <input
+              type="text"
+              name="monthlyPrice"
+              value={formatCOP(form.monthlyPrice)}
+              onChange={handleChange}
+              placeholder="0"
+              required
+            />
+            <label>Precio mensual</label>
+          </div>
 
-          <textarea
-            name="use"
-            placeholder="Uso del inmueble"
-            onChange={handleChange}
-            className="input"
-          />
+          {/* MÉTODO DE PAGO */}
+          <div className="inputGroup">
+            <select name="paymentMethod" onChange={handleChange}>
+              <option>Transferencia</option>
+              <option>Efectivo</option>
+            </select>
+          </div>
 
-          <textarea
-            name="repairs"
-            placeholder="Reparaciones"
-            onChange={handleChange}
-            className="input"
-          />
+          {/* SERVICIOS */}
+          <div className="inputGroup">
+            <label>Servicios incluidos</label>
+            <div>
+              <label><input type="checkbox" value="Agua" onChange={handleCheckbox} /> Agua</label>
+              <label><input type="checkbox" value="Luz" onChange={handleCheckbox} /> Luz</label>
+              <label><input type="checkbox" value="Gas" onChange={handleCheckbox} /> Gas</label>
+              <label><input type="checkbox" value="Administración" onChange={handleCheckbox} /> Administración</label>
+            </div>
+          </div>
 
-          <textarea
-            name="termination"
-            placeholder="Terminación anticipada"
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
+          {/* CLÁUSULAS */}
+          <div className="inputGroup">
+            <textarea name="use" placeholder="Uso del inmueble" onChange={handleChange} />
+            <textarea name="repairs" placeholder="Reparaciones" onChange={handleChange} />
+            <textarea name="termination" placeholder="Terminación anticipada" onChange={handleChange} />
+          </div>
 
-        {/* EXTRA */}
-        <div>
-          <h3 className="font-semibold">Términos adicionales</h3>
-          <textarea
-            name="terms"
-            placeholder="Otros términos"
-            onChange={handleChange}
-            className="input"
-          />
-        </div>
+          {/* TERMINOS */}
+          <div className="inputGroup">
+            <textarea name="terms" onChange={handleChange} required />
+            <label>Términos del contrato</label>
+          </div>
 
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded-xl w-full hover:bg-blue-700"
-        >
-          Guardar contrato
-        </button>
+          <button className="btn">
+            Guardar contrato
+          </button>
 
-      </form>
+        </form>
+
+      </div>
+
+      <style>{`
+        .container {
+          height: 100vh;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background: #f4f6f9;
+        }
+
+        .card {
+          width: 400px;
+          padding: 30px;
+          border-radius: 20px;
+          background: #ffffff;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .title {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+
+        .form {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .inputGroup input,
+        .inputGroup textarea,
+        .inputGroup select {
+          padding: 12px;
+          border-radius: 10px;
+          border: 1px solid #ddd;
+        }
+
+        .btn {
+          padding: 12px;
+          border: none;
+          border-radius: 12px;
+          background: #4CAF50;
+          color: white;
+          font-weight: bold;
+          cursor: pointer;
+        }
+      `}</style>
+
     </div>
   );
 }

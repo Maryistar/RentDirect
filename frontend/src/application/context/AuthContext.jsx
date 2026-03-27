@@ -7,7 +7,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
 
-  // Cargar sesión guardada al iniciar la app
+  // 🔹 Cargar sesión guardada
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
@@ -18,9 +18,9 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  // 🔹 LOGIN normal
   const login = async (credentials) => {
     const res = await loginService(credentials);
-
     setToken(res.token);
     setUser(res.user);
 
@@ -28,6 +28,15 @@ export function AuthProvider({ children }) {
     localStorage.setItem("user", JSON.stringify(res.user));
   };
 
+  // 🔹 LOGIN con Google
+  const loginGoogle = (data) => {
+    setToken(data.token);
+    setUser(data.user);
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+  };
+
+  // 🔹 LOGOUT
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -36,10 +45,11 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, loginGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
+// 🔹 Hook para usar en componentes
 export const useAuth = () => useContext(AuthContext);

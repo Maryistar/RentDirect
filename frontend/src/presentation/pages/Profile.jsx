@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "../../application/context/AuthContext";
 
 const API_BASE = "http://localhost:4000/api/v1";
 
 export default function Profile() {
-  const token = localStorage.getItem("token");
+  const { token } = useAuth();
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -17,18 +18,37 @@ export default function Profile() {
      CARGAR PERFIL
   ========================= */
   useEffect(() => {
+    if (!token) {
+      setLoading(false);
+      setError("No autenticado");
+      return;
+    }
+
+    console.log("TOKEN PROFILE:", token);
+
     async function loadProfile() {
       try {
         const res = await fetch(`${API_BASE}/users/me`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         if (!res.ok) throw new Error("Error al cargar perfil");
 
         const data = await res.json();
-        setUser(data);
-        setEditForm({ name: data.name, email: data.email });
+
+        // 🔥 FIX: soporta {data: user} o user directo
+        const userData = data.data || data;
+
+        setUser(userData);
+        setEditForm({
+          name: userData.name || "",
+          email: userData.email || "",
+        });
+
       } catch (err) {
+        console.error("PROFILE ERROR:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -53,7 +73,9 @@ export default function Profile() {
 
       const res = await fetch(`${API_BASE}/users/me/avatar`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formData,
       });
 
@@ -65,6 +87,7 @@ export default function Profile() {
         ...prev,
         avatar: data.url || prev.avatar,
       }));
+
     } catch (err) {
       alert(err.message);
     } finally {
@@ -81,15 +104,15 @@ export default function Profile() {
 
       const res = await fetch(`${API_BASE}/users/me/avatar`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!res.ok) throw new Error("Error al eliminar imagen");
 
-      setUser((prev) => ({
-        ...prev,
-        avatar: null,
-      }));
+      setUser((prev) => ({ ...prev, avatar: null }));
+
     } catch (err) {
       alert(err.message);
     } finally {
@@ -100,39 +123,49 @@ export default function Profile() {
   /* =========================
      GUARDAR EDICIÓN
   ========================= */
+  async function handleSaveProfile() {
+    try {
+      const res = await fetch(`${API_BASE}/users/me`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editForm),
+      });
 
-async function handleSaveProfile() {
-  try {
-    const res = await fetch(`${API_BASE}/users/me`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(editForm),
-    });
+      if (!res.ok) throw new Error("Error al actualizar perfil");
 
-    if (!res.ok) throw new Error("Error al actualizar perfil");
+      const data = await res.json();
+      const updatedUser = data.data || data;
 
-    const data = await res.json();
+      setUser((prev) => ({ ...prev, ...updatedUser }));
+      setEditOpen(false);
 
-    // 🔥 MERGE EN VEZ DE REEMPLAZAR
-    setUser((prev) => ({
-      ...prev,
-      ...data,
-    }));
-
-    setEditOpen(false);
-  } catch (err) {
-    alert(err.message);
+    } catch (err) {
+      alert(err.message);
+    }
   }
-}
 
-  if (loading) return <p className="p-6 text-center">Cargando perfil...</p>;
-  if (error) return <p className="p-6 text-red-500 text-center">{error}</p>;
+  /* =========================
+     ESTADOS
+  ========================= */
+  if (!token)
+    return <p className="p-6 text-center">Debes iniciar sesión</p>;
 
-  const scorePercent = user.score ? Math.min(user.score * 20, 100) : 0;
+  if (loading)
+    return <p className="p-6 text-center">Cargando perfil...</p>;
 
+  if (error)
+    return <p className="p-6 text-red-500 text-center">{error}</p>;
+
+  const scorePercent = user?.score
+    ? Math.min(user.score * 20, 100)
+    : 0;
+
+  /* =========================
+     UI
+  ========================= */
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4">
       <motion.div
@@ -144,27 +177,24 @@ async function handleSaveProfile() {
         <div className="bg-gradient-to-r from-gray-900 to-gray-700 p-8 text-white">
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="relative w-36 h-36">
-              
-              {/* Avatar */}
               <motion.img
                 whileHover={{ scale: 1.05 }}
                 src={
-                  user.avatar ||
-                  "https://ui-avatars.com/api/?name=" +
-                    encodeURIComponent(user.name || "User")
+                  user?.avatar ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    user?.name || "User"
+                  )}`
                 }
                 alt="Avatar"
                 className="w-36 h-36 rounded-full object-cover border-4 border-white"
               />
 
-              {/* Overlay Loader */}
               {photoLoading && (
                 <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
                   <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                 </div>
               )}
 
-              {/* Botón editar */}
               <label className="absolute bottom-0 right-0 bg-black text-white text-xs px-3 py-1 rounded-full cursor-pointer hover:bg-gray-800 transition">
                 Cambiar
                 <input
@@ -177,12 +207,14 @@ async function handleSaveProfile() {
             </div>
 
             <div className="text-center md:text-left">
-              <h2 className="text-3xl font-bold">{user.name}</h2>
-              <p className="text-gray-300">{user.email}</p>
+              <h2 className="text-3xl font-bold">{user?.name}</h2>
+              <p className="text-gray-300">{user?.email}</p>
 
               <div className="flex gap-3 mt-4 justify-center md:justify-start flex-wrap">
                 <span className="px-4 py-1 rounded-full bg-white/20 text-sm">
-                  {user.role === "owner" ? "Propietario" : "Inquilino"}
+                  {user?.role === "owner"
+                    ? "Propietario"
+                    : "Inquilino"}
                 </span>
 
                 <button
@@ -192,8 +224,7 @@ async function handleSaveProfile() {
                   Editar perfil
                 </button>
 
-                {/* Botón eliminar */}
-                {user.avatar && (
+                {user?.avatar && (
                   <button
                     onClick={handleDeleteAvatar}
                     className="px-4 py-1 rounded-full bg-red-500 text-white text-sm hover:bg-red-600 transition"
@@ -208,12 +239,12 @@ async function handleSaveProfile() {
 
         {/* CONTENIDO */}
         <div className="p-8 space-y-10">
-          {/* SCORE */}
           <div className="bg-gray-50 p-6 rounded-2xl border shadow-sm">
             <h3 className="font-semibold mb-3">Score</h3>
             <div className="text-2xl font-bold mb-3">
-              ⭐ {user.score ?? "--"}
+              ⭐ {user?.score ?? "--"}
             </div>
+
             <div className="w-full bg-gray-200 rounded-full h-3">
               <motion.div
                 initial={{ width: 0 }}
@@ -224,10 +255,12 @@ async function handleSaveProfile() {
             </div>
           </div>
 
-          {/* ACTIVIDAD */}
           <div>
-            <h3 className="font-semibold mb-4">Actividad reciente</h3>
-            {user.activity && user.activity.length > 0 ? (
+            <h3 className="font-semibold mb-4">
+              Actividad reciente
+            </h3>
+
+            {user?.activity && user.activity.length > 0 ? (
               <ul className="space-y-3">
                 {user.activity.map((a, i) => (
                   <li
@@ -272,7 +305,10 @@ async function handleSaveProfile() {
                 className="w-full border rounded-lg p-2 mb-3"
                 value={editForm.name}
                 onChange={(e) =>
-                  setEditForm({ ...editForm, name: e.target.value })
+                  setEditForm({
+                    ...editForm,
+                    name: e.target.value,
+                  })
                 }
                 placeholder="Nombre"
               />
@@ -281,7 +317,10 @@ async function handleSaveProfile() {
                 className="w-full border rounded-lg p-2 mb-5"
                 value={editForm.email}
                 onChange={(e) =>
-                  setEditForm({ ...editForm, email: e.target.value })
+                  setEditForm({
+                    ...editForm,
+                    email: e.target.value,
+                  })
                 }
                 placeholder="Email"
               />

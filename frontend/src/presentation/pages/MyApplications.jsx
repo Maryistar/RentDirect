@@ -1,31 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../application/context/AuthContext"; // 🔹 Importamos contexto
 
 const MyApplications = () => {
   const [applications, setApplications] = useState([]);
   const [activeTab, setActiveTab] = useState("EN_PROCESO");
 
   const navigate = useNavigate();
+  const { token, user } = useAuth(); // 🔹 Traemos token y usuario del contexto
 
   useEffect(() => {
-    fetchApplications();
-  }, []);
+    if (token) fetchApplications(); // 🔹 Solo intentar si hay token
+  }, [token]);
 
   const fetchApplications = async () => {
     try {
       const response = await fetch(
-        "http://localhost:4000/api/v1/applications/me", // ✅ FIX
+        "http://localhost:4000/api/v1/applications/me",
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`, // 🔹 Usamos token del contexto
           },
         }
       );
 
       const data = await response.json();
-
       console.log("DATA BACKEND:", data); // 🔥 DEBUG
-
       setApplications(data.data || data);
     } catch (error) {
       console.error("Error cargando aplicaciones", error);
@@ -66,11 +66,11 @@ const MyApplications = () => {
   const handleWithdraw = async (id) => {
     try {
       await fetch(
-        `http://localhost:4000/api/v1/applications/${id}`, // ✅ FIX
+        `http://localhost:4000/api/v1/applications/${id}`,
         {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`, // 🔹 Usamos token del contexto
           },
         }
       );

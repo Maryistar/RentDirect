@@ -21,7 +21,6 @@ import Chat from "./presentation/pages/chat";
 import ContractForm from "./presentation/pages/ContractForm";
 
 export default function App() {
-
   const { user, token } = useAuth();
 
   return (
@@ -30,95 +29,78 @@ export default function App() {
 
       <div style={{ marginTop: "90px" }}>
         <Routes>
-          {/* todas tus rutas */}
+
+          {/* PÚBLICAS */}
+          <Route path="/" element={<Home />} />
+          <Route path="/properties" element={<Properties />} />
+          <Route path="/properties/:id" element={<PropertyDetail />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/contract/:id" element={<ContractForm />} />
+
+          {/* TENANT */}
+          <Route
+            path="/my-applications"
+            element={
+              token && user?.role === "tenant"
+                ? <MyApplications />
+                : <Navigate to="/login" />
+            }
+          />
+
+          {/* OWNER */}
+          <Route
+            path="/my-properties"
+            element={
+              token && user?.role === "owner"
+                ? <MyProperties />
+                : <Navigate to="/login" />
+            }
+          />
+
+          <Route
+            path="/create-property"
+            element={
+              token && user?.role === "owner"
+                ? <CreateProperty />
+                : <Navigate to="/login" />
+            }
+          />
+
+          <Route
+            path="/edit-property/:id"
+            element={
+              token && user?.role === "owner"
+                ? <EditProperty />
+                : <Navigate to="/login" />
+            }
+          />
+
+          {/* PERFIL */}
+          <Route
+            path="/profile"
+            element={token ? <Profile /> : <Navigate to="/login" />}
+          />
+
+          {/* CHAT */}
+          <Route
+            path="/chat"
+            element={token ? <Chat /> : <Navigate to="/login" />}
+          />
+
+          <Route
+            path="/chat/:id"
+            element={token ? <Chat /> : <Navigate to="/login" />}
+          />
+
+          {/* CATCH ALL */}
+          <Route path="*" element={<Navigate to="/" />} />
+
         </Routes>
       </div>
-
-      <Routes>
-
-        {/* PÚBLICAS */}
-
-        <Route path="/" element={<Home />} />
-
-        <Route path="/properties" element={<Properties />} />
-
-        <Route path="/properties/:id" element={<PropertyDetail />} />
-
-        <Route path="/login" element={<Login />} />
-
-        <Route path="/register" element={<Register />} />
-
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-
-        <Route path="/reset-password" element={<ResetPassword />} />
-
-        <Route path="/verify-email" element={<VerifyEmail />} />
-
-        <Route path="/contract/:id" element={<ContractForm />} />
-
-
-        {/* TENANT */}
-
-        <Route
-          path="/my-applications"
-          element={
-            token && user?.role === "tenant"
-              ? <MyApplications />
-              : <Navigate to="/login" />
-          }
-        />
-
-
-        {/* OWNER */}
-
-        <Route
-          path="/my-properties"
-          element={
-            token && user?.role === "owner"
-              ? <MyProperties />
-              : <Navigate to="/login" />
-          }
-        />
-
-        <Route
-          path="/create-property"
-          element={
-            token && user?.role === "owner"
-              ? <CreateProperty />
-              : <Navigate to="/login" />
-          }
-        />
-
-        <Route path="/edit-property/:id" element={<EditProperty />} />
-
-        {/* PERFIL */}
-
-        <Route
-          path="/profile"
-          element={token ? <Profile /> : <Navigate to="/login" />}
-        />
-
-        {/* CHAT LIST */}
-        <Route
-          path="/chat"
-          element={
-            token ? <Chat /> : <Navigate to="/login" />
-          }
-        />
-
-        {/* CHAT */}
-        <Route
-          path="/chat/:id"
-          element={
-            token ? <Chat /> : <Navigate to="/login" />
-          }
-        />
-
-        {/* CATCH ALL */}
-
-        <Route path="*" element={<Navigate to="/" />} />
-
-      </Routes>
 
       <Footer />
     </>

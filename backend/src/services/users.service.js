@@ -8,7 +8,7 @@ export async function getUserById(userId) {
   const user = await userRepository.findById(userId);
 
   if (!user) {
-    throw new Error('User not found');
+    return null;
   }
 
   return user;
