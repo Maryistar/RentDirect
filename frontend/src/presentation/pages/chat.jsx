@@ -94,10 +94,14 @@ function Chat() {
     }
   }, [id]);
 
-  // ESCUCHAR MENSAJES
+  // ✅ ESCUCHAR MENSAJES (ARREGLADO)
   useEffect(() => {
     const handleMessage = (message) => {
       if (message.chatId == id) {
+
+        // 🚫 EVITA DUPLICADOS (no agregar si es mío)
+        if (message.sender_id === user?.id) return;
+
         setMessages(prev => [...prev, message]);
       }
     };
@@ -117,7 +121,7 @@ function Chat() {
     if (!text.trim()) return;
 
     const newMessage = {
-      id: Date.now(), // temporal único
+      id: Date.now(),
       chatId: id,
       message: text,
       sender_id: user?.id,
@@ -205,7 +209,6 @@ function Chat() {
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         {id ? (
           <>
-            {/* HEADER + BOTONES */}
             <div style={{
               padding: "15px",
               borderBottom: "1px solid #ddd",
@@ -239,7 +242,6 @@ function Chat() {
               )}
             </div>
 
-            {/* MENSAJES */}
             <div style={{
               flex: 1,
               overflowY: "auto",
@@ -275,7 +277,6 @@ function Chat() {
               <div ref={bottomRef}></div>
             </div>
 
-            {/* INPUT */}
             <form onSubmit={sendMessage} style={{
               display: "flex",
               padding: "10px",
