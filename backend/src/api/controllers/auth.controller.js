@@ -5,6 +5,7 @@ import * as service from '../../services/auth.service.js';
 import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
 import db from "../../config/db.js";
+import axios from "axios";
 
 /* =========================
    CONFIG
@@ -14,6 +15,9 @@ const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
+
+// 
+const RECAPTCHA_SECRET = "6LcF058sAAAAABUKqIzg3CQ9TCz0rxoGFx9A1Zes";
 
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET no definido");
@@ -66,7 +70,6 @@ export const googleLogin = async (req, res) => {
       user = users[0];
     }
 
-    // 🔥 TOKEN CORRECTO
     const tokenJWT = jwt.sign(
       {
         id: user.id,
@@ -96,8 +99,22 @@ export const googleLogin = async (req, res) => {
 ========================= */
 export const register = async (req, res, next) => {
   try {
+    const { captcha } = req.body;
+
+    // 🔥 VALIDAR CAPTCHA
+    if (!captcha) {
+      return res.status(400).json({ message: "Captcha requerido" });
+    }
+
+    const isValidCaptcha = await verifyCaptcha(captcha);
+
+    if (!isValidCaptcha) {
+      return res.status(401).json({ message: "Captcha inválido" });
+    }
+
     const result = await service.register(req.body);
     res.status(201).json(result);
+
   } catch (err) {
     next(err);
   }
@@ -120,8 +137,22 @@ export const verifyEmail = async (req, res, next) => {
 ========================= */
 export const login = async (req, res, next) => {
   try {
-    const result = await service.login(req.body.email, req.body.password);
+    const { email, password, captcha } = req.body;
+
+    //  VALIDAR CAPTCHA
+    if (!captcha) {
+      return res.status(400).json({ message: "Captcha requerido" });
+    }
+
+    const isValidCaptcha = await verifyCaptcha(captcha);
+
+    if (!isValidCaptcha) {
+      return res.status(401).json({ message: "Captcha inválido" });
+    }
+
+    const result = await service.login(email, password);
     res.json(result);
+
   } catch (err) {
     next(err);
   }
@@ -154,3 +185,21 @@ export const resetPassword = async (req, res, next) => {
     next(err);
   }
 };
+
+/* 
+   VERIFY CAPTCHA
+*/
+async function verifyCaptcha(token) {
+  const response = await axios.post(
+    "https://www.google.com/recaptcha/api/siteverify",
+    null,
+    {
+      params: {
+        secret: RECAPTCHA_SECRET,
+        response: token,
+      },
+    }
+  );
+
+  return response.data.success;
+}

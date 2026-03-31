@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "../../assets/logo-rentdirect.png";
+import ReCAPTCHA from "react-google-recaptcha"; // 🔥 IMPORT
 
 const API_URL = "http://localhost:4000/api/v1/auth/register";
 
@@ -18,6 +19,7 @@ export default function Register() {
     acceptPrivacy: false,
   });
 
+  const [captcha, setCaptcha] = useState(null); // 🔥 ESTADO CAPTCHA
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [modalContent, setModalContent] = useState(null);
@@ -44,6 +46,12 @@ export default function Register() {
       return;
     }
 
+    // 🔥 VALIDAR CAPTCHA
+    if (!captcha) {
+      setError("Verifica que no eres un robot");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -52,7 +60,10 @@ export default function Register() {
       const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dataToSend),
+        body: JSON.stringify({
+          ...dataToSend,
+          captcha, // 🔥 ENVIAR CAPTCHA AL BACKEND
+        }),
       });
 
       const data = await res.json();
@@ -167,6 +178,14 @@ export default function Register() {
               </label>
             </div>
 
+            {/* 🔥 CAPTCHA */}
+            <div className="flex justify-center">
+              <ReCAPTCHA
+                sitekey="6LcF058sAAAAABUKqIzg3CQ9TCz0rxoGFx9A1Zes"
+                onChange={(value) => setCaptcha(value)}
+              />
+            </div>
+
             <motion.button
               whileTap={{ scale: 0.97 }}
               whileHover={{ scale: 1.02 }}
@@ -214,8 +233,8 @@ export default function Register() {
                   : "Política de Privacidad"}
               </h3>
 
-              <p className="text-sm text-gray-600 leading-relaxed mb-6">
-                falta pergar contenido 
+              <p className="text-sm text-gray-600 mb-6">
+                falta pegar contenido 
               </p>
 
               <button

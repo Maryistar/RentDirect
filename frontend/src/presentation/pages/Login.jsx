@@ -4,26 +4,40 @@ import { useAuth } from "../../application/context/AuthContext";
 import { motion } from "framer-motion";
 import logo from "../../assets/logo-rentdirect.png";
 import { GoogleLogin } from "@react-oauth/google";
+import ReCAPTCHA from "react-google-recaptcha"; // 🔥 IMPORT
 import axios from "axios";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [captcha, setCaptcha] = useState(null); // 🔥 ESTADO CAPTCHA
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const { login, loginGoogle } = useAuth(); // ✅ Usamos loginGoogle del context
+  const { login, loginGoogle } = useAuth();
   const navigate = useNavigate();
 
   // 🔹 LOGIN normal
   async function handleLogin(e) {
     e.preventDefault();
     setError("");
+
+    // 🔥 VALIDACIÓN CAPTCHA
+    if (!captcha) {
+      setError("Verifica que no eres un robot");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await login({ email, password });
-      navigate("/"); // Redirige al home
+      await login({ 
+        email, 
+        password,
+        captcha // 🔥 ENVIAR CAPTCHA AL BACKEND
+      });
+
+      navigate("/");
     } catch (err) {
       if (err.message?.includes("verify your email")) {
         setError("Tu cuenta no está verificada.");
@@ -45,13 +59,12 @@ export default function Login() {
         { token: credentialResponse.credential }
       );
 
-      // Guardar en AuthContext y localStorage
       loginGoogle({
         token: res.data.token,
         user: res.data.user,
       });
 
-      navigate("/"); // Redirige al home
+      navigate("/");
     } catch (err) {
       console.error("ERROR GOOGLE FRONT:", err?.response?.data || err);
       setError("Error al iniciar sesión con Google");
@@ -70,6 +83,7 @@ export default function Login() {
         transition={{ duration: 0.6 }}
         className="w-full max-w-md bg-white p-10 rounded-3xl shadow-xl border border-gray-200"
       >
+
         {/* Logo */}
         <div className="flex flex-col items-center mb-10">
           <img src={logo} alt="Rent Direct Logo" className="w-32 mb-4" />
@@ -80,7 +94,7 @@ export default function Login() {
           Iniciar sesión
         </h2>
 
-        {/* Botón Google */}
+        {/* 🔥 GOOGLE */}
         <div className="mb-6 flex justify-center">
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
@@ -90,8 +104,9 @@ export default function Login() {
 
         <div className="text-center text-gray-400 text-sm mb-6">— o —</div>
 
-        {/* FORM normal */}
+        {/* 🔥 FORM */}
         <form onSubmit={handleLogin} className="space-y-6">
+
           <input
             type="email"
             placeholder="Correo electrónico"
@@ -100,6 +115,7 @@ export default function Login() {
             required
             className="w-full px-4 py-3 border rounded-xl"
           />
+
           <input
             type="password"
             placeholder="Contraseña"
@@ -108,6 +124,15 @@ export default function Login() {
             required
             className="w-full px-4 py-3 border rounded-xl"
           />
+
+          {/* 🔥 CAPTCHA */}
+          <div className="flex justify-center">
+            <ReCAPTCHA
+              sitekey="6LcF058sAAAAABUKqIzg3CQ9TCz0rxoGFx9A1Zes"
+              onChange={(value) => setCaptcha(value)}
+            />
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -117,7 +142,9 @@ export default function Login() {
           </button>
 
           {error && (
-            <div className="text-center text-red-500 text-sm">{error}</div>
+            <div className="text-center text-red-500 text-sm">
+              {error}
+            </div>
           )}
         </form>
 
@@ -129,6 +156,7 @@ export default function Login() {
             <Link to="/register">Crear cuenta</Link>
           </p>
         </div>
+
       </motion.div>
     </div>
   );

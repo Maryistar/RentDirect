@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@azure/storage-blob": "^12.14.0",
+    "axios": "^1.14.0",
     "bcrypt": "^5.1.0",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
