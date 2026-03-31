@@ -8,6 +8,8 @@ import {
   googleLogin 
 } from "../controllers/auth.controller.js";
 
+import { loginLimiter, registerLimiter } from "../../middlewares/rateLimit.js";
+
 const router = express.Router();
 
 // 🔹 RUTAS
@@ -17,5 +19,8 @@ router.post("/verify-email", verifyEmail);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/google", googleLogin);
+router.post("/login", loginLimiter, login);
+router.post("/register", registerLimiter, register);
+
 
 export default router;

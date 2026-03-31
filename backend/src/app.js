@@ -86,10 +86,10 @@ const io = new Server(server, {
   }
 });
 
-// 🔥 namespace correcto
+// 
 const chatNamespace = io.of('/chat');
 
-// 🔐 auth middleware
+//  auth middleware
 chatNamespace.use((socket, next) => {
   try {
     const token = socket.handshake.auth.token;

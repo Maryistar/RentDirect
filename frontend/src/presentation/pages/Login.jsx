@@ -1,18 +1,21 @@
-import { useState } from "react"; 
+import { useState, useRef } from "react"; 
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../application/context/AuthContext";
 import { motion } from "framer-motion";
 import logo from "../../assets/logo-rentdirect.png";
 import { GoogleLogin } from "@react-oauth/google";
-import ReCAPTCHA from "react-google-recaptcha"; // 🔥 IMPORT
+import ReCAPTCHA from "react-google-recaptcha";
 import axios from "axios";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [captcha, setCaptcha] = useState(null); // 🔥 ESTADO CAPTCHA
+  const [captcha, setCaptcha] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // 🔥 NUEVO: referencia para resetear captcha
+  const recaptchaRef = useRef(null);
 
   const { login, loginGoogle } = useAuth();
   const navigate = useNavigate();
@@ -22,7 +25,6 @@ export default function Login() {
     e.preventDefault();
     setError("");
 
-    // 🔥 VALIDACIÓN CAPTCHA
     if (!captcha) {
       setError("Verifica que no eres un robot");
       return;
@@ -34,16 +36,27 @@ export default function Login() {
       await login({ 
         email, 
         password,
-        captcha // 🔥 ENVIAR CAPTCHA AL BACKEND
+        captcha
       });
 
+      // 🔥 RESET CAPTCHA (IMPORTANTE)
+      recaptchaRef.current.reset();
+      setCaptcha(null);
+
       navigate("/");
+
     } catch (err) {
+
+      // 🔥 TAMBIÉN RESET SI FALLA
+      recaptchaRef.current.reset();
+      setCaptcha(null);
+
       if (err.message?.includes("verify your email")) {
         setError("Tu cuenta no está verificada.");
       } else {
         setError(err.message || "Error al iniciar sesión");
       }
+
     } finally {
       setLoading(false);
     }
@@ -94,7 +107,7 @@ export default function Login() {
           Iniciar sesión
         </h2>
 
-        {/* 🔥 GOOGLE */}
+        {/* GOOGLE */}
         <div className="mb-6 flex justify-center">
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
@@ -104,7 +117,7 @@ export default function Login() {
 
         <div className="text-center text-gray-400 text-sm mb-6">— o —</div>
 
-        {/* 🔥 FORM */}
+        {/* FORM */}
         <form onSubmit={handleLogin} className="space-y-6">
 
           <input
@@ -125,11 +138,12 @@ export default function Login() {
             className="w-full px-4 py-3 border rounded-xl"
           />
 
-          {/* 🔥 CAPTCHA */}
+          {/* CAPTCHA */}
           <div className="flex justify-center">
             <ReCAPTCHA
               sitekey="6LcF058sAAAAABUKqIzg3CQ9TCz0rxoGFx9A1Zes"
               onChange={(value) => setCaptcha(value)}
+              ref={recaptchaRef} // 🔥 CLAVE
             />
           </div>
 

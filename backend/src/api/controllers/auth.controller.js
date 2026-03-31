@@ -17,7 +17,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
 // 
-const RECAPTCHA_SECRET = "6LcF058sAAAAABUKqIzg3CQ9TCz0rxoGFx9A1Zes";
+const RECAPTCHA_SECRET = "6LcF058sAAAAAE0VQcDjXXNW6TeimNqbm1SowLHW";
 
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET no definido");
