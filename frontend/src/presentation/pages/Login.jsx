@@ -54,7 +54,7 @@ export default function Login() {
       if (err.message?.includes("verify your email")) {
         setError("Tu cuenta no está verificada.");
       } else {
-        setError(err.message || "Error al iniciar sesión");
+        setError(err.response?.data?.message || err.message || "Error al iniciar sesión");
       }
 
     } finally {
