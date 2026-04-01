@@ -25,7 +25,6 @@ export default function VerifyEmail() {
     }
   };
 
-  // 🔥 REENVIAR CÓDIGO
   const handleResend = async () => {
     if (!email) {
       alert("Ingresa tu correo primero");
@@ -37,7 +36,7 @@ export default function VerifyEmail() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email }), // sin code
+      body: JSON.stringify({ email }),
     });
 
     const data = await res.json();
@@ -45,14 +44,18 @@ export default function VerifyEmail() {
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-gray-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg"
+        className="w-full max-w-md bg-white p-8 rounded-2xl shadow-xl flex flex-col gap-5"
       >
-        <h2 className="text-2xl font-bold text-center mb-6">
+        <h2 className="text-2xl font-bold text-center text-gray-800">
           Verificar correo
         </h2>
+
+        <p className="text-sm text-gray-500 text-center">
+          Ingresa el código que te enviamos a tu correo
+        </p>
 
         <input
           type="email"
@@ -60,7 +63,7 @@ export default function VerifyEmail() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full mb-4 px-4 py-2 border rounded-lg"
+          className="border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
         />
 
         <input
@@ -69,12 +72,12 @@ export default function VerifyEmail() {
           value={code}
           onChange={(e) => setCode(e.target.value)}
           required
-          className="w-full mb-4 px-4 py-2 border rounded-lg"
+          className="border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
         />
 
         <button
           type="submit"
-          className="w-full py-2 rounded-full font-semibold bg-blue-600 text-white hover:bg-blue-700 transition duration-200"
+          className="bg-indigo-500 text-white py-2 rounded-xl font-semibold hover:bg-indigo-600 transition duration-300 shadow-md"
         >
           Verificar
         </button>
@@ -82,7 +85,7 @@ export default function VerifyEmail() {
         <button
           type="button"
           onClick={handleResend}
-          className="w-full mt-3 py-2 rounded-full font-semibold border border-blue-600 text-blue-600 hover:bg-blue-50 transition duration-200"
+          className="border border-indigo-500 text-indigo-500 py-2 rounded-xl font-semibold hover:bg-indigo-50 transition duration-300"
         >
           Reenviar código
         </button>
