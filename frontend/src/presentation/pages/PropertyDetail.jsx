@@ -87,10 +87,14 @@ export default function PropertyDetail() {
 
             const imageUrl = img?.url || img;
 
+            const fullImageUrl = imageUrl.startsWith("http")
+              ? imageUrl
+              : `http://localhost:4000/${imageUrl}`;
+
             return (
               <img
                 key={index}
-                src={imageUrl}
+                src={fullImageUrl}
                 alt="propiedad"
                 className="w-full h-72 object-cover rounded-xl"
               />
