@@ -39,10 +39,13 @@ export default function Properties() {
 
   const propertyTypes = [
     "Todos",
-    "Apartamento",
     "Casa",
+    "Apartamento",
+    "Apartaestudio",
     "Habitacion",
-    "Oficina"
+    "Oficina",
+    "Local Comercial",
+    "Finca",
   ];
 
   const neighborhoods = [

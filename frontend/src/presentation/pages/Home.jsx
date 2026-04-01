@@ -46,7 +46,7 @@ export default function Home() {
           </h1>
 
           <p className="mb-6 text-lg text-gray-200">
-            Explora apartamentos, casas y habitaciones directamente con propietarios.
+            Explora apartamentos, casas, habitaciones y mucho mas directamente con propietarios.
           </p>
 
           {/* BUSCADOR */}
@@ -55,7 +55,7 @@ export default function Home() {
 
             <input
               type="text"
-              placeholder="Buscar por ciudad o dirección..."
+              placeholder="Busca por barrio o dirección..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="flex-1 px-3 py-2 outline-none text-gray-700"
@@ -66,10 +66,14 @@ export default function Home() {
               onChange={(e) => setType(e.target.value)}
               className="px-3 py-2 text-gray-700 outline-none"
             >
+              <option value="house">Casa</option>
               <option value="">Tipo</option>
               <option value="apartment">Apartamento</option>
-              <option value="house">Casa</option>
+              <option value="apartment">Apartaestudio</option>
               <option value="room">Habitación</option>
+              <option value="room">Oficina</option>
+              <option value="room">Local Comercial</option>
+              <option value="room">Finca</option>
             </select>
 
             <button
@@ -135,7 +139,7 @@ export default function Home() {
           </h2>
 
           <p className="text-gray-600 mb-8">
-            Encuentra apartamentos, casas y habitaciones disponibles para arrendar.
+            Encuentra apartamentos, casas, habitaciones, locales y mas... disponibles para arrendar.
           </p>
 
           <Link

@@ -24,15 +24,15 @@ export default function CreateProperty() {
   const [error, setError] = useState("");
 
   const propertyTypes = [
-    "Apartamento",
     "Casa",
+    "Apartamento",
     "Apartaestudio",
-    "Oficina",
-    "Local",
-    "Bodega",
-    "Finca",
     "Habitacion",
-    "Penthouse",
+    "Oficina",
+    "Local Comercial",
+    "Finca",
+    
+    
   ];
 
   const medellinNeighborhoods = [
@@ -54,10 +54,11 @@ export default function CreateProperty() {
   const availableTags = [
     "Amoblado",
     "Parqueadero",
-    "Mascotas",
+    "Acepto Mascotas",
     "Balcón",
-    "Piscina",
     "Ascensor",
+    "Red de gas",
+    "Calentador de agua",
   ];
 
   const formatCOP = (value) => {
