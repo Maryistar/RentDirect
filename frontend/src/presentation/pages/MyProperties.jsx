@@ -65,6 +65,15 @@ export default function MyProperties() {
     }
   }
 
+  // 🔥 NUEVO: función para estado visual
+  function getPropertyStatus(property) {
+    const s = property.status?.toLowerCase().trim();
+
+    if (s === "rented") return "ARRENDADA";
+
+    return "DISPONIBLE";
+  }
+
   async function handleDelete(propertyId) {
 
     const confirmDelete = window.confirm("¿Eliminar esta propiedad?");
@@ -143,8 +152,6 @@ export default function MyProperties() {
           Mis Propiedades
         </h1>
 
-        {/* GRID */}
-
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
 
           {properties.map((property) => {
@@ -170,25 +177,28 @@ export default function MyProperties() {
 
                 <div className="p-5">
 
-                  {/* PRECIO */}
-
                   <p className="text-blue-600 font-semibold text-lg">
                     ${Number(property.price).toLocaleString("es-CO")}
                   </p>
-
-                  {/* TITULO */}
 
                   <h3 className="font-bold text-lg mt-1">
                     {property.title}
                   </h3>
 
-                  {/* DIRECCION */}
+                  {/* 🔥 NUEVA ETIQUETA */}
+                  <span
+                    className={`inline-block mt-2 px-3 py-1 text-sm font-semibold rounded-full ${
+                      getPropertyStatus(property) === "ARRENDADA"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
+                    {getPropertyStatus(property)}
+                  </span>
 
                   <p className="text-gray-500 text-sm mt-1">
                     {property.address}
                   </p>
-
-                  {/* INFO */}
 
                   <div className="flex gap-4 mt-3 text-sm text-gray-600">
                     <span>{property.rooms || 0} hab</span>
@@ -196,16 +206,12 @@ export default function MyProperties() {
                     <span>{property.type}</span>
                   </div>
 
-                  {/* LINK VER */}
-
                   <Link
                     to={`/properties/${property.id}`}
                     className="inline-block mt-4 text-blue-600 hover:underline"
                   >
                     Ver propiedad →
                   </Link>
-
-                  {/* BOTONES */}
 
                   <div className="flex gap-3 mt-4">
 
@@ -224,8 +230,6 @@ export default function MyProperties() {
                     </button>
 
                   </div>
-
-                  {/* APLICACIONES */}
 
                   <div className="mt-6 border-t pt-4">
 

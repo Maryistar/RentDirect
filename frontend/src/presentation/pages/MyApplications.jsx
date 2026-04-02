@@ -33,18 +33,16 @@ const MyApplications = () => {
   };
 
   const mapStatusToUI = (status) => {
-    const s = status?.toLowerCase();
+    const s = status?.toString().trim().toLowerCase();
 
-    if (
-      s === "pending" ||
-      s === "in_review" ||
-      s === "agreed" ||
-      s === "contract_signed"
-    ) {
+    if (["pending", "in_review"].includes(s)) {
       return "EN_PROCESO";
     }
 
-    if (s === "active") return "ARRENDADA";
+    if (["agreed", "contract_signed", "active"].includes(s)) {
+      return "ARRENDADA";
+    }
+
     if (s === "rejected") return "RECHAZADA";
 
     return "EN_PROCESO";

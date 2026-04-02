@@ -24,14 +24,13 @@ export async function findExistingChat(propertyId, ownerId, tenantId) {
   return rows[0];
 }
 
-// 🔹 🔥 NUEVA FUNCIÓN (NO EXISTÍA) → obtener chat por ID
+// 🔹 Obtener chat por ID (NO TOCAR MÁS)
 export async function getChatById(chatId) {
   const [rows] = await pool.execute(
     `
     SELECT 
       c.*,
 
-      -- 🔥 application
       a.id AS applicationId,
       a.status AS applicationStatus
 
@@ -49,7 +48,7 @@ export async function getChatById(chatId) {
   return rows[0];
 }
 
-// 🔹 Obtener chats del usuario
+// 🔹 🔥 ESTA ERA LA QUE FALTABA (CRÍTICA)
 export async function getUserChats(userId) {
   const [rows] = await pool.execute(
     `
@@ -59,34 +58,24 @@ export async function getUserChats(userId) {
       c.owner_id,
       c.tenant_id,
 
-      -- 🔥 applicationId
       a.id AS applicationId,
       a.status AS applicationStatus,
 
-      -- nombre del otro usuario
-      CASE 
-        WHEN c.owner_id = ? THEN u2.name
-        ELSE u1.name
-      END AS name,
+      -- 🔥 ESTE YA RESUELVE EL NOMBRE
+      IF(c.owner_id = ?, u2.name, u1.name) AS name,
 
-      -- último mensaje
       m.message AS lastMessage,
-
-      -- hora del último mensaje
       m.created_at AS lastMessageTime
 
     FROM chats c
 
-    -- 🔥 JOIN APPLICATIONS
     LEFT JOIN applications a 
       ON a.property_id = c.property_id 
       AND a.tenant_id = c.tenant_id
 
-    -- usuarios
-    JOIN users u1 ON c.owner_id = u1.id
-    JOIN users u2 ON c.tenant_id = u2.id
+    LEFT JOIN users u1 ON c.owner_id = u1.id
+    LEFT JOIN users u2 ON c.tenant_id = u2.id
 
-    -- último mensaje
     LEFT JOIN messages m ON m.id = (
       SELECT id FROM messages
       WHERE chat_id = c.id

@@ -114,9 +114,14 @@ export async function updateApplicationStatus(applicationId, status, user) {
 
   await repo.updateApplication(applicationId, status);
 
-  if (status === 'active') {
-    await repo.markPropertyAsRented(application.property_id);
+  if (status === 'agreed') {
+    // 🔥 Ya se bloquea para otros
     await repo.rejectOtherApplications(application.property_id, applicationId);
+  }
+
+  if (status === 'active') {
+    // 🔥 Estado final oficial
+    await repo.markPropertyAsRented(application.property_id);
   }
 
   return { message: 'Application updated successfully' };

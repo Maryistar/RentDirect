@@ -167,17 +167,28 @@ function Chat() {
     <div style={{ display: "flex", height: "100vh", paddingTop: "90px", background: "#eef2f7" }}>
       <div style={{ width: "300px", background: "#fff", borderRight: "1px solid #ddd", padding: "15px", overflowY: "auto" }}>
         <h3>Chats</h3>
-        {chats.map(chat => (
-          <Link key={chat.id} to={`/chat/${chat.id}`} style={{ textDecoration: "none" }}>
-            <div style={{ padding: "10px", borderRadius: "10px", marginBottom: "10px", transition: "0.2s", color: "#000" }}
-              onMouseEnter={e => e.currentTarget.style.background = "#f1f1f1"}
-              onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-            >
-              <strong>{chat.name}</strong><br />
-              <span style={{ fontSize: "12px", color: "gray" }}>{chat.lastMessage || "Sin mensajes"}</span>
-            </div>
-          </Link>
-        ))}
+        {chats.map(chat => {
+          const displayName =
+            chat.name ||
+            chat.tenant_name ||
+            chat.owner_name ||
+            chat.username ||
+            (isOwner ? "Inquilino" : "Propietario");
+
+          return (
+            <Link key={chat.id} to={`/chat/${chat.id}`} style={{ textDecoration: "none" }}>
+              <div style={{ padding: "10px", borderRadius: "10px", marginBottom: "10px", transition: "0.2s", color: "#000" }}
+                onMouseEnter={e => e.currentTarget.style.background = "#f1f1f1"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+              >
+                <strong>{displayName}</strong><br />
+                <span style={{ fontSize: "12px", color: "gray" }}>
+                  {chat.lastMessage || "Sin mensajes"}
+                </span>
+              </div>
+            </Link>
+          );
+        })}
       </div>
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
