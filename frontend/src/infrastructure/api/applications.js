@@ -65,7 +65,9 @@ export async function getApplicationsForProperty(propertyId) {
     throw new Error("Error al cargar las aplicaciones de la propiedad");
   }
 
-  return res.json();
+  const data = await res.json();
+
+  return data.data || []; // 🔥 AQUÍ ESTÁ LA MAGIA
 }
 
 /* =========================

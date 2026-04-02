@@ -36,7 +36,7 @@ export async function applyToProperty(propertyId, tenantId, message) {
 
   const applicationId = await repo.createApplication(
     propertyId,
-    tenantId,   // 🔥 IMPORTANTE (ya lo tenías bien)
+    tenantId,   // 🔥 IMPORTANTE
     message
   );
 
@@ -52,7 +52,6 @@ export async function listMyApplications(tenantId) {
 
   const applications = await repo.getApplicationsByTenant(tenantId);
 
-  // 🔥 Asegura formato correcto para el frontend
   return applications.map(app => ({
     ...app,
     propertyTitle: app.propertyTitle || app.title || "Propiedad",
@@ -75,7 +74,13 @@ export async function listApplicationsForProperty(propertyId, user) {
     throw { status: 403, message: 'Forbidden' };
   }
 
-  return await repo.getApplicationsByProperty(propertyId);
+  const applications = await repo.getApplicationsByProperty(propertyId);
+
+  // 🔹 🔹 CORRECCIÓN CLAVE: usar exactamente el nombre que devuelve el repo
+  return applications.map(app => ({
+    ...app,
+    user_name: app.user_name || "Usuario",  // 🔹 aquí sí usamos user_name
+  }));
 }
 
 
@@ -115,12 +120,10 @@ export async function updateApplicationStatus(applicationId, status, user) {
   await repo.updateApplication(applicationId, status);
 
   if (status === 'agreed') {
-    // 🔥 Ya se bloquea para otros
     await repo.rejectOtherApplications(application.property_id, applicationId);
   }
 
   if (status === 'active') {
-    // 🔥 Estado final oficial
     await repo.markPropertyAsRented(application.property_id);
   }
 
@@ -136,7 +139,6 @@ export async function withdrawApplication(applicationId, user) {
     throw { status: 404, message: 'Application not found' };
   }
 
-  // ✅ AHORA EL TENANT PUEDE RETIRAR SU PROPIA APLICACIÓN
   if (user.role !== 'admin' && application.tenant_id !== user.id) {
     throw { status: 403, message: 'Forbidden' };
   }

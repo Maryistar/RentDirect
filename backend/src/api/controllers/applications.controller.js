@@ -37,11 +37,13 @@ export async function listMyApplications(req, res, next) {
 export async function listApplicationsForProperty(req, res, next) {
   try {
     const result = await service.listApplicationsForProperty(
-      req.params.id, // property_id
-      req.user       // info del usuario que está viendo la propiedad
+      req.params.id,
+      req.user
     );
 
-    res.json(result);
+    // 🔹 CORRECCIÓN CLAVE: envolver en { data: [...] } igual que listMyApplications
+    res.json({ data: result });
+
   } catch (err) {
     next(err);
   }

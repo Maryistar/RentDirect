@@ -46,16 +46,16 @@ export async function createApplication(propertyId, tenantId, message) {
 }
 
 
-// 🔹 List mine (🔥 CORREGIDO)
+// 🔹 List mine (TENANT)
 export async function getApplicationsByTenant(tenantId) {
   const [rows] = await db.query(
     `SELECT 
         a.id,
         a.status,
         a.message,
-        a.created_at AS createdAt, -- 🔥 FIX FECHA
+        a.created_at AS createdAt, 
         p.id AS property_id,
-        p.title AS propertyTitle, -- 🔥 FIX NOMBRE
+        p.title AS propertyTitle,
         p.address,
         p.price
      FROM applications a
@@ -78,7 +78,7 @@ export async function getApplicationsByProperty(propertyId) {
         a.message,
         a.created_at AS createdAt,
         u.id AS tenant_id,
-        u.name AS tenant_name,
+        u.name AS user_name,    -- 🔹 CAMBIO: ahora coincide con frontend
         u.email AS tenant_email
      FROM applications a
      JOIN users u ON u.id = a.tenant_id
@@ -134,7 +134,7 @@ export async function rejectOtherApplications(propertyId, applicationId) {
 }
 
 
-// 🔹 Delete (🔥 FUNCIONA CON SERVICE CORREGIDO)
+// 🔹 Delete
 export async function deleteApplication(applicationId) {
   await db.query(
     'DELETE FROM applications WHERE id = ?',

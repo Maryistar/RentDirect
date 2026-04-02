@@ -37,7 +37,7 @@ export default function MyProperties() {
 
             return {
               ...property,
-              applications: apps
+              applications: Array.isArray(apps) ? apps : []
             };
 
           } catch {
