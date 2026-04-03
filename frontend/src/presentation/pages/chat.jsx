@@ -195,7 +195,12 @@ function Chat() {
         {id ? (
           <>
             <div style={{ padding: "15px", borderBottom: "1px solid #ddd", background: "#fff", display: "flex", flexDirection: "column", gap: "10px" }}>
-              <h3>Chat #{id}</h3>
+              <h3>
+                Chat con{" "}
+                {isOwner
+                  ? chatInfo?.tenant_name || "Inquilino"
+                  : chatInfo?.owner_name || "Propietario"}
+              </h3>
               {isOwner && chatInfo?.applicationStatus === "in_review" && (
                 <button onClick={handleAgree} style={btnGreen}>Aceptar inquilino</button>
               )}

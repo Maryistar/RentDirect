@@ -87,7 +87,9 @@ export async function getAllAvailable() {
 // 🔹 Property
 export async function findPropertyById(propertyId) {
   const [[property]] = await db.query(
-    'SELECT id, status, owner_id FROM properties WHERE id = ?',
+    `SELECT id, address, description, price, owner_id, status 
+     FROM properties 
+     WHERE id = ?`,
     [propertyId]
   );
   return property;

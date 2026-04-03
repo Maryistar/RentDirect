@@ -32,13 +32,24 @@ export async function getChatById(chatId) {
       c.*,
 
       a.id AS applicationId,
-      a.status AS applicationStatus
+      a.status AS applicationStatus,
+      
+      tenant.name AS tenant_name,
+      owner.name AS owner_name,
+
+      p.address AS property_address,
+      p.description AS property_description
 
     FROM chats c
 
     LEFT JOIN applications a
       ON a.property_id = c.property_id
       AND a.tenant_id = c.tenant_id
+
+    LEFT JOIN users tenant ON tenant.id = c.tenant_id
+    LEFT JOIN users owner ON owner.id = c.owner_id
+
+    LEFT JOIN properties p ON p.id = c.property_id
 
     WHERE c.id = ?
     `,

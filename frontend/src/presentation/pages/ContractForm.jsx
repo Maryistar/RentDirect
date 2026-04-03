@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 
@@ -11,14 +11,37 @@ function ContractForm() {
     endDate: "",
     paymentMethod: "Transferencia",
     utilities: [],
-    use: "",
-    repairs: "",
-    termination: "",
+    inventory: [],
     terms: "",
-    monthlyPrice: ""
+    monthlyPrice: "",
+    paymentDays: "",
+    noticeTime: ""
   });
 
+  // 🔥 datos automáticos
+  const [chatInfo, setChatInfo] = useState(null);
+  useEffect(() => {
+    console.log("CHAT INFO FRONT:", chatInfo);
+  }, [chatInfo]);
+
   const token = localStorage.getItem("token");
+
+  // 🔥 CARGAR INFO DEL CHAT (propiedad + usuarios)
+  useEffect(() => {
+    const loadChatInfo = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:4000/api/v1/chats/${id}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setChatInfo(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadChatInfo();
+  }, [id]);
 
   const formatCOP = (value) => {
     if (!value) return "";
@@ -44,17 +67,17 @@ function ContractForm() {
   };
 
   const handleCheckbox = (e) => {
-    const { value, checked } = e.target;
+    const { value, checked, name } = e.target;
 
     if (checked) {
       setForm({
         ...form,
-        utilities: [...form.utilities, value]
+        [name]: [...form[name], value]
       });
     } else {
       setForm({
         ...form,
-        utilities: form.utilities.filter((u) => u !== value)
+        [name]: form[name].filter((u) => u !== value)
       });
     }
   };
@@ -92,61 +115,87 @@ function ContractForm() {
 
         <form onSubmit={handleSubmit} className="form">
 
-          {/* FECHAS */}
-          <div className="inputGroup">
-            <label className="labelTop">Fecha inicio</label>
-            <input type="date" name="startDate" onChange={handleChange} required />
+          {/* 👤 PARTES AUTOMÁTICAS */}
+          <div className="section">
+            <h3>👤 Partes</h3>
+            <input value={chatInfo?.owner_name || "Propietario"} disabled />
+            <input value={chatInfo?.tenant_name || "Inquilino"} disabled />
           </div>
 
-          <div className="inputGroup">
-            <label className="labelTop">Fecha fin</label>
+          {/* 📅 FECHAS */}
+          <div className="section">
+            <h3>📅 Fechas</h3>
+
+            <input type="date" name="startDate" onChange={handleChange} required />
             <input type="date" name="endDate" onChange={handleChange} required />
           </div>
 
-          {/* 💰 PRECIO */}
-          <div className="inputGroup priceGroup">
-            <span className="currency">$</span>
+          {/* 🏠 INMUEBLE AUTOMÁTICO */}
+          <div className="section">
+            <h3>🏠 Inmueble</h3>
+
             <input
-              type="text"
-              name="monthlyPrice"
-              value={formatCOP(form.monthlyPrice)}
-              onChange={handleChange}
-              placeholder="0"
-              required
+              value={chatInfo?.property_address || ""}
+              disabled
             />
-            <label>Precio mensual</label>
+
+            <textarea
+              value={chatInfo?.property_description || ""}
+              disabled
+            />
+
+            <label>Inventario:</label>
+
+            <label><input type="checkbox" name="inventory" value="Pintura nueva" onChange={handleCheckbox} /> Pintura nueva</label>
+            <label><input type="checkbox" name="inventory" value="Llaves en buen estado" onChange={handleCheckbox} /> Llaves en buen estado</label>
+            <label><input type="checkbox" name="inventory" value="Puertas en buen estado" onChange={handleCheckbox} /> Puertas en buen estado</label>
+            <label><input type="checkbox" name="inventory" value="Ventanas en buen estado" onChange={handleCheckbox} /> Ventanas en buen estado</label>
+            <label><input type="checkbox" name="inventory" value="Cocina integral" onChange={handleCheckbox} /> Cocina integral</label>
           </div>
 
-          {/* MÉTODO DE PAGO */}
-          <div className="inputGroup">
+          {/* 💰 PAGO */}
+          <div className="section">
+            <h3>💰 Pago</h3>
+
+            <div className="inputGroup">
+              <span>$</span>
+              <input
+                type="text"
+                name="monthlyPrice"
+                value={formatCOP(form.monthlyPrice)}
+                onChange={handleChange}
+                placeholder="0"
+                required
+              />
+            </div>
+
             <select name="paymentMethod" onChange={handleChange}>
               <option>Transferencia</option>
               <option>Efectivo</option>
             </select>
+
+            <input
+              name="paymentDays"
+              placeholder="Ej: primeros 5 días del mes"
+              onChange={handleChange}
+            />
           </div>
 
-          {/* SERVICIOS */}
-          <div className="inputGroup">
-            <label>Servicios incluidos</label>
-            <div>
-              <label><input type="checkbox" value="Agua" onChange={handleCheckbox} /> Agua</label>
-              <label><input type="checkbox" value="Luz" onChange={handleCheckbox} /> Luz</label>
-              <label><input type="checkbox" value="Gas" onChange={handleCheckbox} /> Gas</label>
-              <label><input type="checkbox" value="Administración" onChange={handleCheckbox} /> Administración</label>
-            </div>
+          {/* 🔌 SERVICIOS */}
+          <div className="section">
+            <h3>🔌 Servicios</h3>
+
+            <label><input type="checkbox" name="utilities" value="Agua" onChange={handleCheckbox} /> Agua</label>
+            <label><input type="checkbox" name="utilities" value="Luz" onChange={handleCheckbox} /> Luz</label>
+            <label><input type="checkbox" name="utilities" value="Gas" onChange={handleCheckbox} /> Gas</label>
+            <label><input type="checkbox" name="utilities" value="Administración" onChange={handleCheckbox} /> Administración</label>
           </div>
 
-          {/* CLÁUSULAS */}
-          <div className="inputGroup">
-            <textarea name="use" placeholder="Uso del inmueble" onChange={handleChange} />
-            <textarea name="repairs" placeholder="Reparaciones" onChange={handleChange} />
-            <textarea name="termination" placeholder="Terminación anticipada" onChange={handleChange} />
-          </div>
+          {/* 📝 SOLO OTROS TERMINOS */}
+          <div className="section">
+            <h3>📝 Otros términos</h3>
 
-          {/* TERMINOS */}
-          <div className="inputGroup">
             <textarea name="terms" onChange={handleChange} required />
-            <label>Términos del contrato</label>
           </div>
 
           <button className="btn">
@@ -159,15 +208,16 @@ function ContractForm() {
 
       <style>{`
         .container {
-          height: 100vh;
+          min-height: 100vh;
           display: flex;
           justify-content: center;
           align-items: center;
           background: #f4f6f9;
+          padding: 40px 0;
         }
 
         .card {
-          width: 400px;
+          width: 500px;
           padding: 30px;
           border-radius: 20px;
           background: #ffffff;
@@ -185,12 +235,27 @@ function ContractForm() {
           gap: 20px;
         }
 
-        .inputGroup input,
-        .inputGroup textarea,
-        .inputGroup select {
+        .section {
+          background: #f9fafc;
+          padding: 15px;
+          border-radius: 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .section h3 {
+          margin-bottom: 5px;
+        }
+
+        input, textarea, select {
           padding: 12px;
           border-radius: 10px;
           border: 1px solid #ddd;
+        }
+
+        textarea {
+          resize: none;
         }
 
         .btn {

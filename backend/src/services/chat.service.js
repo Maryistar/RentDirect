@@ -44,12 +44,18 @@ export async function getChatInfo(chatId, userId) {
     throw { status: 404, message: 'Chat not found' };
   }
 
-  // validar que pertenece al usuario
   if (chat.owner_id !== userId && chat.tenant_id !== userId) {
     throw { status: 403, message: 'Forbidden' };
   }
 
-  return chat;
+  // 🔥 TRAER PROPIEDAD SIN TOCAR SQL
+  const property = await propertyRepo.findPropertyById(chat.property_id);
+
+  return {
+    ...chat,
+    property_address: property?.address,
+    property_description: property?.description
+  };
 }
 
 
