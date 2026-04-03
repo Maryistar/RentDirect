@@ -19,7 +19,12 @@ export async function createContract(data) {
     repairsClause,
     terminationClause,
 
-    terms
+    terms,
+    // 🔥 AGREGA ESTO
+    ownerName,
+    tenantName,
+    ownerDocument,
+    tenantDocument
   } = data;
 
   const [result] = await db.query(
@@ -39,9 +44,14 @@ export async function createContract(data) {
      use_clause,
      repairs_clause,
      termination_clause,
-     terms
-   )
-   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     terms,
+     -- 🔥 NUEVOS CAMPOS
+     owner_name,
+     tenant_name,
+     owner_document,
+     tenant_document
+    )
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       chatId,
       propertyId,
@@ -57,7 +67,12 @@ export async function createContract(data) {
       useClause,
       repairsClause,
       terminationClause,
-      terms
+      terms,
+      // 🔥 ESTO ES LO QUE TE FALTABA
+      ownerName,
+      tenantName,
+      ownerDocument,
+      tenantDocument
     ]
   );
 

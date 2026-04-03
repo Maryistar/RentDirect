@@ -37,13 +37,6 @@ export async function createContract(data, userId) {
   const owner = await userRepository.findById(chat.owner_id);
   const tenant = await userRepository.findById(chat.tenant_id);
 
-  // 🔥 CLÁUSULAS GENERALES AUTOMÁTICAS
-  const defaultClauses = `
-    El arrendatario se compromete a cuidar el inmueble.
-    No se permite subarrendar sin autorización.
-    El incumplimiento dará lugar a terminación del contrato.
-    Se debe avisar con 30 días de anticipación para terminar el contrato.
-  `;
 
   return await contractRepository.createContract({
     chatId: data.chatId,
@@ -54,7 +47,7 @@ export async function createContract(data, userId) {
     startDate: data.startDate,
     endDate: data.endDate,
 
-    monthlyPrice: property.price,
+    monthlyPrice: data.price,
     propertyAddress: property.address,
     propertyDescription: property.description,
 
@@ -63,8 +56,8 @@ export async function createContract(data, userId) {
 
     ownerEmail: owner.email,
     tenantEmail: tenant.email,
-    ownerDocument: owner.document,
-    tenantDocument: tenant.document,
+    ownerDocument: owner.cedula,
+    tenantDocument: tenant.cedula,
 
     inventory: JSON.stringify(data.inventory || []),
 
@@ -75,8 +68,8 @@ export async function createContract(data, userId) {
     repairsClause: data.repairs,
     terminationClause: data.termination,
 
-    // 🔥 AQUÍ SE COMBINAN
-    terms: data.terms + "\n\n" + defaultClauses
+
+    terms: data.terms
   });
 }
 export async function getContractByChat(chatId) {
@@ -85,6 +78,17 @@ export async function getContractByChat(chatId) {
 
 export async function acceptContract(id, userId) {
   const contract = await contractRepository.findById(id);
+
+  // 🔥 TRAER USUARIOS AQUÍ
+  const owner = await userRepository.findById(contract.owner_id);
+  const tenant = await userRepository.findById(contract.tenant_id);
+
+  // 🔥 INYECTAR DATOS AL CONTRACT
+  contract.owner_name = owner.name;
+  contract.tenant_name = tenant.name;
+
+  contract.owner_document = owner.cedula;
+  contract.tenant_document = tenant.cedula;
 
   if (!contract) throw new Error("Contrato no encontrado");
 
@@ -113,6 +117,14 @@ export async function acceptContract(id, userId) {
   await documentRepository.createDocument({
     contract_id: contract.id,
     user_id: contract.tenant_id, // 🔥 CLAVE
+    url: `http://localhost:4000/${pdf.filePath.replace(/\\/g, "/")}`,
+    type: "contract"
+  });
+
+  // 🔹 🔥 NUEVO: para owner
+  await documentRepository.createDocument({
+    contract_id: contract.id,
+    user_id: contract.owner_id,
     url: `http://localhost:4000/${pdf.filePath.replace(/\\/g, "/")}`,
     type: "contract"
   });

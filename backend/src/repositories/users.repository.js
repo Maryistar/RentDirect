@@ -9,6 +9,7 @@ export async function findById(userId) {
         id,
         email,
         name,
+        cedula,
         role,
         score,
         status,
