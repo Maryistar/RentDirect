@@ -36,13 +36,20 @@ export default function CreateProperty() {
   ];
 
   const medellinNeighborhoods = [
+    "La Candelaria (Centro)",
+    "La America",
     "El Poblado",
     "Laureles",
+    "Villa Hermosa",
+    "San Javier",
+    "Doce De Octubre",
     "Envigado",
     "Itagüi",
     "Sabaneta",
     "Bello",
     "Robledo",
+    "Popular",
+    "Santo Domingo Savio",
     "Belén",
     "Buenos Aires",
     "Guayabal",

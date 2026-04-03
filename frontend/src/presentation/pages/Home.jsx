@@ -101,7 +101,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 
           <Link
-            to="/properties?type=apartment"
+            to="/properties?type=apartamento"
             className="bg-white shadow-md rounded-xl p-6 text-center hover:shadow-xl transition"
           >
             <Building size={40} className="mx-auto mb-3 text-blue-700" />

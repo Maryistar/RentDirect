@@ -50,13 +50,24 @@ export default function Properties() {
 
   const neighborhoods = [
     "Todos",
-    "Poblado",
+    "La Candelaria (Centro)",
+    "La America",
+    "El Poblado",
     "Laureles",
+    "Villa Hermosa",
+    "Doce De Octubre",
+    "San Javier",
     "Envigado",
+    "Itagüi",
+    "Sabaneta",
+    "Bello",
     "Belen",
     "Robledo",
+    "Popular",
+    "Santo Domingo Savio",
     "Castilla",
     "Buenos Aires",
+    "Manrique",
     "Aranjuez",
     "Guayabal"
   ];
