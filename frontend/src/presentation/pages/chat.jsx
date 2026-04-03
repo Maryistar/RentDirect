@@ -11,7 +11,12 @@ function Chat() {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [chatInfo, setChatInfo] = useState(null);
-  const user = JSON.parse(localStorage.getItem("user"));
+  const rawUser = JSON.parse(localStorage.getItem("user"));
+
+  const user = {
+    ...rawUser,
+    id: Number(rawUser?.id || rawUser?.userId || rawUser?.user_id)
+  };
   const isOwner = user?.role === "owner";
   const [contract, setContract] = useState(null);
 
@@ -75,7 +80,12 @@ function Chat() {
         `http://localhost:4000/api/v1/chats/${id}/messages`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setMessages(res.data);
+      setMessages(
+        res.data.map(msg => ({
+          ...msg,
+          sender_id: msg.sender_id || msg.senderId || msg.userId
+        }))
+      );
     } catch (error) {
       console.error(error);
     }
@@ -97,12 +107,20 @@ function Chat() {
 
   useEffect(() => {
     const handleMessage = (message) => {
-      // Usamos comparación flexible para el ID del chat
-      if (message.chatId == id) {
+
+      const normalizedMessage = {
+        ...message,
+        sender_id: message.sender_id || message.senderId || message.userId
+      };
+
+      if (normalizedMessage.chatId == id) {
         setMessages(prev => {
-          // Verificación de seguridad simple para no repetir el mismo ID de la base de datos
-          if (message.id && prev.some(m => m.id === message.id)) return prev;
-          return [...prev, message];
+          if (
+            normalizedMessage.id &&
+            prev.some(m => m.id === normalizedMessage.id)
+          ) return prev;
+
+          return [...prev, normalizedMessage];
         });
       }
     };
@@ -217,11 +235,32 @@ function Chat() {
 
             <div style={{ flex: 1, overflowY: "auto", padding: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
               {messages.map((msg, index) => {
-                const isMe = msg.sender_id === user?.id || msg.senderId === user?.id || msg.userId === user?.id;
+                console.log("MSG sender:", msg.sender_id);
+                const isMe = Number(msg.sender_id) === Number(user?.id);
+                console.log("USER ID:", user?.id);
                 return (
-                  <div key={msg.id || index} style={{ display: "flex", justifyContent: isMe ? "flex-end" : "flex-start", animation: "fadeIn 0.3s" }}>
-                    <div style={{ background: isMe ? "#4CAF50" : "#fff", color: isMe ? "#fff" : "#000", padding: "10px 15px", borderRadius: "15px", maxWidth: "60%", boxShadow: "0 2px 6px rgba(0,0,0,0.1)" }}>
-                      <div style={{ fontSize: "11px", opacity: 0.7 }}>{msg.name || msg.username || "Usuario"}</div>
+                  <div
+                    key={msg.id || index}
+                    style={{
+                      display: "flex",
+                      justifyContent: isMe ? "flex-end" : "flex-start",
+                      animation: "fadeIn 0.3s"
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: isMe ? "#4CAF50" : "#fff",
+                        color: isMe ? "#fff" : "#000",
+                        padding: "10px 15px",
+                        borderRadius: "15px",
+                        maxWidth: "60%",
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                        wordBreak: "break-word"
+                      }}
+                    >
+                      <div style={{ fontSize: "11px", opacity: 0.7 }}>
+                        {msg.name || msg.username || "Usuario"}
+                      </div>
                       {msg.message}
                     </div>
                   </div>

@@ -119,19 +119,19 @@ chatNamespace.on('connection', (socket) => {
   socket.on('sendMessage', async ({ chatId, message }) => {
     try {
 
-      const newMessage = await chatService.createMessage({
+      const messageId = await chatService.createMessage({
         chatId,
         senderId: socket.user.id,
         message
       });
 
       chatNamespace.to(`chat_${chatId}`).emit('newMessage', {
-        id: newMessage.id,
+        id: messageId,
         chatId,
-        sender_id: socket.user.id, // 🔥 importante mismo nombre frontend
+        sender_id: socket.user.id,
         message,
         createdAt: new Date(),
-        name: newMessage.name
+        name: socket.user.name || "Tú"
       });
 
     } catch (err) {
