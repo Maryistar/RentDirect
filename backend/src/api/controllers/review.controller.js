@@ -22,8 +22,9 @@ export const createReview = async (req, res) => {
   const reviewer_id = req.user.id;
 
   try {
-    if (review.reviewer_id === review.reviewed_id) {
-        return res.status(400).json({ message: "Acción inválida" });
+    // ✅ FIX AQUÍ
+    if (reviewer_id === reviewed_id) {
+      return res.status(400).json({ message: "Acción inválida" });
     }
 
     const [existing] = await db.query(
