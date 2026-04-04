@@ -99,7 +99,7 @@ export const googleLogin = async (req, res) => {
 ========================= */
 export const register = async (req, res, next) => {
   try {
-    const { captcha } = req.body;
+    const { captcha, adminKey } = req.body; // 👈 AGREGAMOS adminKey
 
     // 🔥 VALIDAR CAPTCHA
     if (!captcha) {
@@ -110,6 +110,11 @@ export const register = async (req, res, next) => {
 
     if (!isValidCaptcha) {
       return res.status(401).json({ message: "Captcha inválido" });
+    }
+
+    // 🔥 NUEVO: validar admin
+    if (adminKey && adminKey === process.env.ADMIN_SECRET) {
+      req.body.role = "admin";
     }
 
     const result = await service.register(req.body);
