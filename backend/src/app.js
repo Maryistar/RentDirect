@@ -65,6 +65,8 @@ app.use('/api/v1', chatRoutes);
 app.use('/api/v1/rental-records', rentalRoutes);
 app.use('/api/v1/contracts', contractsRoutes);
 app.use('/api/v1/documents', documentsRoutes);
+app.use("/api/v1", usersRoutes);
+
 
 // ================================
 // ERROR HANDLER

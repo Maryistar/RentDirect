@@ -97,3 +97,20 @@ export async function insertDocument(userId, type, url) {
     'pending'
   ]);
 }
+
+export const getUserById = async (id) => {
+  const [rows] = await db.query(
+    "SELECT id, name, email, role, phone, status FROM users WHERE id = ?",
+    [id]
+  );
+  return rows[0]; // retorna un usuario
+};
+
+export const updateUser = async (id, data) => {
+  const { name, email, role, phone, status } = data;
+  await db.query(
+    "UPDATE users SET name = ?, email = ?, role = ?, phone = ?, status = ? WHERE id = ?",
+    [name, email, role, phone, status, id]
+  );
+  return getUserById(id);
+};

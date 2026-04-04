@@ -1,6 +1,8 @@
 import * as usersRepository from "../../repositories/users.repository.js";
 import * as userService from "../../services/users.service.js";
 import multer from "multer";
+import pool from "../../config/db.js";
+
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -115,5 +117,38 @@ export const deleteAvatar = async (req, res) => {
   } catch (error) {
     console.error("ERROR ELIMINANDO:", error);
     res.status(500).json({ message: "Error al eliminar avatar" });
+  }
+};
+
+export const getUsers = async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT id, name, email, role, status
+      FROM users
+      WHERE deleted_at IS NULL
+    `);
+
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al obtener usuarios" });
+  }
+};
+
+export const updateUserByAdmin = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const { name, email, role, phone, status } = req.body;
+
+    // Validar que exista usuario
+    const user = await usersRepository.getUserById(userId);
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    await usersRepository.updateUser(userId, { name, email, role, phone, status });
+
+    const updatedUser = await usersRepository.getUserById(userId);
+    res.json(updatedUser);
+  } catch (err) {
+    next(err);
   }
 };

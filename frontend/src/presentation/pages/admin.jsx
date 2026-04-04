@@ -72,9 +72,13 @@ export default function Admin() {
           <p className="text-gray-500 mb-4">
             Ver, editar o eliminar usuarios
           </p>
-          <button className="bg-black text-white px-4 py-2 rounded-lg">
+          <button
+            onClick={() => navigate("/admin/users")}
+            className="bg-black text-white px-4 py-2 rounded-lg"
+          >
             Ir a usuarios
           </button>
+          
         </div>
 
         <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition">

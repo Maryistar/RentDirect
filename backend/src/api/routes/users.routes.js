@@ -1,4 +1,5 @@
-// backend/src/api/routes/user.routes.js
+// users.routes.js
+
 import express from "express";
 import db from "../../config/db.js";
 import jwt from "jsonwebtoken";
@@ -8,38 +9,22 @@ import {
   updateMe,
   uploadDocumentHandler,
   uploadAvatar,
-  deleteAvatar
+  deleteAvatar,
+  getUsers,
+  updateUserByAdmin,
 } from "../controllers/users.controller.js";
 import { upload } from "../../config/upload.js";
+import { authenticate, authorize } from "../../middlewares/auth.middleware.js"; // <-- Usar tus middleware existentes
 
 dotenv.config();
 
 const router = express.Router();
 
 /* =========================
-   MIDDLEWARE AUTENTICACIÓN
+   RUTAS ADMIN USUARIOS
 ========================= */
-export const authenticate = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    return res.status(401).json({ message: "No token" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
-  try {
-    // 🔥 USAR EL MISMO SECRET EN TODO EL PROYECTO
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    req.user = decoded;
-    next();
-
-  } catch (err) {
-    console.log("JWT ERROR:", err.message); // 🔍 debug útil
-    return res.status(401).json({ message: "Token inválido" });
-  }
-};
+router.get("/users", authenticate, authorize(["admin"]), getUsers); // admin lista usuarios
+router.put("/admin/:id", authenticate, authorize(["admin"]), updateUserByAdmin); // admin edita usuarios
 
 /* =========================
    RUTAS PERFIL USUARIO LOGUEADO
@@ -67,7 +52,6 @@ router.get("/users/:id", authenticate, async (req, res) => {
     }
 
     res.json(users[0]);
-
   } catch (err) {
     console.error("ERROR GET USER BY ID:", err);
     res.status(500).json({ message: "Error al obtener perfil" });

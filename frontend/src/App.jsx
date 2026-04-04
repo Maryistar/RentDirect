@@ -21,7 +21,7 @@ import Chat from "./presentation/pages/chat";
 import ContractForm from "./presentation/pages/ContractForm";
 import MyDocuments from "./presentation/pages/MyDocuments";
 import Admin from "./presentation/pages/admin";
-
+import Users from "./presentation/pages/admin/Users";
 
 export default function App() {
   const { user, token } = useAuth();
@@ -92,6 +92,10 @@ export default function App() {
           />
 
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/users" element={<Users />} />
+
+
+
 
           {/* PERFIL */}
           <Route
