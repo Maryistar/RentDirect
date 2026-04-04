@@ -48,7 +48,7 @@ export default function PropertyDetail() {
       setApplying(true);
 
       await applyToProperty(property.id, "Estoy interesado en esta propiedad");
-
+      
       alert("✅ Aplicación enviada");
 
     } catch (error) {

@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { socket } from "../../socket";
+import { useAuth } from "../../application/context/AuthContext";
 
 function Chat() {
 
@@ -11,12 +12,8 @@ function Chat() {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [chatInfo, setChatInfo] = useState(null);
-  const rawUser = JSON.parse(localStorage.getItem("user"));
 
-  const user = {
-    ...rawUser,
-    id: Number(rawUser?.id || rawUser?.userId || rawUser?.user_id)
-  };
+  const { user } = useAuth();
   const isOwner = user?.role === "owner";
   const [contract, setContract] = useState(null);
 
@@ -265,9 +262,11 @@ function Chat() {
 
             <div style={{ flex: 1, overflowY: "auto", padding: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
               {messages.map((msg, index) => {
-                console.log("MSG sender:", msg.sender_id);
                 const isMe = Number(msg.sender_id) === Number(user?.id);
                 console.log("USER ID:", user?.id);
+                console.log("MSG sender:", msg.sender_id);
+                console.log("IS ME:", isMe);
+
                 return (
                   <div
                     key={msg.id || index}
