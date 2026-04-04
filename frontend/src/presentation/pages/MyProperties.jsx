@@ -185,7 +185,7 @@ export default function MyProperties() {
                     {property.title}
                   </h3>
 
-                  {/* 🔥 NUEVA ETIQUETA */}
+                  
                   <span
                     className={`inline-block mt-2 px-3 py-1 text-sm font-semibold rounded-full ${
                       getPropertyStatus(property) === "ARRENDADA"
@@ -257,7 +257,17 @@ export default function MyProperties() {
                           {app.user_name || app.name || app.email || "Usuario"}
                         </p>
 
-                        <p>
+                        {/*  BOTÓN PERFIL */}
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            onClick={() => navigate(`/profile/${app.tenant_id}`)}
+                            className="bg-gray-800 text-white px-3 py-1 rounded hover:bg-black text-sm"
+                          >
+                            Ver perfil
+                          </button>
+                        </div>
+
+                        <p className="mt-2">
                           <strong>Mensaje:</strong>{" "}
                           {app.message || "Sin mensaje"}
                         </p>
