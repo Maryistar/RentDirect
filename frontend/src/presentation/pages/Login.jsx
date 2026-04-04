@@ -33,8 +33,8 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await login({ 
-        email, 
+      await login({
+        email,
         password,
         captcha
       });
@@ -43,7 +43,17 @@ export default function Login() {
       recaptchaRef.current.reset();
       setCaptcha(null);
 
-      navigate("/");
+      // 🔥 LEER USUARIO GUARDADO
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      console.log("USER LOGIN:", user); // 👈 verifica
+
+      // 🔥 REDIRECCIÓN INTELIGENTE
+      if (user?.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
 
     } catch (err) {
 
@@ -77,7 +87,12 @@ export default function Login() {
         user: res.data.user,
       });
 
-      navigate("/");
+      // 🔥 REDIRECCIÓN
+      if (res.data.user?.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       console.error("ERROR GOOGLE FRONT:", err?.response?.data || err);
       setError("Error al iniciar sesión con Google");

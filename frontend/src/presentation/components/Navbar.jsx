@@ -212,6 +212,27 @@ export default function Navbar() {
                 </>
               )}
 
+              {user && role === "admin" && (
+                <>
+                  <Link to="/" onClick={() => setIsOpen(false)} className="menu-item">
+                    <Home size={18} />
+                    Inicio
+                  </Link>
+
+                  <Link to="/admin" onClick={() => setIsOpen(false)} className="menu-item">
+                    <User size={18} />
+                    Panel Admin 🔥
+                  </Link>
+
+                  <div className="border-t my-2"></div>
+
+                  <button onClick={handleLogout} className="menu-item-danger">
+                    <LogOut size={18} />
+                    Cerrar sesión
+                  </button>
+                </>
+              )}
+
             </div>
 
           )}

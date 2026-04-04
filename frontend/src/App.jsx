@@ -20,6 +20,7 @@ import Profile from "./presentation/pages/Profile";
 import Chat from "./presentation/pages/chat";
 import ContractForm from "./presentation/pages/ContractForm";
 import MyDocuments from "./presentation/pages/MyDocuments";
+import Admin from "./presentation/pages/admin";
 
 
 export default function App() {
@@ -89,6 +90,8 @@ export default function App() {
                 : <Navigate to="/login" />
             }
           />
+
+          <Route path="/admin" element={<Admin />} />
 
           {/* PERFIL */}
           <Route
