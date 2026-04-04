@@ -78,8 +78,9 @@ export async function getApplicationsByProperty(propertyId) {
         a.message,
         a.created_at AS createdAt,
         u.id AS tenant_id,
-        u.name AS user_name,    -- 🔹 CAMBIO: ahora coincide con frontend
+        u.name AS user_name,    -- 
         u.email AS tenant_email
+        
      FROM applications a
      JOIN users u ON u.id = a.tenant_id
      WHERE a.property_id = ?

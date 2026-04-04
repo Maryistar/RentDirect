@@ -25,14 +25,11 @@ export default function MyProperties() {
 
   async function loadProperties() {
     try {
-
       const data = await getMyProperties();
 
       const withApplications = await Promise.all(
         data.map(async (property) => {
-
           try {
-
             const apps = await getApplicationsForProperty(property.id);
 
             return {
@@ -41,116 +38,86 @@ export default function MyProperties() {
             };
 
           } catch {
-
             return {
               ...property,
               applications: []
             };
-
           }
-
         })
       );
 
       setProperties(withApplications);
 
     } catch (error) {
-
       console.error(error);
-
     } finally {
-
       setLoading(false);
-
     }
   }
 
-  // 🔥 NUEVO: función para estado visual
+  //  ESTADO PROPIEDAD
   function getPropertyStatus(property) {
-    const s = property.status?.toLowerCase().trim();
+    const s = property.status?.toLowerCase();
 
     if (s === "rented") return "ARRENDADA";
-
     return "DISPONIBLE";
   }
 
+  //  ESTADO APLICACIÓN EN ESPAÑOL
+  function translateStatus(status) {
+    switch (status) {
+      case "pending": return "Pendiente";
+      case "in_review": return "En revisión";
+      case "agreed": return "Aceptado";
+      case "rejected": return "Rechazado";
+      default: return status;
+    }
+  }
+
   async function handleDelete(propertyId) {
-
-    const confirmDelete = window.confirm("¿Eliminar esta propiedad?");
-
-    if (!confirmDelete) return;
+    if (!window.confirm("¿Eliminar esta propiedad?")) return;
 
     try {
-
       await deleteProperty(propertyId);
-
       loadProperties();
-
     } catch {
-
       alert("Error eliminando propiedad");
-
     }
-
   }
 
   function handleEdit(propertyId) {
-
     navigate(`/edit-property/${propertyId}`);
-
   }
 
   async function handleStatus(applicationId, status) {
-
     try {
-
       await updateApplicationStatus(applicationId, status);
-
       loadProperties();
-
     } catch {
-
       alert("Error actualizando aplicación");
-
     }
-
   }
 
   async function handleStartChat(propertyId, tenantId, applicationId) {
-
     try {
-
       const chat = await startChat(propertyId, tenantId);
-
       await updateApplicationStatus(applicationId, "in_review");
-
       navigate(`/chat/${chat.id}`);
-
     } catch {
-
       alert("Error iniciando conversación");
-
     }
-
   }
 
   if (loading) {
-    return (
-      <div className="p-10 text-center">
-        Cargando propiedades...
-      </div>
-    );
+    return <div className="p-10 text-center">Cargando propiedades...</div>;
   }
 
   return (
-
-    <div className="min-h-screen bg-slate-100 py-12 px-6">
+    <div className="min-h-screen bg-gray-100 py-12 px-6">
 
       <div className="max-w-7xl mx-auto">
 
-        <h1 className="text-3xl font-bold mb-10">
-          Mis Propiedades
-        </h1>
+        <h1 className="text-3xl font-bold mb-10">Mis Propiedades</h1>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
 
@@ -161,10 +128,9 @@ export default function MyProperties() {
               : null;
 
             return (
-
               <div
                 key={property.id}
-                className="bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden"
+                className="bg-white rounded-2xl shadow-md hover:shadow-xl transition overflow-hidden"
               >
 
                 {image && (
@@ -177,133 +143,125 @@ export default function MyProperties() {
 
                 <div className="p-5">
 
-                  <p className="text-blue-600 font-semibold text-lg">
+                  {/* PRECIO */}
+                  <p className="text-blue-600 font-bold text-lg">
                     ${Number(property.price).toLocaleString("es-CO")}
                   </p>
 
-                  <h3 className="font-bold text-lg mt-1">
+                  {/* TITULO */}
+                  <h3 className="font-bold text-lg">
                     {property.title}
                   </h3>
 
-                  
-                  <span
-                    className={`inline-block mt-2 px-3 py-1 text-sm font-semibold rounded-full ${
-                      getPropertyStatus(property) === "ARRENDADA"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}
-                  >
+                  {/* ESTADO */}
+                  <span className={`inline-block mt-2 px-3 py-1 text-xs font-semibold rounded-full
+                    ${getPropertyStatus(property) === "ARRENDADA"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-yellow-100 text-yellow-700"}`}>
                     {getPropertyStatus(property)}
                   </span>
 
+                  {/* DIRECCION */}
                   <p className="text-gray-500 text-sm mt-1">
                     {property.address}
                   </p>
 
-                  <div className="flex gap-4 mt-3 text-sm text-gray-600">
+                  {/* INFO */}
+                  <div className="flex gap-4 mt-2 text-sm text-gray-600">
                     <span>{property.rooms || 0} hab</span>
                     <span>{property.bathrooms || 0} baños</span>
                     <span>{property.type}</span>
                   </div>
 
-                  <Link
-                    to={`/properties/${property.id}`}
-                    className="inline-block mt-4 text-blue-600 hover:underline"
-                  >
-                    Ver propiedad →
-                  </Link>
+                  {/* ACCIONES */}
+                  <div className="flex justify-between items-center mt-4">
 
-                  <div className="flex gap-3 mt-4">
-
-                    <button
-                      onClick={() => handleEdit(property.id)}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                    <Link
+                      to={`/properties/${property.id}`}
+                      className="text-blue-600 text-sm hover:underline"
                     >
-                      Editar
-                    </button>
+                      Ver propiedad →
+                    </Link>
 
-                    <button
-                      onClick={() => handleDelete(property.id)}
-                      className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
-                    >
-                      Eliminar
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(property.id)}
+                        className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm"
+                      >
+                        Editar
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(property.id)}
+                        className="bg-red-600 text-white px-3 py-1 rounded-lg text-sm"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
 
                   </div>
 
+                  {/* APLICACIONES */}
                   <div className="mt-6 border-t pt-4">
 
-                    <h4 className="font-semibold mb-3">
-                      Aplicaciones
-                    </h4>
+                    <h4 className="font-semibold mb-3">Aplicaciones</h4>
 
                     {property.applications.length === 0 && (
-
                       <p className="text-sm text-gray-500">
                         No hay aplicaciones
                       </p>
-
                     )}
 
                     {property.applications.map((app) => (
 
                       <div
                         key={app.id}
-                        className="border rounded-xl p-3 mb-3 bg-slate-50"
+                        className="bg-gray-50 border rounded-xl p-4 mb-3"
                       >
 
-                        <p>
-                          <strong>Usuario:</strong>{" "}
-                          {app.user_name || app.name || app.email || "Usuario"}
-                        </p>
+                        <div className="flex justify-between items-center">
 
-                        {/*  BOTÓN PERFIL */}
-                        <div className="flex gap-2 mt-2">
+                          <p className="font-semibold text-sm">
+                            {app.user_name || app.name}
+                          </p>
+
                           <button
                             onClick={() => navigate(`/profile/${app.tenant_id}`)}
-                            className="bg-gray-800 text-white px-3 py-1 rounded hover:bg-black text-sm"
+                            className="text-xs bg-black text-white px-2 py-1 rounded"
                           >
                             Ver perfil
                           </button>
+
                         </div>
 
-                        <p className="mt-2">
-                          <strong>Mensaje:</strong>{" "}
+                        <p className="text-sm text-gray-600 mt-1">
                           {app.message || "Sin mensaje"}
                         </p>
 
-                        <p className="text-blue-600 font-semibold">
-                          Estado: {app.status}
+                        <p className="text-xs mt-2 font-semibold text-blue-600">
+                          {translateStatus(app.status)}
                         </p>
 
                         {app.status === "pending" && (
-
-                          <div className="flex gap-3 mt-2">
+                          <div className="flex gap-2 mt-3">
 
                             <button
                               onClick={() =>
-                                handleStartChat(
-                                  property.id,
-                                  app.tenant_id,
-                                  app.id
-                                )
+                                handleStartChat(property.id, app.tenant_id, app.id)
                               }
-                              className="bg-green-600 text-white px-3 py-1 rounded"
+                              className="bg-green-600 text-white px-2 py-1 rounded text-xs"
                             >
-                              Iniciar conversación
+                              Chat
                             </button>
 
                             <button
-                              onClick={() =>
-                                handleStatus(app.id, "rejected")
-                              }
-                              className="bg-red-600 text-white px-3 py-1 rounded"
+                              onClick={() => handleStatus(app.id, "rejected")}
+                              className="bg-red-600 text-white px-2 py-1 rounded text-xs"
                             >
                               Rechazar
                             </button>
 
                           </div>
-
                         )}
 
                       </div>
@@ -315,7 +273,6 @@ export default function MyProperties() {
                 </div>
 
               </div>
-
             );
 
           })}
@@ -323,17 +280,13 @@ export default function MyProperties() {
         </div>
 
         {properties.length === 0 && (
-
           <p className="text-center text-gray-500 mt-10">
             No tienes propiedades publicadas
           </p>
-
         )}
 
       </div>
 
     </div>
-
   );
-
 }
