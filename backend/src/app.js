@@ -20,6 +20,8 @@ import applicationsRoutes from './api/routes/applications.routes.js';
 import authRoutes from "./api/routes/auth.routes.js";
 
 import * as chatService from './services/chat.service.js';
+import documentsRoutes from './api/routes/documents.routes.js';
+
 
 // ================================
 // FIX __dirname
@@ -62,6 +64,7 @@ app.use('/api/v1', applicationsRoutes);
 app.use('/api/v1', chatRoutes);
 app.use('/api/v1/rental-records', rentalRoutes);
 app.use('/api/v1/contracts', contractsRoutes);
+app.use('/api/v1/documents', documentsRoutes);
 
 // ================================
 // ERROR HANDLER

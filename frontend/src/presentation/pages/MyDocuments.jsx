@@ -11,14 +11,14 @@ const MyDocuments = () => {
 
   const fetchDocuments = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/v1/documents/me", {
+      const res = await fetch("http://localhost:4000/api/v1/documents/my-documents", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
       const data = await res.json();
-      setDocs(data.data || []);
+      setDocs(data || []);
     } catch (err) {
       console.error("Error cargando documentos", err);
     }

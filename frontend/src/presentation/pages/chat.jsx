@@ -93,6 +93,18 @@ function Chat() {
 
   useEffect(() => { loadChats(); }, []);
   useEffect(() => { loadMessages(); }, [id]);
+  
+  useEffect(() => {
+    if (!id) return;
+
+    setChats(prev =>
+      prev.map(chat =>
+        chat.id == id
+          ? { ...chat, hasNew: false }
+          : chat
+      )
+    );
+  }, [id]);
 
   useEffect(() => {
     if (!id) return;
@@ -110,7 +122,8 @@ function Chat() {
 
       const normalizedMessage = {
         ...message,
-        sender_id: message.sender_id || message.senderId || message.userId
+        sender_id: message.sender_id || message.senderId || message.userId,
+        isNew: true // 🔥 AGREGAMOS ESTO
       };
 
       if (normalizedMessage.chatId == id) {
@@ -123,6 +136,19 @@ function Chat() {
           return [...prev, normalizedMessage];
         });
       }
+
+      // 🔥 ACTUALIZAR LISTA DE CHATS
+      setChats(prev =>
+        prev.map(chat =>
+          chat.id == normalizedMessage.chatId
+            ? {
+              ...chat,
+              lastMessage: normalizedMessage.message,
+              hasNew: normalizedMessage.sender_id !== user?.id // 👈 clave
+            }
+            : chat
+        )
+      );
     };
 
     socket.on("newMessage", handleMessage);
@@ -200,7 +226,11 @@ function Chat() {
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               >
                 <strong>{displayName}</strong><br />
-                <span style={{ fontSize: "12px", color: "gray" }}>
+                <span style={{
+                  fontSize: "12px",
+                  color: chat.hasNew ? "green" : "gray",
+                  fontWeight: chat.hasNew ? "bold" : "normal"
+                }}>
                   {chat.lastMessage || "Sin mensajes"}
                 </span>
               </div>

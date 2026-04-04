@@ -152,6 +152,11 @@ export default function Navbar() {
                     Publicar propiedad
                   </Link>
 
+                  <Link to="/my-documents" onClick={() => setIsOpen(false)} className="menu-item">
+                    <FileText size={18} />
+                    Mis documentos
+                  </Link>
+
                   <Link to="/profile" onClick={() => setIsOpen(false)} className="menu-item">
                     <User size={18} />
                     Perfil

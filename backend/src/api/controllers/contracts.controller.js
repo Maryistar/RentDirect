@@ -87,3 +87,20 @@ export async function downloadPDF(req, res) {
     });
   }
 }
+
+export async function getMyDocuments(req, res) {
+  try {
+
+    if (!req.user) {
+      return res.status(401).json({ message: "No autorizado" });
+    }
+
+    const documents = await documentRepository.findByUserId(req.user.id);
+
+    res.json(documents);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error obteniendo documentos" });
+  }
+}
