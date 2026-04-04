@@ -53,12 +53,12 @@ router.delete("/me/avatar", authenticate, deleteAvatar);
 /* =========================
    RUTA PERFIL POR ID
 ========================= */
-router.get("/users/:id", authenticate, async (req, res) => {
+router.get("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
 
   try {
     const [users] = await db.query(
-      "SELECT id, name, email, avatar, role FROM users WHERE id = ?",
+      "SELECT id, name, email, avatar, role, score FROM users WHERE id = ?",
       [id]
     );
 

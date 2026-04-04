@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../../application/context/AuthContext";
+import { useParams } from "react-router-dom";
 
 const API_BASE = "http://localhost:4000/api/v1";
 
 export default function Profile() {
-  const { token } = useAuth();
+  const { token, user: authUser } = useAuth();
+  const { id } = useParams();
+
+  const isOwnProfile = !id;
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,7 +19,7 @@ export default function Profile() {
   const [editForm, setEditForm] = useState({ name: "", email: "" });
 
   /* =========================
-     CARGAR PERFIL
+     CARGAR PERFIL DINÁMICO
   ========================= */
   useEffect(() => {
     if (!token) {
@@ -24,11 +28,13 @@ export default function Profile() {
       return;
     }
 
-    console.log("TOKEN PROFILE:", token);
-
     async function loadProfile() {
       try {
-        const res = await fetch(`${API_BASE}/users/me`, {
+        const endpoint = isOwnProfile
+          ? `${API_BASE}/users/me`
+          : `${API_BASE}/users/${id}`;
+
+        const res = await fetch(endpoint, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -37,18 +43,19 @@ export default function Profile() {
         if (!res.ok) throw new Error("Error al cargar perfil");
 
         const data = await res.json();
-
-        // 🔥 FIX: soporta {data: user} o user directo
         const userData = data.data || data;
 
         setUser(userData);
-        setEditForm({
-          name: userData.name || "",
-          email: userData.email || "",
-        });
+
+        if (isOwnProfile) {
+          setEditForm({
+            name: userData.name || "",
+            email: userData.email || "",
+          });
+        }
 
       } catch (err) {
-        console.error("PROFILE ERROR:", err);
+        console.error(err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -56,12 +63,14 @@ export default function Profile() {
     }
 
     loadProfile();
-  }, [token]);
+  }, [token, id]);
 
   /* =========================
-     SUBIR FOTO
+     SUBIR FOTO (SOLO PROPIO)
   ========================= */
   async function handlePhotoUpload(e) {
+    if (!isOwnProfile) return;
+
     const file = e.target.files[0];
     if (!file) return;
 
@@ -73,9 +82,7 @@ export default function Profile() {
 
       const res = await fetch(`${API_BASE}/users/me/avatar`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
@@ -99,17 +106,15 @@ export default function Profile() {
      ELIMINAR FOTO
   ========================= */
   async function handleDeleteAvatar() {
+    if (!isOwnProfile) return;
+
     try {
       setPhotoLoading(true);
 
-      const res = await fetch(`${API_BASE}/users/me/avatar`, {
+      await fetch(`${API_BASE}/users/me/avatar`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      if (!res.ok) throw new Error("Error al eliminar imagen");
 
       setUser((prev) => ({ ...prev, avatar: null }));
 
@@ -124,6 +129,8 @@ export default function Profile() {
      GUARDAR EDICIÓN
   ========================= */
   async function handleSaveProfile() {
+    if (!isOwnProfile) return;
+
     try {
       const res = await fetch(`${API_BASE}/users/me`, {
         method: "PUT",
@@ -195,42 +202,48 @@ export default function Profile() {
                 </div>
               )}
 
-              <label className="absolute bottom-0 right-0 bg-black text-white text-xs px-3 py-1 rounded-full cursor-pointer hover:bg-gray-800 transition">
-                Cambiar
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handlePhotoUpload}
-                />
-              </label>
+              {isOwnProfile && (
+                <label className="absolute bottom-0 right-0 bg-black text-white text-xs px-3 py-1 rounded-full cursor-pointer">
+                  Cambiar
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                  />
+                </label>
+              )}
             </div>
 
             <div className="text-center md:text-left">
               <h2 className="text-3xl font-bold">{user?.name}</h2>
               <p className="text-gray-300">{user?.email}</p>
 
-              <div className="flex gap-3 mt-4 justify-center md:justify-start flex-wrap">
+              <div className="flex gap-3 mt-4 flex-wrap">
                 <span className="px-4 py-1 rounded-full bg-white/20 text-sm">
                   {user?.role === "owner"
                     ? "Propietario"
                     : "Inquilino"}
                 </span>
 
-                <button
-                  onClick={() => setEditOpen(true)}
-                  className="px-4 py-1 rounded-full bg-white text-black text-sm font-semibold hover:bg-gray-200 transition"
-                >
-                  Editar perfil
-                </button>
+                {isOwnProfile && (
+                  <>
+                    <button
+                      onClick={() => setEditOpen(true)}
+                      className="px-4 py-1 rounded-full bg-white text-black text-sm"
+                    >
+                      Editar perfil
+                    </button>
 
-                {user?.avatar && (
-                  <button
-                    onClick={handleDeleteAvatar}
-                    className="px-4 py-1 rounded-full bg-red-500 text-white text-sm hover:bg-red-600 transition"
-                  >
-                    Eliminar foto
-                  </button>
+                    {user?.avatar && (
+                      <button
+                        onClick={handleDeleteAvatar}
+                        className="px-4 py-1 rounded-full bg-red-500 text-white text-sm"
+                      >
+                        Eliminar foto
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -238,109 +251,37 @@ export default function Profile() {
         </div>
 
         {/* CONTENIDO */}
-        <div className="p-8 space-y-10">
-          <div className="bg-gray-50 p-6 rounded-2xl border shadow-sm">
-            <h3 className="font-semibold mb-3">Score</h3>
-            <div className="text-2xl font-bold mb-3">
-              ⭐ {user?.score ?? "--"}
-            </div>
-
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${scorePercent}%` }}
-                transition={{ duration: 0.8 }}
-                className="h-3 rounded-full bg-black"
-              />
-            </div>
+        <div className="p-8">
+          <h3 className="font-semibold mb-3">Score</h3>
+          <div className="text-2xl font-bold mb-3">
+            ⭐ {user?.score ?? "--"}
           </div>
 
-          <div>
-            <h3 className="font-semibold mb-4">
-              Actividad reciente
-            </h3>
-
-            {user?.activity && user.activity.length > 0 ? (
-              <ul className="space-y-3">
-                {user.activity.map((a, i) => (
-                  <li
-                    key={i}
-                    className="bg-gray-50 p-4 rounded-xl border text-sm"
-                  >
-                    {a}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-500">
-                No hay actividad reciente.
-              </p>
-            )}
+          <div className="w-full bg-gray-200 rounded-full h-3">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${scorePercent}%` }}
+              className="h-3 rounded-full bg-black"
+            />
           </div>
         </div>
       </motion.div>
 
-      {/* MODAL EDITAR */}
+      {/* MODAL */}
       <AnimatePresence>
-        {editOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-            onClick={() => setEditOpen(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white p-8 rounded-2xl w-full max-w-md"
-            >
-              <h3 className="text-lg font-semibold mb-4">
-                Editar perfil
-              </h3>
-
+        {editOpen && isOwnProfile && (
+          <motion.div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-xl w-80">
               <input
-                className="w-full border rounded-lg p-2 mb-3"
                 value={editForm.name}
                 onChange={(e) =>
-                  setEditForm({
-                    ...editForm,
-                    name: e.target.value,
-                  })
+                  setEditForm({ ...editForm, name: e.target.value })
                 }
-                placeholder="Nombre"
               />
-
-              <input
-                className="w-full border rounded-lg p-2 mb-5"
-                value={editForm.email}
-                onChange={(e) =>
-                  setEditForm({
-                    ...editForm,
-                    email: e.target.value,
-                  })
-                }
-                placeholder="Email"
-              />
-
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setEditOpen(false)}
-                  className="px-4 py-2 rounded-lg bg-gray-200"
-                >
-                  Cancelar
-                </button>
-
-                <button
-                  onClick={handleSaveProfile}
-                  className="px-4 py-2 rounded-lg bg-black text-white"
-                >
-                  Guardar
-                </button>
-              </div>
-            </motion.div>
+              <button onClick={handleSaveProfile}>
+                Guardar
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

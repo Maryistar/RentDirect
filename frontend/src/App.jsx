@@ -81,10 +81,14 @@ export default function App() {
 
           {/* PERFIL */}
           <Route
-            path="/profile"
+            path="/profile/:id"
             element={token ? <Profile /> : <Navigate to="/login" />}
           />
 
+          <Route
+            path="/profile"
+            element={token ? <Profile /> : <Navigate to="/login" />}
+          />
           {/* CHAT */}
           <Route
             path="/chat"

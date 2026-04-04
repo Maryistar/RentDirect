@@ -49,12 +49,18 @@ export async function createPropertyImage(data) {
   return result.insertId;
 }
 
-
-
-// 🔹 Buscar propiedad con imágenes
+// 
 export async function findByIdWithImages(id) {
   const [properties] = await db.query(
-    `SELECT * FROM properties WHERE id = ?`,
+    `SELECT 
+      p.*,
+      u.id AS owner_id,
+      u.name AS owner_name,
+      u.email AS owner_email,
+      u.avatar AS owner_photo
+     FROM properties p
+     JOIN users u ON p.owner_id = u.id
+     WHERE p.id = ?`,
     [id]
   );
 
@@ -84,6 +90,7 @@ export async function getAllAvailable() {
 
   return rows;
 }
+
 // 🔹 Property
 export async function findPropertyById(propertyId) {
   const [[property]] = await db.query(
@@ -166,6 +173,7 @@ export async function deleteProperty(id) {
   );
 }
 
+// 🔹 Cambiar estado
 export async function updateStatus(id, status) {
   await db.query(
     "UPDATE properties SET status = ? WHERE id = ?",
