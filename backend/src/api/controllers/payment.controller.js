@@ -4,6 +4,19 @@ import paypal from '@paypal/checkout-server-sdk';
 export const createOrder = async (req, res) => {
   try {
 
+    // 🔥 NUEVO (recibir tipo)
+    const { type } = req.body;
+    console.log("TIPO:", type);
+
+    // 🔥 NUEVO (definir precio dinámico)
+    let value = "5.00";
+    let description = "Publicación de propiedad";
+
+    if (type === "premium") {
+      value = "20.00";
+      description = "Plan Premium 🔥";
+    }
+
     const request = new paypal.orders.OrdersCreateRequest();
 
     request.prefer("return=representation");
@@ -14,8 +27,9 @@ export const createOrder = async (req, res) => {
         {
           amount: {
             currency_code: "USD",
-            value: "10.00",
+            value: value, // 👈 dinámico
           },
+          description: description, // 👈 opcional pero PRO
         },
       ],
     });

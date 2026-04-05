@@ -22,6 +22,7 @@ export default function CreateProperty() {
   const [description, setDescription] = useState("");
   const [images, setImages] = useState([]);
   const [preview, setPreview] = useState([]);
+  const [pendingProperty, setPendingProperty] = useState(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -114,40 +115,25 @@ export default function CreateProperty() {
   };
 
   async function handleSubmit() {
-    setLoading(true);
-    try {
-      const formData = new FormData();
+    const formData = new FormData();
 
-      formData.append("title", title);
+    formData.append("title", title);
+    const fullAddress = `${address}, ${neighborhood}`;
+    formData.append("address", fullAddress);
+    formData.append("price", price.replace(/\./g, ""));
+    formData.append("type", type);
+    formData.append("rooms", rooms);
+    formData.append("bathrooms", bathrooms);
+    formData.append("tags", JSON.stringify(tags));
+    formData.append("description", description);
 
-      const fullAddress = `${address}, ${neighborhood}`;
-      formData.append("address", fullAddress);
+    images.forEach((img) => formData.append("images", img));
 
-      formData.append("price", price.replace(/\./g, ""));
-      formData.append("type", type);
-      formData.append("rooms", rooms);
-      formData.append("bathrooms", bathrooms);
-      formData.append("tags", JSON.stringify(tags));
-      formData.append("description", description);
+    // 🔥 NO PUBLICAR TODAVÍA
+    setPendingProperty(formData);
 
-      images.forEach((img) => formData.append("images", img));
-
-      const response = await createProperty(formData);
-
-      // 🔥 SI NECESITA PAGO
-      if (response?.requirePayment) {
-        setShowPaymentModal(true);
-        return;
-      }
-
-      navigate("/my-properties");
-
-
-    } catch (err) {
-      setError("Error al publicar");
-    } finally {
-      setLoading(false);
-    }
+    // mostrar modal de pago
+    setShowPaymentModal(true);
   }
 
   const progress = (step / 3) * 100;
@@ -329,15 +315,21 @@ export default function CreateProperty() {
                 <div className="mt-4">
                   <PayPalButtons
                     createOrder={async () => {
-                      const order = await createPaypalOrder();
+                      const order = await createPaypalOrder("basic");
                       return order.id;
                     }}
-                    onApprove={async (data) => {
-                      console.log("PAGO APROBADO", data);
-
+                    onApprove={async () => {
                       alert("Pago exitoso 🔥");
 
-                      // luego aquí publicamos la propiedad
+                      try {
+                        await createProperty(pendingProperty);
+
+                        alert("Propiedad publicada ✅");
+                        navigate("/my-properties");
+
+                      } catch (err) {
+                        alert("Error creando propiedad");
+                      }
                     }}
                   />
                 </div>
@@ -358,7 +350,7 @@ export default function CreateProperty() {
                 <div className="mt-4">
                   <PayPalButtons
                     createOrder={async () => {
-                      const order = await createPaypalOrder(); // luego lo diferenciamos
+                      const order = await createPaypalOrder("premium"); // luego lo diferenciamos
                       return order.id;
                     }}
                     onApprove={async (data) => {
