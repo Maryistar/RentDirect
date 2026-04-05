@@ -1,5 +1,6 @@
 import * as userRepository from '../repositories/users.repository.js';
 import { uploadFile } from './files.service.js';
+import pool from "../config/db.js";
 
 /* ================================
    OBTENER USUARIO
@@ -17,13 +18,28 @@ export async function getUserById(userId) {
 /* ================================
    ACTUALIZAR PERFIL
 ================================ */
-export async function updateUser(userId, data) {
-  // Aquí puedes agregar validaciones futuras
+export const updateUser = async (id, data) => {
+  const { name, last_name, email, description } = data;
 
-  await userRepository.update(userId, data);
-
-  return await userRepository.findById(userId); // 🔥 devolvemos usuario actualizado
-}
+  await pool.query(
+    `
+    UPDATE users
+    SET 
+      name = ?, 
+      last_name = ?, 
+      email = ?, 
+      description = ?
+    WHERE id = ?
+    `,
+    [
+      name || null,
+      last_name || null,
+      email || null,
+      description || null,
+      id
+    ]
+  );
+};
 
 /* ================================
    SUBIR DOCUMENTO

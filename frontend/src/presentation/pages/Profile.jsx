@@ -26,6 +26,59 @@ export default function Profile() {
 
   const [photoLoading, setPhotoLoading] = useState(false);
 
+  /* ========================= EDIT PROFILE ========================= */
+  const [editMode, setEditMode] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    last_name: "",
+    email: "",
+    description: ""
+  });
+
+  const handleEditChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleUpdateProfile = async () => {
+  try {
+    setSaving(true);
+
+    const res = await fetch(`${API_BASE}/users/me`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(form),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+
+    setUser(data.data || data);
+
+    
+    setShowToast(true);
+
+    
+    setTimeout(() => {
+      setEditMode(false);
+    }, 300);
+
+    
+    setTimeout(() => {
+      setShowToast(false);
+    }, 2500);
+
+  } catch (err) {
+    alert(err.message);
+  } finally {
+    setSaving(false);
+  }
+};
+
   /* ========================= LOAD PROFILE ========================= */
   useEffect(() => {
     if (!token) {
@@ -45,7 +98,18 @@ export default function Profile() {
         });
 
         const data = await res.json();
-        setUser(data.data || data);
+        const userData = data.data || data;
+
+        setUser(userData);
+        console.log("USER DATA:", userData);
+
+        setForm({
+          name: userData.name || "",
+          last_name: userData.last_name || "",
+          email: userData.email || "",
+          description: userData.description || ""
+        });
+
       } catch (err) {
         setError(err.message);
       } finally {
@@ -249,23 +313,153 @@ export default function Profile() {
             </div>
 
             <div>
-              <h2 className="text-3xl font-bold">{user?.name}</h2>
+              <h2 className="text-3xl font-bold">
+                {user?.name} {user?.last_name}
+              </h2>
               <p>{user?.email}</p>
 
-              {isOwnProfile && user?.avatar && (
-                <button
-                  onClick={handleDeleteAvatar}
-                  className="mt-2 text-xs bg-red-500 px-3 py-1 rounded"
-                >
-                  Eliminar foto
-                </button>
+              {user?.description && (
+                <p className="text-sm mt-2 text-gray-300">
+                  {user.description}
+                </p>
+              )}
+
+              {isOwnProfile && (
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={() => setEditMode(!editMode)}
+                    className="bg-white text-black px-3 py-1 rounded text-xs"
+                  >
+                    Editar perfil
+                  </button>
+
+                  {user?.avatar && (
+                    <button
+                      onClick={handleDeleteAvatar}
+                      className="bg-red-500 px-3 py-1 rounded text-xs"
+                    >
+                      Eliminar foto
+                    </button>
+                  )}
+                </div>
               )}
             </div>
 
           </div>
         </div>
 
-        {/* RESTO IGUAL */}
+        {/* EDIT FORM */}
+        {editMode && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 40 }}
+              transition={{ duration: 0.25 }}
+              className="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6"
+            >
+
+              {/* HEADER */}
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold">Editar perfil</h3>
+                <button
+                  onClick={() => setEditMode(false)}
+                  className="text-gray-400 hover:text-black text-lg"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* FORM */}
+              <div className="space-y-4">
+
+                {/* NOMBRE */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Nombre
+                  </label>
+                  <input
+                    name="name"
+                    value={form.name}
+                    onChange={handleEditChange}
+                    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-black outline-none"
+                  />
+                </div>
+
+                {/* APELLIDO */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Apellido
+                  </label>
+                  <input
+                    name="last_name"
+                    value={form.last_name}
+                    onChange={handleEditChange}
+                    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-black outline-none"
+                  />
+                </div>
+
+                {/* EMAIL */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Correo electrónico
+                  </label>
+                  <input
+                    name="email"
+                    value={form.email}
+                    onChange={handleEditChange}
+                    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-black outline-none"
+                  />
+                </div>
+
+                {/* DESCRIPCIÓN */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Descripción
+                  </label>
+                  <textarea
+                    name="description"
+                    value={form.description}
+                    onChange={handleEditChange}
+                    rows={3}
+                    className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-black outline-none"
+                  />
+                </div>
+
+              </div>
+
+              {/* BOTONES */}
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={() => setEditMode(false)}
+                  className="px-4 py-2 rounded-lg border text-gray-600 hover:bg-gray-100"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  onClick={handleUpdateProfile}
+                  disabled={saving}
+                  className={`px-4 py-2 rounded-lg text-white transition-all duration-200
+                    ${saving ? "bg-gray-400 cursor-not-allowed" : "bg-black hover:bg-gray-800"}
+                  `}
+                >
+                  {saving ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                      Guardando...
+                    </span>
+                  ) : (
+                    "Guardar cambios"
+                  )}
+                </button>
+              </div>
+
+            </motion.div>
+          </div>
+        )}
+              
         <div className="p-8">
 
           <h3 className="font-semibold mb-1">Calificación</h3>
