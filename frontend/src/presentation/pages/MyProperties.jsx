@@ -55,15 +55,12 @@ export default function MyProperties() {
     }
   }
 
-  //  ESTADO PROPIEDAD
   function getPropertyStatus(property) {
     const s = property.status?.toLowerCase();
-
     if (s === "rented") return "ARRENDADA";
     return "DISPONIBLE";
   }
 
-  //  ESTADO APLICACIÓN EN ESPAÑOL
   function translateStatus(status) {
     switch (status) {
       case "pending": return "Pendiente";
@@ -117,11 +114,14 @@ export default function MyProperties() {
 
       <div className="max-w-7xl mx-auto">
 
-        <h1 className="text-3xl font-bold mb-10">Mis Propiedades</h1>
+        {/* TITULO CENTRADO */}
+        <h1 className="text-4xl font-bold text-center mb-12 text-slate-800 animate-fade-in-down">
+          Mis Propiedades
+        </h1>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-          {properties.map((property) => {
+          {properties.map((property, index) => {
 
             const image = property.thumbnail
               ? `http://localhost:4000/${property.thumbnail}`
@@ -130,30 +130,30 @@ export default function MyProperties() {
             return (
               <div
                 key={property.id}
-                className="bg-white rounded-2xl shadow-md hover:shadow-xl transition overflow-hidden"
+                className="bg-white rounded-2xl shadow-md hover:shadow-2xl 
+                transition-all duration-300 overflow-hidden 
+                transform hover:-translate-y-1 animate-fade-in-up"
+                style={{ animationDelay: `${index * 0.05}s` }}
               >
 
                 {image && (
                   <img
                     src={image}
                     alt={property.title}
-                    className="w-full h-52 object-cover"
+                    className="w-full h-52 object-cover transition-transform duration-300 hover:scale-105"
                   />
                 )}
 
                 <div className="p-5">
 
-                  {/* PRECIO */}
-                  <p className="text-blue-600 font-bold text-lg">
+                  <p className="text-blue-700 font-bold text-lg">
                     ${Number(property.price).toLocaleString("es-CO")}
                   </p>
 
-                  {/* TITULO */}
-                  <h3 className="font-bold text-lg">
+                  <h3 className="font-bold text-lg text-slate-800">
                     {property.title}
                   </h3>
 
-                  {/* ESTADO */}
                   <span className={`inline-block mt-2 px-3 py-1 text-xs font-semibold rounded-full
                     ${getPropertyStatus(property) === "ARRENDADA"
                       ? "bg-green-100 text-green-700"
@@ -161,27 +161,28 @@ export default function MyProperties() {
                     {getPropertyStatus(property)}
                   </span>
 
-                  {/* DIRECCION */}
                   <p className="text-gray-500 text-sm mt-1">
                     {property.address}
                   </p>
 
-                  {/* INFO */}
                   <div className="flex gap-4 mt-2 text-sm text-gray-600">
                     <span>{property.rooms || 0} hab</span>
                     <span>{property.bathrooms || 0} baños</span>
                     <span>{property.type}</span>
                   </div>
 
-                  {/* ACCIONES */}
+                  {/*  ACCIONES */}
                   <div className="flex justify-between items-center mt-4">
 
                     <Link
-                      to={`/properties/${property.id}`}
-                      className="text-blue-600 text-sm hover:underline"
-                    >
-                      Ver propiedad →
-                    </Link>
+                        to={`/properties/${property.id}`}
+                        state={{ from: "/my-properties" }}
+                        className="text-sm px-4 py-1 rounded-full 
+                        bg-blue-50 text-blue-700 
+                        hover:bg-blue-100 transition"
+                      >
+                        Ver propiedad
+                      </Link>
 
                     <div className="flex gap-2">
                       <button
@@ -227,7 +228,9 @@ export default function MyProperties() {
 
                           <button
                             onClick={() => navigate(`/profile/${app.tenant_id}`)}
-                            className="text-xs bg-black text-white px-2 py-1 rounded"
+                            className="text-xs px-3 py-1 rounded-full 
+                            bg-gray-200 text-gray-700 
+                            hover:bg-gray-300 transition"
                           >
                             Ver perfil
                           </button>
@@ -286,6 +289,41 @@ export default function MyProperties() {
         )}
 
       </div>
+
+      {/* ANIMACIONES */}
+      <style>
+        {`
+          .animate-fade-in-down {
+            animation: fadeInDown 0.6s ease;
+          }
+
+          .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease;
+          }
+
+          @keyframes fadeInDown {
+            from {
+              opacity: 0;
+              transform: translateY(-20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}
+      </style>
 
     </div>
   );
