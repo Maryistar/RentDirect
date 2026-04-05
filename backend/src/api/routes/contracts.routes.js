@@ -10,5 +10,6 @@ router.get("/chat/:chatId", controller.getByChat);
 router.put("/:id/accept", authenticate, controller.accept);
 router.get("/:id/pdf", controller.downloadPDF);
 router.put("/:id/reject", authenticate, controller.reject);
+router.delete("/:id", authenticate, controller.remove);
 
 export default router;

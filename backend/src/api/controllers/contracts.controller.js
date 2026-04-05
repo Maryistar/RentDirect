@@ -145,3 +145,20 @@ export async function reject(req, res) {
     res.status(500).json({ message: "Error al rechazar contrato" });
   }
 }
+
+export async function remove(req, res) {
+  try {
+    const { id } = req.params;
+
+    await contractService.deleteContract(id);
+
+    res.json({ message: "Contrato eliminado correctamente" });
+
+  } catch (error) {
+    console.error("💥 ERROR DELETE:", error);
+
+    res.status(500).json({
+      message: "Error eliminando contrato"
+    });
+  }
+}

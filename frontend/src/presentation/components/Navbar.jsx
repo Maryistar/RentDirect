@@ -221,7 +221,7 @@ export default function Navbar() {
 
                   <Link to="/admin" onClick={() => setIsOpen(false)} className="menu-item">
                     <User size={18} />
-                    Panel Admin 🔥
+                    Panel Admin 
                   </Link>
 
                   <div className="border-t my-2"></div>
