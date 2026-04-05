@@ -44,3 +44,7 @@ export async function findByUserId(userId) {
 
   return rows;
 }
+export const fetchDocuments = async () => {
+  const [rows] = await db.query("SELECT * FROM documents"); // ajusta según tu tabla
+  return rows;
+};

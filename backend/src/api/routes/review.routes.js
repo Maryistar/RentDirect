@@ -1,5 +1,5 @@
 import express from "express";
-import { authenticate } from "./users.routes.js";
+import { authenticate } from "../../middlewares/auth.middleware.js";
 import {
   createReview,
   getReviewsByUser,

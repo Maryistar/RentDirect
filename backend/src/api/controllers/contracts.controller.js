@@ -1,5 +1,7 @@
 import * as contractService from '../../services/contracts.service.js';
 import * as documentRepository from '../../repositories/documents.repository.js';
+import { fetchContracts } from "../../repositories/contracts.repository.js";
+import { fetchDocuments } from "../../repositories/documents.repository.js";
 
 export async function create(req, res) {
   try {

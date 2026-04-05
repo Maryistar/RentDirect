@@ -114,3 +114,8 @@ export async function findExistingContract(propertyId, tenantId) {
 
   return rows[0];
 }
+
+export const fetchContracts = async () => {
+  const [rows] = await db.query("SELECT * FROM contracts WHERE status = 1");
+  return rows;
+};
