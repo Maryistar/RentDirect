@@ -26,7 +26,6 @@ export default function Profile() {
 
   const [photoLoading, setPhotoLoading] = useState(false);
 
-  /* ========================= EDIT PROFILE ========================= */
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -42,44 +41,35 @@ export default function Profile() {
   };
 
   const handleUpdateProfile = async () => {
-  try {
-    setSaving(true);
+    try {
+      setSaving(true);
 
-    const res = await fetch(`${API_BASE}/users/me`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(form),
-    });
+      const res = await fetch(`${API_BASE}/users/me`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(form),
+      });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
 
-    setUser(data.data || data);
+      setUser(data.data || data);
 
-    
-    setShowToast(true);
+      setShowToast(true);
 
-    
-    setTimeout(() => {
-      setEditMode(false);
-    }, 300);
+      setTimeout(() => setEditMode(false), 300);
+      setTimeout(() => setShowToast(false), 2500);
 
-    
-    setTimeout(() => {
-      setShowToast(false);
-    }, 2500);
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
-  } catch (err) {
-    alert(err.message);
-  } finally {
-    setSaving(false);
-  }
-};
-
-  /* ========================= LOAD PROFILE ========================= */
   useEffect(() => {
     if (!token) {
       setLoading(false);
@@ -101,7 +91,6 @@ export default function Profile() {
         const userData = data.data || data;
 
         setUser(userData);
-        console.log("USER DATA:", userData);
 
         setForm({
           name: userData.name || "",
@@ -120,7 +109,6 @@ export default function Profile() {
     loadProfile();
   }, [token, id]);
 
-  /* ========================= AVATAR ========================= */
   const handlePhotoUpload = async (e) => {
     if (!isOwnProfile) return;
 
@@ -171,7 +159,6 @@ export default function Profile() {
     }
   };
 
-  /* ========================= REVIEWS ========================= */
   const loadReviews = async () => {
     const userId = id || authUser?.id;
     if (!userId) return;
@@ -316,6 +303,14 @@ export default function Profile() {
               <h2 className="text-3xl font-bold">
                 {user?.name} {user?.last_name}
               </h2>
+
+              
+              {user?.role && (
+                <span className="inline-block mt-1 text-xs bg-white/20 px-2 py-1 rounded">
+                  {user.role === "owner" ? "Propietario" : "Inquilino"}
+                </span>
+              )}
+
               <p>{user?.email}</p>
 
               {user?.description && (
@@ -347,6 +342,8 @@ export default function Profile() {
 
           </div>
         </div>
+
+        
 
         {/* EDIT FORM */}
         {editMode && (
