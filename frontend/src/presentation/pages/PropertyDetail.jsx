@@ -2,14 +2,22 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getPropertyById } from "../../infrastructure/api/properties";
 import { applyToProperty } from "../../infrastructure/api/applications";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function PropertyDetail() {
   const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const from = location.state?.from;
 
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [applying, setApplying] = useState(false);
+
+  // CARRUSEL STATE
+  const [currentImage, setCurrentImage] = useState(0);
 
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -18,8 +26,6 @@ export default function PropertyDetail() {
       try {
         const data = await getPropertyById(id);
         const propertyData = data.data || data;
-
-        console.log("PROPERTY DATA:", propertyData);
 
         setProperty(propertyData);
       } catch (err) {
@@ -32,6 +38,19 @@ export default function PropertyDetail() {
 
     loadProperty();
   }, [id]);
+
+  //  AUTO SLIDE
+  useEffect(() => {
+    if (!property?.images?.length) return;
+
+    const interval = setInterval(() => {
+      setCurrentImage((prev) =>
+        prev === property.images.length - 1 ? 0 : prev + 1
+      );
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [property]);
 
   const handleApply = async () => {
     try {
@@ -51,42 +70,81 @@ export default function PropertyDetail() {
 
   const ownerId = property.owner_id;
 
-  console.log("OWNER ID:", ownerId);
-  console.log("PROPERTY COMPLETA:", property);
-
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <Link
-        to="/properties"
-        className="text-blue-600 hover:underline mb-6 inline-block"
+
+      {/*  BOTÓN VOLVER  */}
+      <button
+        onClick={() => navigate(from || "/properties")}
+        className="mb-6 px-6 py-2 rounded-full 
+        bg-blue-700 text-white font-semibold 
+        shadow-md hover:bg-blue-800 hover:scale-105 
+        transition-all duration-300"
       >
-        ← Volver a propiedades
-      </Link>
+        Volver 
+      </button>
 
-      {/* IMÁGENES */}
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
+      {/*  CARRUSEL */}
+      <div className="relative mb-8">
+
         {property.images && property.images.length > 0 ? (
-          property.images.map((img, index) => {
-            const imageUrl = img?.url || img;
+          <>
+            {/* IMAGEN ACTUAL */}
+            <img
+              src={
+                property.images[currentImage]?.url?.startsWith("http")
+                  ? property.images[currentImage].url
+                  : `http://localhost:4000/${property.images[currentImage]?.url || property.images[currentImage]}`
+              }
+              alt="propiedad"
+              className="w-full h-[420px] object-cover rounded-2xl transition-all duration-700"
+            />
 
-            const fullImageUrl = imageUrl.startsWith("http")
-              ? imageUrl
-              : `http://localhost:4000/${imageUrl}`;
+            {/* BOTONES */}
+            <button
+              onClick={() =>
+                setCurrentImage((prev) =>
+                  prev === 0 ? property.images.length - 1 : prev - 1
+                )
+              }
+              className="absolute left-4 top-1/2 -translate-y-1/2 
+              bg-white/80 px-3 py-2 rounded-full shadow hover:scale-110"
+            >
+              ‹
+            </button>
 
-            return (
-              <img
-                key={index}
-                src={fullImageUrl}
-                alt="propiedad"
-                className="w-full h-72 object-cover rounded-xl"
-              />
-            );
-          })
+            <button
+              onClick={() =>
+                setCurrentImage((prev) =>
+                  prev === property.images.length - 1 ? 0 : prev + 1
+                )
+              }
+              className="absolute right-4 top-1/2 -translate-y-1/2 
+              bg-white/80 px-3 py-2 rounded-full shadow hover:scale-110"
+            >
+              ›
+            </button>
+
+            {/* INDICADORES */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              {property.images.map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-3 h-3 rounded-full ${
+                    i === currentImage
+                      ? "bg-white"
+                      : "bg-white/50"
+                  }`}
+                />
+              ))}
+            </div>
+          </>
         ) : (
           <div className="h-72 bg-gray-200 flex items-center justify-center rounded-xl">
             Sin imágenes
           </div>
         )}
+
       </div>
 
       {/* INFO */}
@@ -104,7 +162,6 @@ export default function PropertyDetail() {
         <span>🏠 {property.type}</span>
       </div>
 
-      {/* TAGS */}
       {property.tags && property.tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-6">
           {property.tags.map((tag, i) => (
@@ -118,32 +175,26 @@ export default function PropertyDetail() {
         </div>
       )}
 
-      {/* DESCRIPCIÓN */}
       <p className="text-gray-700 leading-relaxed">
         {property.description}
       </p>
 
-      {/* 🔥 PROPIETARIO MEJORADO */}
+      {/* OWNER */}
       <div className="mt-12 bg-white shadow-lg rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 border border-gray-100">
         
-        {/* INFO OWNER */}
         <div className="flex items-center gap-5 w-full md:w-auto">
-          <div className="relative">
-            <img
-              src={
-                property.owner_photo
-                  ? property.owner_photo.startsWith("http")
-                    ? property.owner_photo
-                    : `http://localhost:4000/${property.owner_photo}`
-                  : "https://ui-avatars.com/api/?name=" +
-                    encodeURIComponent(property.owner_name || "Owner")
-              }
-              alt="owner"
-              className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 shadow-sm"
-            />
-
-            <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></span>
-          </div>
+          <img
+            src={
+              property.owner_photo
+                ? property.owner_photo.startsWith("http")
+                  ? property.owner_photo
+                  : `http://localhost:4000/${property.owner_photo}`
+                : "https://ui-avatars.com/api/?name=" +
+                  encodeURIComponent(property.owner_name || "Owner")
+            }
+            alt="owner"
+            className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 shadow-sm"
+          />
 
           <div>
             <p className="font-semibold text-lg text-gray-800">
@@ -153,19 +204,14 @@ export default function PropertyDetail() {
             <p className="text-gray-500 text-sm">
               {property.owner_email}
             </p>
-
-            <p className="text-xs text-gray-400 mt-1">
-              Propietario verificado
-            </p>
           </div>
         </div>
 
-        {/* BOTÓN PERFIL */}
         <div className="w-full md:w-auto">
           {ownerId ? (
             <Link
               to={`/profile/${ownerId}`}
-              className="px-6 py-2 rounded-lg bg-gray-900 text-white hover:bg-black transition-all duration-200 shadow-sm w-full md:w-auto text-center block"
+              className="px-6 py-2 rounded-lg bg-gray-900 text-white hover:bg-black transition"
             >
               Ver perfil
             </Link>
@@ -177,7 +223,7 @@ export default function PropertyDetail() {
         </div>
       </div>
 
-      {/* BOTÓN APLICAR */}
+      {/* APPLY */}
       {user?.role === "tenant" && (
         <button
           onClick={handleApply}

@@ -51,6 +51,7 @@ export default function CreateProperty() {
     "Caldas",
     "Bello",
     "Robledo",
+    "Santa Cruz",
     "Popular",
     "Santo Domingo Savio",
     "Belén",

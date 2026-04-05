@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; 
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../application/context/AuthContext"; // 🔹 Importamos contexto
+import { useAuth } from "../../application/context/AuthContext";
 
 const MyApplications = () => {
   const [applications, setApplications] = useState([]);
   const [activeTab, setActiveTab] = useState("EN_PROCESO");
 
   const navigate = useNavigate();
-  const { token, user } = useAuth(); // 🔹 Traemos token y usuario del contexto
+  const { token, user } = useAuth();
 
   useEffect(() => {
-    if (token) fetchApplications(); // 🔹 Solo intentar si hay token
+    if (token) fetchApplications();
   }, [token]);
 
   const fetchApplications = async () => {
@@ -19,13 +19,13 @@ const MyApplications = () => {
         "http://localhost:4000/api/v1/applications/me",
         {
           headers: {
-            Authorization: `Bearer ${token}`, // 🔹 Usamos token del contexto
+            Authorization: `Bearer ${token}`,
           },
         }
       );
 
       const data = await response.json();
-      console.log("DATA BACKEND:", data); // 🔥 DEBUG
+      console.log("DATA BACKEND:", data);
       setApplications(data.data || data);
     } catch (error) {
       console.error("Error cargando aplicaciones", error);
@@ -66,7 +66,7 @@ const MyApplications = () => {
         {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${token}`, // 🔹 Usamos token del contexto
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -78,86 +78,169 @@ const MyApplications = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-semibold mb-6">
-        Mis aplicaciones
-      </h1>
+    <div className="min-h-screen bg-slate-100 py-12 px-6">
 
-      {/* TABS */}
-      <div className="flex gap-4 mb-8">
-        {["EN_PROCESO", "ARRENDADA", "RECHAZADA"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-5 py-2 rounded-lg font-medium transition ${
-              activeTab === tab
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 text-gray-700"
-            }`}
-          >
-            {tab.replace("_", " ")}
-          </button>
-        ))}
-      </div>
+      <div className="max-w-6xl mx-auto">
 
-      {/* LISTADO */}
-      <div className="space-y-6">
-        {filteredApplications.map((app) => {
-          const uiStatus = mapStatusToUI(app.status);
+        {/* HEADER */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-bold text-slate-800 animate-fade-in-down">
+            Mis aplicaciones
+          </h1>
+        </div>
 
-          return (
-            <div
-              key={app.id}
-              className="bg-white rounded-xl shadow p-6"
+        {/* TABS MODERNOS */}
+        <div className="flex justify-center mb-10 flex-wrap gap-3">
+          {["EN_PROCESO", "ARRENDADA", "RECHAZADA"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-6 py-2 rounded-full font-medium transition
+              ${
+                activeTab === tab
+                  ? "bg-blue-800 text-white shadow"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+              }`}
             >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-medium">
-                  {app.propertyTitle || "Propiedad"}
-                </h3>
+              {tab.replace("_", " ")}
+            </button>
+          ))}
+        </div>
 
-                <span
-                  className={`px-4 py-1 rounded-full text-sm font-semibold ${getBadgeStyle(
-                    uiStatus
-                  )}`}
-                >
-                  {uiStatus.replace("_", " ")}
-                </span>
-              </div>
+        {/* GRID DE CARDS */}
+        <div className="grid md:grid-cols-2 gap-6">
 
-              <p className="mb-2">
-                <strong>Mensaje:</strong> {app.message || "Sin mensaje"}
-              </p>
+          {filteredApplications.map((app, index) => {
+            const uiStatus = mapStatusToUI(app.status);
 
-              <p className="text-gray-500 text-sm mb-4">
-                Aplicado el{" "}
-                {app.createdAt
-                  ? new Date(app.createdAt).toLocaleDateString()
-                  : "Fecha no disponible"}
-              </p>
+            // 🔥 IMAGEN PREVIEW
+            const image = app.thumbnail
+              ? `http://localhost:4000/${app.thumbnail}`
+              : null;
 
-              <div className="flex justify-between items-center">
-                <button
-                  onClick={() =>
-                    navigate(`/properties/${app.property_id}`)
-                  }
-                  className="text-blue-600 font-medium hover:underline"
-                >
-                  Ver propiedad →
-                </button>
+            return (
+              <div
+                key={app.id}
+                className="bg-white rounded-2xl shadow-md hover:shadow-xl 
+                transition-all duration-300 overflow-hidden 
+                animate-fade-in-up"
+                style={{ animationDelay: `${index * 0.05}s` }}
+              >
 
-                {uiStatus === "EN_PROCESO" && (
-                  <button
-                    onClick={() => handleWithdraw(app.id)}
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-                  >
-                    Retirar
-                  </button>
+                {/* IMAGEN */}
+                {image && (
+                  <img
+                    src={image}
+                    alt="property"
+                    className="w-full h-48 object-cover"
+                  />
                 )}
+
+                <div className="p-5">
+
+                  {/* HEADER CARD */}
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-lg font-semibold text-slate-800">
+                      {app.propertyTitle || "Propiedad"}
+                    </h3>
+
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${getBadgeStyle(
+                        uiStatus
+                      )}`}
+                    >
+                      {uiStatus.replace("_", " ")}
+                    </span>
+                  </div>
+
+                  {/* INFO */}
+                  <p className="text-gray-600 text-sm mb-2">
+                    <strong>Mensaje:</strong> {app.message || "Sin mensaje"}
+                  </p>
+
+                  <p className="text-gray-400 text-xs mb-4">
+                    Aplicado el{" "}
+                    {app.createdAt
+                      ? new Date(app.createdAt).toLocaleDateString()
+                      : "Fecha no disponible"}
+                  </p>
+
+                  {/* ACCIONES */}
+                  <div className="flex justify-between items-center">
+
+                    <button
+                      onClick={() =>
+                        navigate(`/properties/${app.property_id}`, {
+                          state: { from: "/my-applications" },
+                        })
+                      }
+                      className="text-blue-700 font-medium hover:underline"
+                    >
+                      Ver propiedad 
+                    </button>
+
+                    {uiStatus === "EN_PROCESO" && (
+                      <button
+                        onClick={() => handleWithdraw(app.id)}
+                        className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+                      >
+                        Retirar
+                      </button>
+                    )}
+
+                  </div>
+
+                </div>
+
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+
+        {/* EMPTY */}
+        {filteredApplications.length === 0 && (
+          <p className="text-center text-gray-500 mt-10">
+            No hay aplicaciones en esta categoría
+          </p>
+        )}
+
       </div>
+
+      {/* ANIMACIONES */}
+      <style>
+        {`
+          .animate-fade-in-down {
+            animation: fadeInDown 0.6s ease;
+          }
+
+          .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease;
+          }
+
+          @keyframes fadeInDown {
+            from {
+              opacity: 0;
+              transform: translateY(-20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}
+      </style>
+
     </div>
   );
 };

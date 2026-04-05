@@ -66,6 +66,7 @@ export default function Properties() {
     "Bello",
     "Belen",
     "Robledo",
+    "Santa Cruz",
     "Popular",
     "Santo Domingo Savio",
     "Castilla",
