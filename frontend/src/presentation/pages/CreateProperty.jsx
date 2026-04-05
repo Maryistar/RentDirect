@@ -22,6 +22,8 @@ export default function CreateProperty() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
 
   const propertyTypes = [
     "Casa",
@@ -111,8 +113,17 @@ export default function CreateProperty() {
 
       images.forEach((img) => formData.append("images", img));
 
-      await createProperty(formData);
+      const response = await createProperty(formData);
+
+      // 🔥 SI NECESITA PAGO
+      if (response?.requirePayment) {
+        setShowPaymentModal(true);
+        return;
+      }
+
       navigate("/my-properties");
+
+
     } catch (err) {
       setError("Error al publicar");
     } finally {
@@ -121,6 +132,9 @@ export default function CreateProperty() {
   }
 
   const progress = (step / 3) * 100;
+
+  
+
 
   return (
     <div className="min-h-screen bg-slate-100 py-16 px-6">
@@ -265,6 +279,51 @@ export default function CreateProperty() {
           </div>
         </div>
       </div>
+
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
+
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">
+              🚫 Publicación gratuita usada
+            </h2>
+
+            <p className="text-gray-600 mb-6">
+              Ya usaste tu publicación gratis.
+              Para continuar, debes elegir una opción:
+            </p>
+
+            <div className="flex flex-col gap-4">
+
+              <button
+                onClick={() => {
+                  console.log("Pagar por publicación");
+                }}
+                className="bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition"
+              >
+                💳 Pagar por publicación
+              </button>
+
+              <button
+                onClick={() => {
+                  console.log("Plan premium");
+                }}
+                className="bg-purple-600 text-white py-2 rounded-xl hover:bg-purple-700 transition"
+              >
+                ⭐ Comprar plan premium
+              </button>
+
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="text-gray-500 text-sm mt-2"
+              >
+                Cancelar
+              </button>
+
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -40,8 +40,22 @@ export async function createProperty(data, user, files) {
     }
   }
 
+
+   // 🔥 VALIDACIÓN DE PUBLICACIONES GRATIS
+  const totalProperties = await repo.countByOwner(user.id);
+
+  if (totalProperties >= 1) {
+    return {
+      requirePayment: true,
+      message: "Debes pagar para publicar otra propiedad"
+    };
+  }
+
   return { id: propertyId };
 }
+
+ 
+
 
 // 🔹 Listar disponibles
 export async function listAvailable() {

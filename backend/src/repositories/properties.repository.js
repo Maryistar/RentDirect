@@ -36,6 +36,18 @@ export async function createProperty(data) {
   return result.insertId;
 }
 
+// 🔹 Contar propiedades del owner
+export async function countByOwner(ownerId) {
+  const [[result]] = await db.query(
+    `SELECT COUNT(*) as total 
+     FROM properties 
+     WHERE owner_id = ?`,
+    [ownerId]
+  );
+
+  return result.total;
+}
+
 // 🔹 Crear imagen
 export async function createPropertyImage(data) {
   const [result] = await db.query(
@@ -180,3 +192,4 @@ export async function updateStatus(id, status) {
     [status, id]
   );
 }
+
