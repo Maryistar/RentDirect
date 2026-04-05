@@ -7,7 +7,7 @@ import { generateContractPDF } from "../utils/pdf.js";
 import fs from "fs";
 import path from "path";
 import * as userRepository from "../repositories/users.repository.js";
-
+import db from "../config/db.js";
 
 
 export async function createContract(data, userId) {
@@ -32,7 +32,7 @@ export async function createContract(data, userId) {
     throw { status: 403, message: 'Only owner can create contract' };
   }
 
-  // 🔥 Obtener datos reales
+  //  Obtener datos reales
   const property = await propertyRepository.findById(chat.property_id);
   const owner = await userRepository.findById(chat.owner_id);
   const tenant = await userRepository.findById(chat.tenant_id);
@@ -79,11 +79,11 @@ export async function getContractByChat(chatId) {
 export async function acceptContract(id, userId) {
   const contract = await contractRepository.findById(id);
 
-  // 🔥 TRAER USUARIOS AQUÍ
+  // 
   const owner = await userRepository.findById(contract.owner_id);
   const tenant = await userRepository.findById(contract.tenant_id);
 
-  // 🔥 INYECTAR DATOS AL CONTRACT
+  // 
   contract.owner_name = owner.name;
   contract.tenant_name = tenant.name;
 
@@ -111,7 +111,7 @@ export async function acceptContract(id, userId) {
     );
   }
 
-  // 🔥 4️⃣ GENERAR PDF UNA SOLA VEZ
+  // 
   const pdf = generateContractPDF(contract);
 
   await documentRepository.createDocument({
@@ -121,7 +121,7 @@ export async function acceptContract(id, userId) {
     type: "contract"
   });
 
-  // 🔹 🔥 NUEVO: para owner
+  // 
   await documentRepository.createDocument({
     contract_id: contract.id,
     user_id: contract.owner_id,
@@ -135,3 +135,10 @@ export async function acceptContract(id, userId) {
 export async function getContractById(id) {
   return await contractRepository.findById(id);
 }
+
+export const rejectContract = async (id) => {
+  await db.query(
+    "UPDATE contracts SET status = 'rejected' WHERE id = ?",
+    [id]
+  );
+};

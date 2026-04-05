@@ -20,7 +20,6 @@ export async function createContract(data) {
     terminationClause,
 
     terms,
-    // 🔥 AGREGA ESTO
     ownerName,
     tenantName,
     ownerDocument,
@@ -45,7 +44,6 @@ export async function createContract(data) {
      repairs_clause,
      termination_clause,
      terms,
-     -- 🔥 NUEVOS CAMPOS
      owner_name,
      tenant_name,
      owner_document,
@@ -68,7 +66,6 @@ export async function createContract(data) {
       repairsClause,
       terminationClause,
       terms,
-      // 🔥 ESTO ES LO QUE TE FALTABA
       ownerName,
       tenantName,
       ownerDocument,
@@ -116,6 +113,7 @@ export async function findExistingContract(propertyId, tenantId) {
 }
 
 export const fetchContracts = async () => {
-  const [rows] = await db.query("SELECT * FROM contracts WHERE status = 1");
-  return rows;
+  const [rows] = await db.query("SELECT * FROM contracts");
+
+  return rows; 
 };

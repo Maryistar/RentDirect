@@ -86,7 +86,10 @@ export default function Admin() {
           <p className="text-gray-500 mb-4">
             Administrar propiedades publicadas
           </p>
-          <button className="bg-black text-white px-4 py-2 rounded-lg">
+         <button
+            onClick={() => navigate("/admin/properties")}
+            className="bg-black text-white px-4 py-2 rounded-lg"
+          >
             Ir a propiedades
           </button>
         </div>
@@ -96,7 +99,10 @@ export default function Admin() {
           <p className="text-gray-500 mb-4">
             Revisar contratos activos
           </p>
-          <button className="bg-black text-white px-4 py-2 rounded-lg">
+          <button
+            onClick={() => navigate("/admin/contracts")}
+            className="bg-black text-white px-4 py-2 rounded-lg"
+          >
             Ir a contratos
           </button>
         </div>

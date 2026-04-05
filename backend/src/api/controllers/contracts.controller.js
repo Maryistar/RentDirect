@@ -2,6 +2,7 @@ import * as contractService from '../../services/contracts.service.js';
 import * as documentRepository from '../../repositories/documents.repository.js';
 import { fetchContracts } from "../../repositories/contracts.repository.js";
 import { fetchDocuments } from "../../repositories/documents.repository.js";
+import path from "path";
 
 export async function create(req, res) {
   try {
@@ -54,8 +55,8 @@ export async function accept(req, res) {
     const { id } = req.params;
 
     const result = await contractService.acceptContract(id, req.user.id);
-    await fetchContracts(); // 🔥 para ver "active"
-    await fetchDocuments(); // 🔥 para ver el nuevo documento
+    await fetchContracts(); //  para ver "active"
+    await fetchDocuments(); // para ver el nuevo documento
 
     res.json(result);
 
@@ -75,11 +76,14 @@ export async function downloadPDF(req, res) {
 
     const document = await documentRepository.findByContractId(id);
 
-    if (!document) {
-      return res.status(404).json({ message: "Documento no encontrado" });
-    }
+   if (!document) {
+    return res.status(404).json({
+      message: "Este contrato no tiene PDF generado"
+    });
+  }
 
-    const filePath = document.url.replace("http://localhost:4000/", "");
+    const relativePath = document.url.replace("http://localhost:4000/", "");
+    const filePath = path.resolve(relativePath);
 
     res.download(filePath);
 
@@ -106,5 +110,38 @@ export async function getMyDocuments(req, res) {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error obteniendo documentos" });
+  }
+}
+
+export async function getAll(req, res) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "No autorizado" });
+    }
+
+    const contracts = await fetchContracts();
+
+    res.json(contracts);
+
+  } catch (error) {
+    console.error(" ERROR GET ALL CONTRACTS:", error);
+
+    res.status(500).json({
+      message: "Error obteniendo contratos"
+    });
+  }
+}
+
+export async function reject(req, res) {
+  try {
+    const { id } = req.params;
+
+    await contractService.rejectContract(id);
+
+    res.json({ message: "Contrato rechazado" });
+
+  } catch (error) {
+    console.error("💥 ERROR REJECT:", error);
+    res.status(500).json({ message: "Error al rechazar contrato" });
   }
 }
