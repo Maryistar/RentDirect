@@ -432,7 +432,7 @@ function StepTwo({
 
       <div>
         <label className="block mb-3 text-sm font-semibold">
-          Características
+          Caracteristicas
         </label>
         <div className="flex flex-wrap gap-3">
           {availableTags.map((tag) => (
