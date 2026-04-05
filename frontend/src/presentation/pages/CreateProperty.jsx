@@ -41,11 +41,14 @@ export default function CreateProperty() {
     "El Poblado",
     "Laureles",
     "Villa Hermosa",
+    "Manrique",
     "San Javier",
     "Doce De Octubre",
     "Envigado",
     "Itagüi",
     "Sabaneta",
+    "La Estrella",
+    "Caldas",
     "Bello",
     "Robledo",
     "Popular",
@@ -55,7 +58,9 @@ export default function CreateProperty() {
     "Guayabal",
     "Castilla",
     "Aranjuez",
-    "Manrique",
+    "Copacabana",
+    "Girardota",
+    "Barbosa",
   ];
 
   const availableTags = [

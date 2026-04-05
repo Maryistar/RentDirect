@@ -55,11 +55,14 @@ export default function Properties() {
     "El Poblado",
     "Laureles",
     "Villa Hermosa",
+    "Manrique",
     "Doce De Octubre",
     "San Javier",
     "Envigado",
     "Itagüi",
     "Sabaneta",
+    "La Estrella",
+    "Caldas",
     "Bello",
     "Belen",
     "Robledo",
@@ -67,9 +70,11 @@ export default function Properties() {
     "Santo Domingo Savio",
     "Castilla",
     "Buenos Aires",
-    "Manrique",
     "Aranjuez",
-    "Guayabal"
+    "Guayabal",
+    "Copacabana",
+    "Girardota",
+    "Barbosa",
   ];
 
   return (
@@ -78,19 +83,23 @@ export default function Properties() {
       <div className="max-w-7xl mx-auto">
 
         {/* HEADER */}
+        <div className="flex flex-col items-center mb-12">
 
-        <div className="flex justify-between items-center mb-10">
-
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-4xl font-bold text-center mb-6 
+            animate-fade-in-down 
+            text-slate-800">
             Propiedades disponibles
           </h1>
 
-          <div className="flex gap-4">
+          {/* FILTROS MODERNOS */}
+          <div className="flex flex-wrap gap-4 justify-center">
 
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="border rounded-lg px-4 py-2"
+              className="bg-white border border-gray-200 rounded-xl px-5 py-2 
+              shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-700 
+              hover:shadow-md transition"
             >
               {propertyTypes.map((t) => (
                 <option key={t}>{t}</option>
@@ -100,7 +109,9 @@ export default function Properties() {
             <select
               value={neighborhoodFilter}
               onChange={(e) => setNeighborhoodFilter(e.target.value)}
-              className="border rounded-lg px-4 py-2"
+              className="bg-white border border-gray-200 rounded-xl px-5 py-2 
+              shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-700 
+              hover:shadow-md transition"
             >
               {neighborhoods.map((n) => (
                 <option key={n}>{n}</option>
@@ -112,10 +123,9 @@ export default function Properties() {
         </div>
 
         {/* GRID */}
-
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
 
-          {filtered.map((property) => {
+          {filtered.map((property, index) => {
 
             const image = property.thumbnail
               ? `http://localhost:4000/${property.thumbnail}`
@@ -126,24 +136,28 @@ export default function Properties() {
               <Link
                 key={property.id}
                 to={`/properties/${property.id}`}
-                className="bg-white rounded-2xl shadow hover:shadow-lg transition overflow-hidden"
+                className="bg-white rounded-2xl shadow-md hover:shadow-xl 
+                transition-all duration-300 overflow-hidden 
+                transform hover:-translate-y-1 
+                animate-fade-in-up"
+                style={{ animationDelay: `${index * 0.05}s` }}
               >
 
                 {image && (
                   <img
                     src={image}
                     alt={property.title}
-                    className="w-full h-52 object-cover"
+                    className="w-full h-52 object-cover transition-transform duration-300 hover:scale-105"
                   />
                 )}
 
                 <div className="p-5">
 
-                  <p className="text-blue-600 font-semibold text-lg">
+                  <p className="text-blue-700 font-semibold text-lg">
                     ${Number(property.price).toLocaleString("es-CO")}
                   </p>
 
-                  <h3 className="font-bold text-lg mt-1">
+                  <h3 className="font-bold text-lg mt-1 text-slate-800">
                     {property.title}
                   </h3>
 
@@ -174,6 +188,41 @@ export default function Properties() {
         )}
 
       </div>
+
+      {/* ANIMACIONES */}
+      <style>
+        {`
+          .animate-fade-in-down {
+            animation: fadeInDown 0.6s ease;
+          }
+
+          .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease;
+          }
+
+          @keyframes fadeInDown {
+            from {
+              opacity: 0;
+              transform: translateY(-20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}
+      </style>
 
     </div>
   );
