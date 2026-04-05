@@ -12,7 +12,7 @@ export async function create(req, res) {
       req.body,
       req.user.id
     );
-
+    await fetchContracts();
     res.json({ id: contractId });
 
   } catch (error) {
@@ -52,6 +52,8 @@ export async function accept(req, res) {
     const { id } = req.params;
 
     const result = await contractService.acceptContract(id, req.user.id);
+    await fetchContracts(); // 🔥 para ver "active"
+    await fetchDocuments(); // 🔥 para ver el nuevo documento
 
     res.json(result);
 
@@ -85,5 +87,22 @@ export async function downloadPDF(req, res) {
     res.status(500).json({
       message: "Error descargando PDF"
     });
+  }
+}
+
+export async function getMyDocuments(req, res) {
+  try {
+
+    if (!req.user) {
+      return res.status(401).json({ message: "No autorizado" });
+    }
+
+    const documents = await documentRepository.findByUserId(req.user.id);
+
+    res.json(documents);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error obteniendo documentos" });
   }
 }

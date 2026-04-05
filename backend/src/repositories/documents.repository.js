@@ -31,3 +31,16 @@ export async function findByContractId(contractId) {
 
   return rows[0];
 }
+
+export async function findByUserId(userId) {
+  const [rows] = await db.query(
+    `SELECT * 
+     FROM documents 
+     WHERE user_id = ?
+     AND deleted_at IS NULL
+     ORDER BY created_at DESC`,
+    [userId]
+  );
+
+  return rows;
+}

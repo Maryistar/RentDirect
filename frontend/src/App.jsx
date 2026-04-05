@@ -19,6 +19,9 @@ import EditProperty from "./presentation/pages/EditProperty";
 import Profile from "./presentation/pages/Profile";
 import Chat from "./presentation/pages/chat";
 import ContractForm from "./presentation/pages/ContractForm";
+import MyDocuments from "./presentation/pages/MyDocuments";
+import Admin from "./presentation/pages/admin";
+import Users from "./presentation/pages/admin/Users";
 
 export default function App() {
   const { user, token } = useAuth();
@@ -79,6 +82,21 @@ export default function App() {
             }
           />
 
+          <Route
+            path="/my-documents"
+            element={
+              token && (user?.role === "owner" || user?.role === "tenant")
+                ? <MyDocuments />
+                : <Navigate to="/login" />
+            }
+          />
+
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/users" element={<Users />} />
+
+
+
+
           {/* PERFIL */}
           <Route
             path="/profile/:id"
@@ -102,6 +120,8 @@ export default function App() {
 
           {/* CATCH ALL */}
           <Route path="*" element={<Navigate to="/" />} />
+
+          
 
         </Routes>
       </div>

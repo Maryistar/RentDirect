@@ -78,7 +78,7 @@ export default function MyProperties() {
       await deleteProperty(propertyId);
       loadProperties();
     } catch {
-      alert("Error eliminando propiedad");
+      alert("No se puede eliminar la propiedad porque no está disponible");
     }
   }
 

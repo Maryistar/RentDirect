@@ -15,6 +15,7 @@ export default function Register() {
     password: "",
     confirmPassword: "",
     role: "tenant",
+    adminKey: "",
     acceptTerms: false,
     acceptPrivacy: false,
   });
@@ -23,6 +24,8 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [modalContent, setModalContent] = useState(null);
+  const [showAdmin, setShowAdmin] = useState(false);
+
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -157,6 +160,23 @@ export default function Register() {
                 <option value="tenant">Inquilino</option>
                 <option value="owner">Propietario</option>
               </select>
+
+              <p
+                className="text-sm text-blue-600 cursor-pointer mt-2"
+                onClick={() => setShowAdmin(!showAdmin)}
+              >
+                ¿Eres administrador?
+              </p>
+
+              {showAdmin && (
+                <Input
+                  label="Clave de administrador"
+                  name="adminKey"
+                  value={form.adminKey}
+                  onChange={handleChange}
+                />
+              )}
+              
             </div>
 
             {/* Checkboxes */}

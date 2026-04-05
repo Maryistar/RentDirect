@@ -108,19 +108,32 @@ export async function updateProperty(id, data, user) {
 }
 
 // 🔹 Eliminar
-export async function deleteProperty(id, user) {
+import * as propertyRepo from '../repositories/properties.repository.js';
 
-  const property = await repo.findById(id);
+export async function deleteProperty(propertyId, user) {
+
+  // 1. Buscar la propiedad
+  const property = await propertyRepo.findPropertyById(propertyId);
 
   if (!property) {
     throw { status: 404, message: 'Property not found' };
   }
 
-  if (user.role !== 'admin' && property.owner_id !== user.id) {
-    throw { status: 403, message: 'Forbidden' };
+  // 2. Validar que sea el dueño
+  if (property.owner_id !== user.id) {
+    throw { status: 403, message: 'You are not the owner of this property' };
   }
 
-  await repo.deleteProperty(id);
+  // 3. 🔥 VALIDACIÓN CLAVE
+  if (property.status === 'rented') {
+    throw {
+      status: 400,
+      message: 'No se puede eliminar la propiedad porque está arrendada'
+    };
+  }
 
-  return { message: 'Property deleted successfully' };
+  // 4. Eliminar
+  await propertyRepo.deleteProperty(propertyId);
+
+  return { message: 'Propiedad eliminada correctamente' };
 }

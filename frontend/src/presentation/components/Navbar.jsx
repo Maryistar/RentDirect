@@ -152,6 +152,11 @@ export default function Navbar() {
                     Publicar propiedad
                   </Link>
 
+                  <Link to="/my-documents" onClick={() => setIsOpen(false)} className="menu-item">
+                    <FileText size={18} />
+                    Mis documentos
+                  </Link>
+
                   <Link to="/profile" onClick={() => setIsOpen(false)} className="menu-item">
                     <User size={18} />
                     Perfil
@@ -196,6 +201,27 @@ export default function Navbar() {
                   <Link to="/chat" onClick={() => setIsOpen(false)} className="menu-item">
                     <User size={18} />
                     Chats
+                  </Link>
+
+                  <div className="border-t my-2"></div>
+
+                  <button onClick={handleLogout} className="menu-item-danger">
+                    <LogOut size={18} />
+                    Cerrar sesión
+                  </button>
+                </>
+              )}
+
+              {user && role === "admin" && (
+                <>
+                  <Link to="/" onClick={() => setIsOpen(false)} className="menu-item">
+                    <Home size={18} />
+                    Inicio
+                  </Link>
+
+                  <Link to="/admin" onClick={() => setIsOpen(false)} className="menu-item">
+                    <User size={18} />
+                    Panel Admin 🔥
                   </Link>
 
                   <div className="border-t my-2"></div>
