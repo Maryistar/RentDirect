@@ -22,6 +22,9 @@ import ContractForm from "./presentation/pages/ContractForm";
 import MyDocuments from "./presentation/pages/MyDocuments";
 import Admin from "./presentation/pages/admin";
 import Users from "./presentation/pages/admin/Users";
+import Terms from "./presentation/pages/Terms";
+import Privacy from "./presentation/pages/Privacy";
+
 
 export default function App() {
   const { user, token } = useAuth();
@@ -121,7 +124,8 @@ export default function App() {
           {/* CATCH ALL */}
           <Route path="*" element={<Navigate to="/" />} />
 
-          
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
 
         </Routes>
       </div>

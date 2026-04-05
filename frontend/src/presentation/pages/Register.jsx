@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "../../assets/logo-rentdirect.png";
-import ReCAPTCHA from "react-google-recaptcha"; // 🔥 IMPORT
+import ReCAPTCHA from "react-google-recaptcha"; 
+import TermsContent from "../components/legal/TermsContent";
+import PrivacyContent from "../components/legal/PrivacyContent";
 
 const API_URL = "http://localhost:4000/api/v1/auth/register";
 
@@ -20,7 +22,7 @@ export default function Register() {
     acceptPrivacy: false,
   });
 
-  const [captcha, setCaptcha] = useState(null); // 🔥 ESTADO CAPTCHA
+  const [captcha, setCaptcha] = useState(null); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [modalContent, setModalContent] = useState(null);
@@ -49,7 +51,7 @@ export default function Register() {
       return;
     }
 
-    // 🔥 VALIDAR CAPTCHA
+    //  VALIDAR CAPTCHA
     if (!captcha) {
       setError("Verifica que no eres un robot");
       return;
@@ -65,7 +67,7 @@ export default function Register() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...dataToSend,
-          captcha, // 🔥 ENVIAR CAPTCHA AL BACKEND
+          captcha, 
         }),
       });
 
@@ -198,7 +200,7 @@ export default function Register() {
               </label>
             </div>
 
-            {/* 🔥 CAPTCHA */}
+            
             <div className="flex justify-center">
               <ReCAPTCHA
                 sitekey="6LcF058sAAAAABUKqIzg3CQ9TCz0rxoGFx9A1Zes"
@@ -244,7 +246,7 @@ export default function Register() {
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              className="bg-white w-[90%] max-w-lg p-6 rounded-2xl shadow-xl"
+              className="bg-white w-[95%] max-w-2xl p-6 rounded-2xl shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-lg font-bold mb-4">
@@ -253,16 +255,22 @@ export default function Register() {
                   : "Política de Privacidad"}
               </h3>
 
-              <p className="text-sm text-gray-600 mb-6">
-                falta pegar contenido 
-              </p>
+              <div className="max-h-[400px] overflow-y-auto pr-2 text-sm text-gray-700 mb-6">
+                {modalContent === "terms" ? <TermsContent /> : <PrivacyContent />}
+              </div>
 
               <button
                 onClick={() => {
                   if (modalContent === "terms") {
-                    setForm({ ...form, acceptTerms: true });
+                    setForm((prev) => ({
+                      ...prev,
+                      acceptTerms: true,
+                    }));
                   } else {
-                    setForm({ ...form, acceptPrivacy: true });
+                    setForm((prev) => ({
+                      ...prev,
+                      acceptPrivacy: true,
+                    }));
                   }
                   setModalContent(null);
                 }}
