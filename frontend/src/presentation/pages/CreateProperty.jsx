@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { createProperty } from "../../infrastructure/api/properties";
 import { UploadCloud } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { createPaypalOrder } from "../../infrastructure/api/payments";
+import { PayPalButtons } from "@paypal/react-paypal-js";
+
 
 export default function CreateProperty() {
   const navigate = useNavigate();
@@ -23,6 +26,22 @@ export default function CreateProperty() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPaypal, setShowPaypal] = useState(false);
+  const [showPremiumPaypal, setShowPremiumPaypal] = useState(false);
+
+  async function handlePayment() {
+    try {
+      const order = await createPaypalOrder();
+
+      console.log("ORDER ID:", order.id);
+
+      alert("Orden creada: " + order.id);
+
+    } catch (err) {
+      console.error(err);
+      alert("Error en pago");
+    }
+  }
 
 
   const propertyTypes = [
@@ -295,23 +314,61 @@ export default function CreateProperty() {
 
             <div className="flex flex-col gap-4">
 
+
               <button
                 onClick={() => {
-                  console.log("Pagar por publicación");
+                  setShowPaypal(true);
+                  setShowPremiumPaypal(false);
                 }}
-                className="bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition"
+                className="bg-blue-600 text-white px-6 py-2 rounded-xl"
               >
                 💳 Pagar por publicación
               </button>
 
+              {showPaypal && (
+                <div className="mt-4">
+                  <PayPalButtons
+                    createOrder={async () => {
+                      const order = await createPaypalOrder();
+                      return order.id;
+                    }}
+                    onApprove={async (data) => {
+                      console.log("PAGO APROBADO", data);
+
+                      alert("Pago exitoso 🔥");
+
+                      // luego aquí publicamos la propiedad
+                    }}
+                  />
+                </div>
+              )}
+
+
               <button
                 onClick={() => {
-                  console.log("Plan premium");
+                  setShowPremiumPaypal(true);
+                  setShowPaypal(false);
                 }}
                 className="bg-purple-600 text-white py-2 rounded-xl hover:bg-purple-700 transition"
               >
                 ⭐ Comprar plan premium
               </button>
+
+              {showPremiumPaypal && (
+                <div className="mt-4">
+                  <PayPalButtons
+                    createOrder={async () => {
+                      const order = await createPaypalOrder(); // luego lo diferenciamos
+                      return order.id;
+                    }}
+                    onApprove={async (data) => {
+                      alert("Plan premium activado ⭐🔥");
+
+                      // aquí luego activamos plan premium
+                    }}
+                  />
+                </div>
+              )}
 
               <button
                 onClick={() => setShowPaymentModal(false)}
