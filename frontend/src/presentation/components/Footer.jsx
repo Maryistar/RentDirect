@@ -17,6 +17,15 @@ export default function Footer() {
           </p>
         </div>
 
+        <div className="flex gap-4 text-sm">
+          <Link to="/terms" className="hover:underline">
+            Términos y Condiciones
+          </Link>
+
+          <Link to="/privacy" className="hover:underline">
+            Política de Privacidad
+          </Link>
+        </div>
         
 
         {/* Contacto */}

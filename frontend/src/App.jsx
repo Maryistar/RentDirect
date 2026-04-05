@@ -22,7 +22,14 @@ import ContractForm from "./presentation/pages/ContractForm";
 import MyDocuments from "./presentation/pages/MyDocuments";
 import Admin from "./presentation/pages/admin";
 import Users from "./presentation/pages/admin/Users";
+
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+
+import AdminProperties from "./presentation/pages/admin/AdminProperties";
+import AdminContracts from "./presentation/pages/admin/AdminContracts";
+import Terms from "./presentation/pages/Terms";
+import Privacy from "./presentation/pages/Privacy";
+
 
 
 export default function App() {
@@ -99,6 +106,13 @@ export default function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/users" element={<Users />} />
 
+
+          <Route path="/admin/properties" element={<AdminProperties />} />
+          <Route path="/admin/contracts" element={<AdminContracts />} />
+
+
+
+
           {/* PERFIL */}
           <Route
             path="/profile/:id"
@@ -123,6 +137,11 @@ export default function App() {
 
           {/* CATCH ALL */}
           <Route path="*" element={<Navigate to="/" />} />
+
+
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+
 
         </Routes>
       </div>

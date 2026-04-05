@@ -32,6 +32,7 @@ export async function getMe(req, res, next) {
     return res.json({
       id: user.id,
       name: user.name,
+      last_name: user.last_name,
       email: user.email,
       role: user.role,
       avatar: user.avatar,
@@ -126,7 +127,7 @@ export const getUserById = async (req, res) => {
     const { id } = req.params;
 
     const [rows] = await db.query(
-      `SELECT id, name, email, role, avatar, score 
+      `SELECT id, name, last_name, email, role, avatar, score 
        FROM users 
        WHERE id = ?`,
       [id]

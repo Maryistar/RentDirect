@@ -174,9 +174,11 @@ const MyApplications = () => {
                           state: { from: "/my-applications" },
                         })
                       }
-                      className="text-blue-700 font-medium hover:underline"
+                      className="text-sm px-4 py-1 rounded-full 
+                      bg-blue-100 text-blue-800 
+                      hover:bg-blue-200 transition font-medium"
                     >
-                      Ver propiedad 
+                      Ver propiedad
                     </button>
 
                     {uiStatus === "EN_PROCESO" && (

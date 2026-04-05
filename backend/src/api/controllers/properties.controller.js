@@ -6,7 +6,7 @@ export async function createProperty(req, res, next) {
     const result = await service.createProperty(
       req.body,
       req.user,
-      req.files // 👈 IMPORTANTE
+      req.files 
     );
 
     res.status(201).json(result);
@@ -66,6 +66,15 @@ export async function deleteProperty(req, res, next) {
       req.params.id,
       req.user
     );
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function listAllProperties(req, res, next) {
+  try {
+    const result = await repository.getAllWithImages();
     res.json(result);
   } catch (err) {
     next(err);

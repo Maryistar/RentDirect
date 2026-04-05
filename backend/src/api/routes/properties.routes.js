@@ -1,3 +1,4 @@
+import * as controller from "../controllers/properties.controller.js";
 import express from 'express';
 import multer from 'multer';
 import {
@@ -65,5 +66,7 @@ router.delete(
   authorize(['owner', 'admin']),
   deleteProperty
 );
+
+router.get("/admin", authenticate, controller.listAllProperties);
 
 export default router;

@@ -193,3 +193,22 @@ export async function updateStatus(id, status) {
   );
 }
 
+
+export async function getAllWithImages() {
+  const [properties] = await db.query(`
+    SELECT * FROM properties
+    ORDER BY created_at DESC
+  `);
+
+  for (let p of properties) {
+    const [images] = await db.query(
+      `SELECT * FROM property_images WHERE property_id = ? ORDER BY ord ASC`,
+      [p.id]
+    );
+
+    p.images = images;
+  }
+
+  return properties;
+}
+
