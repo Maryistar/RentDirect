@@ -80,39 +80,7 @@ export default function Home() {
             </span>
           </div>
 
-          {/* BUSCADOR */}
-          <div className="bg-white/95 backdrop-blur-md rounded-2xl p-3 flex gap-2 items-center shadow-2xl">
-
-            <input
-              type="text"
-              placeholder="Busca por barrio o dirección..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-3 py-2 outline-none text-gray-700 bg-transparent"
-            />
-
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="px-3 py-2 text-gray-700 outline-none bg-transparent"
-            >
-              <option value="">Tipo</option>
-              <option value="house">Casa</option>
-              <option value="apartment">Apartamento</option>
-              <option value="room">Habitación</option>
-              <option value="office">Oficina</option>
-            </select>
-
-            <button
-              onClick={handleSearch}
-              className="bg-blue-700 text-white px-5 py-2 rounded-xl flex items-center gap-2 hover:bg-blue-800 transition"
-            >
-              <Search size={18} />
-              Buscar
-            </button>
-
-          </div>
-
+          
         </div>
       </section>
 
