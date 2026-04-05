@@ -1,0 +1,53 @@
+import paypalClient from '../../services/paypal.service.js';
+import paypal from '@paypal/checkout-server-sdk';
+
+export const createOrder = async (req, res) => {
+  try {
+
+    const request = new paypal.orders.OrdersCreateRequest();
+
+    request.prefer("return=representation");
+
+    request.requestBody({
+      intent: "CAPTURE",
+      purchase_units: [
+        {
+          amount: {
+            currency_code: "USD",
+            value: "10.00",
+          },
+        },
+      ],
+    });
+
+    const order = await paypalClient.execute(request);
+
+    res.json({
+      id: order.result.id
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error creando orden" });
+  }
+};
+
+export const captureOrder = async (req, res) => {
+  try {
+
+    const { orderID } = req.body;
+
+    const request = new paypal.orders.OrdersCaptureRequest(orderID);
+    request.requestBody({});
+
+    const capture = await paypalClient.execute(request);
+
+    res.json({
+      status: "COMPLETED",
+      data: capture.result
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: "Error capturando pago" });
+  }
+};

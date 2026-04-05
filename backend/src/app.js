@@ -22,6 +22,7 @@ import authRoutes from "./api/routes/auth.routes.js";
 import * as chatService from './services/chat.service.js';
 import reviewRoutes from "./api/routes/review.routes.js";
 import documentsRoutes from './api/routes/documents.routes.js';
+import paymentRoutes from './api/routes/payment.routes.js';
 
 
 // ================================
@@ -68,6 +69,7 @@ app.use('/api/v1/contracts', contractsRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
 app.use('/api/v1/documents', documentsRoutes);
 app.use("/api/v1", usersRoutes);
+app.use('/api/v1', paymentRoutes);
 
 
 // ================================

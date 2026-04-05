@@ -22,12 +22,17 @@ import ContractForm from "./presentation/pages/ContractForm";
 import MyDocuments from "./presentation/pages/MyDocuments";
 import Admin from "./presentation/pages/admin";
 import Users from "./presentation/pages/admin/Users";
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+
 
 export default function App() {
   const { user, token } = useAuth();
 
   return (
-    <>
+    <PayPalScriptProvider options={{
+      "client-id": "AWp99QqN02PrhbzZbddPE_njCDFW6DHMV92dEaw2QUf2oOonpJjBpCdVXz1vRRtKXgz8bxRHiw9yjGE_",
+      currency: "USD"
+    }}>
       <Navbar />
 
       <div style={{ marginTop: "90px" }}>
@@ -94,9 +99,6 @@ export default function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/users" element={<Users />} />
 
-
-
-
           {/* PERFIL */}
           <Route
             path="/profile/:id"
@@ -107,6 +109,7 @@ export default function App() {
             path="/profile"
             element={token ? <Profile /> : <Navigate to="/login" />}
           />
+
           {/* CHAT */}
           <Route
             path="/chat"
@@ -121,12 +124,10 @@ export default function App() {
           {/* CATCH ALL */}
           <Route path="*" element={<Navigate to="/" />} />
 
-          
-
         </Routes>
       </div>
 
       <Footer />
-    </>
+    </PayPalScriptProvider>
   );
 }
