@@ -24,6 +24,7 @@ import reviewRoutes from "./api/routes/review.routes.js";
 import documentsRoutes from './api/routes/documents.routes.js';
 import paymentRoutes from './api/routes/payment.routes.js';
 
+import adminRoutes from "./api/routes/admin.routes.js";
 
 // ================================
 // FIX __dirname
@@ -70,7 +71,7 @@ app.use("/api/v1/reviews", reviewRoutes);
 app.use('/api/v1/documents', documentsRoutes);
 app.use("/api/v1", usersRoutes);
 app.use('/api/v1', paymentRoutes);
-
+app.use("/api/v1/admin", adminRoutes);
 
 // ================================
 // ERROR HANDLER
