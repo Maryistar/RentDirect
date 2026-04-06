@@ -56,9 +56,32 @@ export const captureOrder = async (req, res) => {
 
     const capture = await paypalClient.execute(request);
 
-    res.json({
+    const user = req.user;
+    const { type } = req.body;
+
+    // 🔥 PLAN PREMIUM
+    if (type === "premium") {
+
+      const premiumUntil = new Date();
+      premiumUntil.setDate(premiumUntil.getDate() + 30);
+
+      await db.query(
+        `UPDATE users 
+     SET is_premium = 1, premium_until = ? 
+     WHERE id = ?`,
+        [premiumUntil, user.id]
+      );
+
+      return res.json({
+        status: "COMPLETED",
+        message: "Plan premium activado"
+      });
+    }
+
+    // 🔥 PAGO POR PUBLICACIÓN
+    return res.json({
       status: "COMPLETED",
-      data: capture.result
+      message: "Pago exitoso, ya puedes publicar"
     });
 
   } catch (err) {

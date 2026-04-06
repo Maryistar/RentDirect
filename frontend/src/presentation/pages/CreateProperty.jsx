@@ -116,8 +116,8 @@ export default function CreateProperty() {
 
   async function handleSubmit() {
 
-    setError(""); 
-    // 🔥 VALIDACIÓN
+    setError("");
+
     if (
       !title ||
       !address ||
@@ -145,10 +145,24 @@ export default function CreateProperty() {
 
     images.forEach((img) => formData.append("images", img));
 
-    setPendingProperty(formData);
-    setShowPaymentModal(true);
-  }
+    try {
+      const result = await createProperty(formData);
 
+      // 🔥 SI NECESITA PAGO
+      if (result.requirePayment) {
+        setPendingProperty(formData);
+        setShowPaymentModal(true);
+        return;
+      }
+
+      // ✅ SI ES GRATIS
+      alert("Propiedad publicada gratis 🎉");
+      navigate("/my-properties");
+
+    } catch (err) {
+      setError("Error creando propiedad");
+    }
+  }
 
   const progress = (step / 3) * 100;
 
@@ -333,9 +347,13 @@ export default function CreateProperty() {
                       return order.id;
                     }}
                     onApprove={async () => {
+
+                      if (loading) return; // 🔥 EVITA DOBLE EJECUCIÓN
+                      setLoading(true);
                       alert("Pago exitoso 🔥");
 
                       try {
+                        pendingProperty.append("isPaid", "true");
                         await createProperty(pendingProperty);
 
                         alert("Propiedad publicada ✅");

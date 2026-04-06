@@ -1,4 +1,5 @@
 import * as service from '../../services/properties.service.js';
+import * as repository from '../../repositories/properties.repository.js';
 
 // 🔹 CREATE
 export async function createProperty(req, res, next) {

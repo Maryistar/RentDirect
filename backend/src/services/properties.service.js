@@ -11,7 +11,31 @@ export async function createProperty(data, user, files) {
     throw { status: 400, message: 'Missing required fields' };
   }
 
-  // Guardar thumbnail (primera imagen)
+  const realUser = await repo.getUserById(user.id);
+
+  // 🔥 DETECTAR SI VIENE DE PAGO
+  const isPaid = data.isPaid === "true";
+
+  // 🔥 VALIDACIONES
+  const isPremiumActive =
+    realUser.is_premium &&
+    realUser.premium_until &&
+    new Date(realUser.premium_until) > new Date();
+
+  const hasFree = realUser.free_publications_used < 1;
+
+  // ❌ SOLO BLOQUEAR SI:
+  // - NO es premium
+  // - NO tiene gratis
+  // - NO ha pagado
+  if (!isPremiumActive && !hasFree && !isPaid) {
+    return {
+      requirePayment: true,
+      message: "Debes pagar para publicar otra propiedad"
+    };
+  }
+
+  // 🔥 CREAR PROPIEDAD (UNA SOLA VEZ)
   const thumbnail = files?.length
     ? `uploads/${files[0].filename}`
     : null;
@@ -29,7 +53,7 @@ export async function createProperty(data, user, files) {
     thumbnail
   });
 
-  // 🔹 Guardar imágenes adicionales
+  // 🔹 Guardar imágenes
   if (files && files.length > 0) {
     for (let i = 0; i < files.length; i++) {
       await repo.createPropertyImage({
@@ -40,19 +64,14 @@ export async function createProperty(data, user, files) {
     }
   }
 
-
-   // 🔥 VALIDACIÓN DE PUBLICACIONES GRATIS
-  const totalProperties = await repo.countByOwner(user.id);
-
-  if (totalProperties >= 1) {
-    return {
-      requirePayment: true,
-      message: "Debes pagar para publicar otra propiedad"
-    };
+  // 🔥 SOLO SI ES GRATIS → SUMAR
+  if (hasFree && !isPremiumActive && !isPaid) {
+    await repo.incrementFreePublications(user.id);
   }
 
   return { id: propertyId };
 }
+
 
  
 
