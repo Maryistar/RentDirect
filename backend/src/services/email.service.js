@@ -18,3 +18,20 @@ export async function sendVerificationEmail(email, code, subject = 'Verification
   };
   await transporter.sendMail(mailOptions);
 }
+
+export async function sendInvoiceEmail(to, subject, text, filePath) {
+  const mailOptions = {
+    from: `"RentDirect" <${process.env.EMAIL_USER}>`,
+    to,
+    subject,
+    text,
+    attachments: [
+      {
+        filename: "factura.pdf",
+        path: filePath,
+      },
+    ],
+  };
+
+  await transporter.sendMail(mailOptions);
+}

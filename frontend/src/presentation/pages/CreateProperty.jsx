@@ -346,31 +346,64 @@ export default function CreateProperty() {
                       const order = await createPaypalOrder("basic");
                       return order.id;
                     }}
-                    onApprove={async () => {
+                    onApprove={async (data) => {
 
-                      if (loading) return; // 🔥 EVITA DOBLE EJECUCIÓN
+                      if (loading) return;
                       setLoading(true);
-
 
                       try {
 
-                        // 🔥 cerrar todo
+                        // ✅ 1. PRIMERO muestra algo rápido
+                        alert("Procesando pago... ⏳");
+
+                        // ✅ 2. CIERRA PAYPAL INMEDIATAMENTE
                         setShowPaymentModal(false);
-                        setShowPremiumPaypal(false);
+                        setShowPaypal(false);
+
+                        // ⛔ AQUÍ YA PAYPAL SE VA A CERRAR
+
+                        // ✅ 3. AHORA haces lo pesado
+                        const res = await fetch("http://localhost:4000/api/v1/payments/capture-order", {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${localStorage.getItem("token")}`,
+                          },
+                          body: JSON.stringify({
+                            orderID: data.orderID,
+                            type: "basic"
+                          }),
+                        });
+
+                        const responseData = await res.json();
+
+                        if (!res.ok) {
+                          throw new Error(responseData.error || "Error en el pago");
+                        }
 
                         alert("Pago exitoso 🔥");
 
+                        if (!pendingProperty) {
+                          throw new Error("No hay propiedad pendiente");
+                        }
 
                         pendingProperty.append("isPaid", "true");
+
                         await createProperty(pendingProperty);
 
                         alert("Propiedad publicada ✅");
+
                         navigate("/my-properties");
 
                       } catch (err) {
-                        alert("Error creando propiedad");
+                        console.error(err);
+                        alert("Error después del pago");
+                      } finally {
+                        setLoading(false);
                       }
                     }}
+
+
                   />
                 </div>
               )}
@@ -393,33 +426,64 @@ export default function CreateProperty() {
                       const order = await createPaypalOrder("premium"); // luego lo diferenciamos
                       return order.id;
                     }}
-                    onApprove={async () => {
+                    onApprove={async (data) => {
+
+                      if (loading) return;
+                      setLoading(true);
 
                       try {
 
-                        // 🔥 cerrar todo
+                        // ✅ 1. PRIMERO muestra algo rápido
+                        alert("Procesando pago... ⏳");
+
+                        // ✅ 2. CIERRA PAYPAL INMEDIATAMENTE
                         setShowPaymentModal(false);
-                        setShowPremiumPaypal(false);
+                        setShowPaypal(false);
 
-                        alert("Plan premium activado ⭐🔥");
+                        // ⛔ AQUÍ YA PAYPAL SE VA A CERRAR
 
-                        // 🔥 OPCIONAL: si venía de crear propiedad
-                        if (pendingProperty) {
+                        // ✅ 3. AHORA haces lo pesado
+                        const res = await fetch("http://localhost:4000/api/v1/payments/capture-order", {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${localStorage.getItem("token")}`,
+                          },
+                          body: JSON.stringify({
+                            orderID: data.orderID,
+                            type: "premium"
+                          }),
+                        });
 
-                          pendingProperty.append("isPaid", "true");
+                        const responseData = await res.json();
 
-                          await createProperty(pendingProperty);
-
-                          alert("Propiedad publicada con plan premium ✅");
+                        if (!res.ok) {
+                          throw new Error(responseData.error || "Error en el pago");
                         }
 
-                        // 🔥 redirigir
+                        alert("Pago exitoso 🔥");
+
+                        if (!pendingProperty) {
+                          throw new Error("No hay propiedad pendiente");
+                        }
+
+                        pendingProperty.append("isPaid", "true");
+
+                        await createProperty(pendingProperty);
+
+                        alert("Propiedad publicada ✅");
+
                         navigate("/my-properties");
 
                       } catch (err) {
-                        alert("Error después de activar premium");
+                        console.error(err);
+                        alert("Error después del pago");
+                      } finally {
+                        setLoading(false);
                       }
                     }}
+
+
                   />
                 </div>
               )}
