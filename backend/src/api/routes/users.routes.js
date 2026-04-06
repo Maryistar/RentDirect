@@ -1,4 +1,6 @@
+
 import express from "express";
+import * as controller from "../controllers/users.controller.js";
 import db from "../../config/db.js";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
@@ -32,7 +34,7 @@ router.put("/me", authenticate, updateMe);
 router.post("/me/documents", authenticate, uploadDocumentHandler);
 router.post("/me/avatar", authenticate, upload.single("file"), uploadAvatar);
 router.delete("/me/avatar", authenticate, deleteAvatar);
-
+router.put("/:id/toggle", authenticate, controller.toggleStatus);
 /* =========================
    RUTA PERFIL POR ID
 ========================= */

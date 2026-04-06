@@ -142,3 +142,7 @@ export const rejectContract = async (id) => {
     [id]
   );
 };
+
+export async function deleteContract(id) {
+  return await contractRepository.deleteContract(id);
+}

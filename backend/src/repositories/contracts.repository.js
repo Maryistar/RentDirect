@@ -1,6 +1,6 @@
 import db from "../config/db.js";
 
-// 🔹 Crear contrato
+
 export async function createContract(data) {
   const {
     chatId,
@@ -117,3 +117,9 @@ export const fetchContracts = async () => {
 
   return rows; 
 };
+
+export async function deleteContract(id) {
+  await db.query("DELETE FROM documents WHERE contract_id = ?", [id]);
+
+  await db.query("DELETE FROM contracts WHERE id = ?", [id]);
+}

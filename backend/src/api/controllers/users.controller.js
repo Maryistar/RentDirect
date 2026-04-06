@@ -178,3 +178,17 @@ export const updateUserByAdmin = async (req, res, next) => {
     next(err);
   }
 };
+
+export async function toggleStatus(req, res) {
+  try {
+    const { id } = req.params;
+
+    const status = await userService.toggleUserStatus(id);
+
+    res.json({ status });
+
+  } catch (error) {
+    console.error("💥 ERROR TOGGLE USER:", error);
+    res.status(500).json({ message: "Error cambiando estado" });
+  }
+}

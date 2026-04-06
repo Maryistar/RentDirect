@@ -75,6 +75,29 @@ export default function AdminContracts() {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Eliminar contrato definitivamente?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.delete(
+        `http://localhost:4000/api/v1/contracts/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      alert("Contrato eliminado 🗑️");
+
+      setContracts(contracts.filter((c) => c.id !== id));
+
+    } catch (err) {
+      console.error(err);
+      alert("Error eliminando contrato");
+    }
+  };
+
   const handleDownload = async (id) => {
     try {
       const token = localStorage.getItem("token");
@@ -122,19 +145,29 @@ export default function AdminContracts() {
     }
   };
 
+  // 🔥 NUEVA FUNCIÓN PARA TRADUCIR
+  const getStatusText = (status) => {
+    switch (status) {
+      case "active":
+        return "Activo";
+      case "pending":
+        return "Pendiente";
+      case "rejected":
+        return "Rechazado";
+      default:
+        return status;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      {/* HEADER */}
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800">
           Gestión de Contratos 📄
         </h1>
-        <p className="text-gray-500">
-          Administra y controla todos los contratos
-        </p>
       </div>
 
-      {/* CONTENIDO */}
       <div className="grid gap-4">
 
         {contracts.length === 0 ? (
@@ -149,7 +182,7 @@ export default function AdminContracts() {
               key={c.id}
               className="bg-white p-5 rounded-2xl shadow hover:shadow-xl transition flex justify-between items-center"
             >
-              {/* INFO */}
+
               <div>
                 <p className="text-lg font-semibold text-gray-800">
                   Contrato #{c.id}
@@ -160,25 +193,24 @@ export default function AdminContracts() {
                     c.status
                   )}`}
                 >
-                  {c.status}
+                  {getStatusText(c.status)}
                 </span>
               </div>
 
-              {/* ACCIONES */}
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
 
                 {c.status === "pending" && (
                   <>
                     <button
                       onClick={() => handleAccept(c.id)}
-                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm transition"
+                      className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm"
                     >
                       Aceptar
                     </button>
 
                     <button
                       onClick={() => handleReject(c.id)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition"
+                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm"
                     >
                       Rechazar
                     </button>
@@ -188,11 +220,18 @@ export default function AdminContracts() {
                 {c.status === "active" && (
                   <button
                     onClick={() => handleDownload(c.id)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition"
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-sm"
                   >
-                    Descargar PDF
+                    PDF
                   </button>
                 )}
+
+                <button
+                  onClick={() => handleDelete(c.id)}
+                  className="bg-gray-800 hover:bg-black text-white px-3 py-1 rounded-lg text-sm"
+                >
+                  Eliminar
+                </button>
 
               </div>
             </div>

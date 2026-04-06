@@ -12,7 +12,7 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
-// 🔥 VALIDACIÓN CRÍTICA
+//  VALIDACIÓN CRÍTICA
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET no está definido en el .env");
 }
@@ -75,7 +75,6 @@ export async function verifyEmail(email, code) {
     return { message: 'User already verified' };
   }
 
-  // 🔁 Reenviar código
   if (!code) {
     const newCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expires = new Date(Date.now() + 10 * 60 * 1000);
@@ -110,6 +109,10 @@ export async function login(email, password) {
   if (!user)
     throw { status: 401, message: 'Invalid credentials' };
 
+ 
+  if (user.status === "inactive")
+    throw { status: 403, message: "Usuario desactivado" };
+
   if (!user.is_verified)
     throw { status: 401, message: 'Please verify your email before logging in.' };
 
@@ -118,7 +121,6 @@ export async function login(email, password) {
   if (!ok)
     throw { status: 401, message: 'Invalid credentials' };
 
-  // 🔥 TOKEN CORRECTO (usa SIEMPRE la constante)
   const token = jwt.sign(
     {
       id: user.id,

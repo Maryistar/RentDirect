@@ -59,3 +59,7 @@ export async function uploadUserDocument(userId, file, type) {
 
   return { url };
 }
+
+export async function toggleUserStatus(id) {
+  return await userRepository.toggleUserStatus(id);
+}
