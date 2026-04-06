@@ -33,7 +33,6 @@ export default function AdminContracts() {
     }
   };
 
-  // ✅ ACEPTAR
   const handleAccept = async (id) => {
     try {
       const token = localStorage.getItem("token");
@@ -54,7 +53,6 @@ export default function AdminContracts() {
     }
   };
 
-  // ❌ RECHAZAR
   const handleReject = async (id) => {
     if (!window.confirm("¿Rechazar contrato?")) return;
 
@@ -77,7 +75,6 @@ export default function AdminContracts() {
     }
   };
 
-  // 🗑️ ELIMINAR (NUEVO)
   const handleDelete = async (id) => {
     if (!window.confirm("¿Eliminar contrato definitivamente?")) return;
 
@@ -93,7 +90,6 @@ export default function AdminContracts() {
 
       alert("Contrato eliminado 🗑️");
 
-      // 🔥 actualizar UI sin recargar
       setContracts(contracts.filter((c) => c.id !== id));
 
     } catch (err) {
@@ -102,7 +98,6 @@ export default function AdminContracts() {
     }
   };
 
-  // 📄 PDF
   const handleDownload = async (id) => {
     try {
       const token = localStorage.getItem("token");
@@ -150,6 +145,20 @@ export default function AdminContracts() {
     }
   };
 
+  // 🔥 NUEVA FUNCIÓN PARA TRADUCIR
+  const getStatusText = (status) => {
+    switch (status) {
+      case "active":
+        return "Activo";
+      case "pending":
+        return "Pendiente";
+      case "rejected":
+        return "Rechazado";
+      default:
+        return status;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
 
@@ -157,9 +166,6 @@ export default function AdminContracts() {
         <h1 className="text-3xl font-bold text-gray-800">
           Gestión de Contratos 📄
         </h1>
-        <p className="text-gray-500">
-          
-        </p>
       </div>
 
       <div className="grid gap-4">
@@ -187,7 +193,7 @@ export default function AdminContracts() {
                     c.status
                   )}`}
                 >
-                  {c.status}
+                  {getStatusText(c.status)}
                 </span>
               </div>
 
@@ -220,7 +226,6 @@ export default function AdminContracts() {
                   </button>
                 )}
 
-                
                 <button
                   onClick={() => handleDelete(c.id)}
                   className="bg-gray-800 hover:bg-black text-white px-3 py-1 rounded-lg text-sm"
