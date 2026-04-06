@@ -385,10 +385,32 @@ export default function CreateProperty() {
                       const order = await createPaypalOrder("premium"); // luego lo diferenciamos
                       return order.id;
                     }}
-                    onApprove={async (data) => {
+                    onApprove={async () => {
+
                       alert("Plan premium activado ⭐🔥");
 
-                      // aquí luego activamos plan premium
+                      try {
+
+                        // 🔥 OPCIONAL: si venía de crear propiedad
+                        if (pendingProperty) {
+
+                          pendingProperty.append("isPaid", "true");
+
+                          await createProperty(pendingProperty);
+
+                          alert("Propiedad publicada con plan premium ✅");
+                        }
+
+                        // 🔥 cerrar todo
+                        setShowPaymentModal(false);
+                        setShowPremiumPaypal(false);
+
+                        // 🔥 redirigir
+                        navigate("/my-properties");
+
+                      } catch (err) {
+                        alert("Error después de activar premium");
+                      }
                     }}
                   />
                 </div>
