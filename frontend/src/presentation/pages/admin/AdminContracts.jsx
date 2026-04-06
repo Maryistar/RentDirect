@@ -158,7 +158,7 @@ export default function AdminContracts() {
           Gestión de Contratos 📄
         </h1>
         <p className="text-gray-500">
-          Administra y controla todos los contratos
+          
         </p>
       </div>
 
@@ -220,7 +220,7 @@ export default function AdminContracts() {
                   </button>
                 )}
 
-                {/* 🗑️ NUEVO BOTÓN */}
+                
                 <button
                   onClick={() => handleDelete(c.id)}
                   className="bg-gray-800 hover:bg-black text-white px-3 py-1 rounded-lg text-sm"

@@ -115,3 +115,18 @@ export const updateUser = async (id, data) => {
   );
   return getUserById(id);
 };
+
+export async function toggleUserStatus(id) {
+  const [[user]] = await db.query(
+    "SELECT status FROM users WHERE id = ?",
+    [id]
+  );
+
+  const newStatus = user.status === "active" ? "suspended" : "active";
+  await db.query(
+    "UPDATE users SET status = ? WHERE id = ?",
+    [newStatus, id]
+  );
+
+  return newStatus;
+}

@@ -105,7 +105,7 @@ export default function Admin() {
             Gestionar Usuarios
           </h3>
           <p className="text-gray-500 mb-6">
-            Ver, editar o eliminar usuarios
+            Ver, editar, suspender o activar usuarios
           </p>
 
           <button
@@ -139,7 +139,7 @@ export default function Admin() {
             Ver Contratos
           </h3>
           <p className="text-gray-500 mb-6">
-            Revisar contratos activos
+            Administra y controla todos los contratos
           </p>
 
           <button

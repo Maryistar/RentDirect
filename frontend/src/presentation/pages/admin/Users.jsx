@@ -6,13 +6,14 @@ export default function Users() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
+  const [filter, setFilter] = useState("all"); // 🔥 filtro
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     role: "",
     phone: "",
-    status: "",
+    status: "active",
   });
 
   useEffect(() => {
@@ -42,9 +43,30 @@ export default function Users() {
     }
   };
 
-  const handleDelete = (id) => {
-    if (!window.confirm("¿Eliminar usuario?")) return;
-    setUsers(users.filter((u) => u.id !== id));
+  const handleToggle = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.put(
+        `http://localhost:4000/api/v1/users/${id}/toggle`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setUsers(
+        users.map((u) =>
+          u.id === id ? { ...u, status: res.data.status } : u
+        )
+      );
+
+    } catch (error) {
+      console.error(error);
+      alert("Error cambiando estado");
+    }
   };
 
   const openEdit = (user) => {
@@ -96,31 +118,77 @@ export default function Users() {
   const getStatusStyle = (status) => {
     return status === "active"
       ? "bg-green-100 text-green-700"
-      : "bg-red-100 text-red-700";
+      : "bg-yellow-100 text-yellow-700";
   };
+
+  const getStatusText = (status) => {
+    return status === "active" ? "Activo" : "Suspendido";
+  };
+
+  // 🔥 FILTRADO DINÁMICO
+  const filteredUsers = users.filter((u) => {
+    if (filter === "active") return u.status === "active";
+    if (filter === "suspended") return u.status === "suspended";
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
 
       {/* HEADER */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-800">
           Gestión de Usuarios 👤
         </h1>
         <p className="text-gray-500">
-          Administra todos los usuarios del sistema
+          Filtra y administra usuarios
         </p>
       </div>
 
-      {/* GRID */}
+      {/* FILTROS */}
+      <div className="flex gap-3 mb-6">
+        <button
+          onClick={() => setFilter("all")}
+          className={`px-4 py-2 rounded-lg ${
+            filter === "all"
+              ? "bg-black text-white"
+              : "bg-white border"
+          }`}
+        >
+          Todos
+        </button>
+
+        <button
+          onClick={() => setFilter("active")}
+          className={`px-4 py-2 rounded-lg ${
+            filter === "active"
+              ? "bg-green-500 text-white"
+              : "bg-white border"
+          }`}
+        >
+          Activos
+        </button>
+
+        <button
+          onClick={() => setFilter("suspended")}
+          className={`px-4 py-2 rounded-lg ${
+            filter === "suspended"
+              ? "bg-yellow-500 text-white"
+              : "bg-white border"
+          }`}
+        >
+          Suspendidos
+        </button>
+      </div>
+
+      {/* LISTA */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-        {users.map((u) => (
+        {filteredUsers.map((u) => (
           <div
             key={u.id}
             className="bg-white p-5 rounded-2xl shadow hover:shadow-xl transition"
           >
-            {/* HEADER USER */}
             <div className="flex items-center gap-4 mb-4">
               <img
                 src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -136,49 +204,44 @@ export default function Users() {
               </div>
             </div>
 
-            {/* BADGES */}
             <div className="flex gap-2 mb-4 flex-wrap">
               <span className={`px-3 py-1 rounded-full text-sm ${getRoleStyle(u.role)}`}>
-                {u.role === "owner"
-                  ? "Propietario"
-                  : u.role === "tenant"
-                  ? "Inquilino"
-                  : u.role}
+                {u.role}
               </span>
 
-              <span className={`px-3 py-1 rounded-full text-sm ${getStatusStyle(u.status || "active")}`}>
-                {u.status === "inactive" ? "Inactivo" : "Activo"}
+              <span className={`px-3 py-1 rounded-full text-sm ${getStatusStyle(u.status)}`}>
+                {getStatusText(u.status)}
               </span>
             </div>
 
-            {/* ACCIONES */}
             <div className="flex gap-2 flex-wrap">
 
-                {/* 👁️ VER PERFIL */}
-                <button
-                  onClick={() => navigate(`/profile/${u.id}`)}
-                  className="bg-gray-800 hover:bg-black text-white px-3 py-1 rounded-lg text-sm transition"
-                >
-                  Ver perfil
-                </button>
+              <button
+                onClick={() => navigate(`/profile/${u.id}`)}
+                className="bg-gray-800 text-white px-3 py-1 rounded-lg text-sm"
+              >
+                Ver perfil
+              </button>
 
-                {/* ✏️ EDITAR */}
-                <button
-                  onClick={() => openEdit(u)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-sm transition"
-                >
-                  Editar
-                </button>
+              <button
+                onClick={() => openEdit(u)}
+                className="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm"
+              >
+                Editar
+              </button>
 
-                {/* ❌ ELIMINAR */}
-                <button
-                  onClick={() => handleDelete(u.id)}
-                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm transition"
-                >
-                  Eliminar
-                </button>
+              <button
+                onClick={() => handleToggle(u.id)}
+                className={`px-3 py-1 rounded-lg text-sm text-white ${
+                  u.status === "active"
+                    ? "bg-red-500"
+                    : "bg-green-500"
+                }`}
+              >
+                {u.status === "active" ? "Suspender" : "Activar"}
+              </button>
 
-              </div>
+            </div>
           </div>
         ))}
 
@@ -187,14 +250,10 @@ export default function Users() {
       {/* MODAL */}
       {editingUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-xl w-96">
 
-          <div className="bg-white p-6 rounded-xl w-96 shadow-lg">
+            <h2 className="text-lg font-bold mb-4">Editar Usuario</h2>
 
-            <h2 className="text-lg font-bold mb-4">
-              Editar Usuario
-            </h2>
-
-            <label className="text-sm font-medium">Nombre</label>
             <input
               name="name"
               value={formData.name}
@@ -202,7 +261,6 @@ export default function Users() {
               className="w-full mb-2 p-2 border rounded"
             />
 
-            <label className="text-sm font-medium">Email</label>
             <input
               name="email"
               value={formData.email}
@@ -210,7 +268,6 @@ export default function Users() {
               className="w-full mb-2 p-2 border rounded"
             />
 
-            <label className="text-sm font-medium">Rol</label>
             <select
               name="role"
               value={formData.role}
@@ -221,15 +278,6 @@ export default function Users() {
               <option value="tenant">Inquilino</option>
             </select>
 
-            <label className="text-sm font-medium">Teléfono</label>
-            <input
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              className="w-full mb-2 p-2 border rounded"
-            />
-
-            <label className="text-sm font-medium">Estado</label>
             <select
               name="status"
               value={formData.status}
@@ -237,27 +285,20 @@ export default function Users() {
               className="w-full mb-2 p-2 border rounded"
             >
               <option value="active">Activo</option>
-              <option value="inactive">Inactivo</option>
+              <option value="suspended">Suspendido</option>
             </select>
 
             <div className="flex justify-end gap-2 mt-4">
-              <button
-                onClick={() => setEditingUser(null)}
-                className="px-3 py-1 bg-gray-300 rounded"
-              >
-                Cancelar
-              </button>
-
+              <button onClick={() => setEditingUser(null)}>Cancelar</button>
               <button
                 onClick={handleSave}
-                className="px-3 py-1 bg-blue-500 text-white rounded"
+                className="bg-blue-500 text-white px-3 py-1 rounded"
               >
                 Guardar
               </button>
             </div>
 
           </div>
-
         </div>
       )}
 
