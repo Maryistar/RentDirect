@@ -11,10 +11,10 @@ export const transporter = nodemailer.createTransport({
 export async function sendVerificationEmail(email, code, subject = 'Verification code') {
   // tu código actual de nodemailer
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: `"RentDirect" <${process.env.EMAIL_USER}>`,
     to: email,
     subject,
-    text: `Your code is: ${code}`
+    text: `Tu codigo de verificacion es: ${code}`
   };
   await transporter.sendMail(mailOptions);
 }
