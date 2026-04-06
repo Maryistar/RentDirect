@@ -110,8 +110,12 @@ export async function login(email, password) {
     throw { status: 401, message: 'Invalid credentials' };
 
  
-  if (user.status === "inactive")
-    throw { status: 403, message: "Usuario desactivado" };
+  if (user.status !== "active") {
+  throw {
+    status: 403,
+    message: "Tu cuenta está suspendida. Contacta al administrador."
+  };
+}
 
   if (!user.is_verified)
     throw { status: 401, message: 'Please verify your email before logging in.' };

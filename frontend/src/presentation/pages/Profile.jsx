@@ -94,9 +94,9 @@ export default function Profile() {
 
         setForm({
           name: userData.name || "",
-          last_name: userData.last_name || "",
+          last_name: userData.last_name || userData.lastname || "",
           email: userData.email || "",
-          description: userData.description || ""
+          description: userData.description || userData.bio || ""
         });
 
       } catch (err) {
@@ -301,7 +301,7 @@ export default function Profile() {
 
             <div>
               <h2 className="text-3xl font-bold">
-                {user?.name} {user?.last_name}
+                {user?.name} {user?.last_name || user?.lastname || ""}
               </h2>
 
               
@@ -313,9 +313,9 @@ export default function Profile() {
 
               <p>{user?.email}</p>
 
-              {user?.description && (
+              {(user?.description || user?.bio) && (
                 <p className="text-sm mt-2 text-gray-300">
-                  {user.description}
+                  {user.description || user.bio}
                 </p>
               )}
 
