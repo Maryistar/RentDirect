@@ -350,9 +350,17 @@ export default function CreateProperty() {
 
                       if (loading) return; // 🔥 EVITA DOBLE EJECUCIÓN
                       setLoading(true);
-                      alert("Pago exitoso 🔥");
+
 
                       try {
+
+                        // 🔥 cerrar todo
+                        setShowPaymentModal(false);
+                        setShowPremiumPaypal(false);
+
+                        alert("Pago exitoso 🔥");
+
+
                         pendingProperty.append("isPaid", "true");
                         await createProperty(pendingProperty);
 
@@ -387,9 +395,13 @@ export default function CreateProperty() {
                     }}
                     onApprove={async () => {
 
-                      alert("Plan premium activado ⭐🔥");
-
                       try {
+
+                        // 🔥 cerrar todo
+                        setShowPaymentModal(false);
+                        setShowPremiumPaypal(false);
+
+                        alert("Plan premium activado ⭐🔥");
 
                         // 🔥 OPCIONAL: si venía de crear propiedad
                         if (pendingProperty) {
@@ -400,10 +412,6 @@ export default function CreateProperty() {
 
                           alert("Propiedad publicada con plan premium ✅");
                         }
-
-                        // 🔥 cerrar todo
-                        setShowPaymentModal(false);
-                        setShowPremiumPaypal(false);
 
                         // 🔥 redirigir
                         navigate("/my-properties");
