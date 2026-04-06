@@ -40,31 +40,6 @@ export default function AdminProperties() {
     }
   };
 
-  const handleDelete = async (id, status) => {
-    if (status === "rented") {
-      alert("No se puede eliminar una propiedad arrendada");
-      return;
-    }
-
-    if (!window.confirm("¿Eliminar esta propiedad?")) return;
-
-    try {
-      const token = localStorage.getItem("token");
-
-      await axios.delete(
-        `http://localhost:4000/api/v1/properties/${id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      loadProperties();
-    } catch (err) {
-      console.error(err);
-      alert("Error eliminando propiedad");
-    }
-  };
-
   const openEdit = (property) => {
     setEditingProperty(property);
     setFormData({
@@ -180,13 +155,6 @@ export default function AdminProperties() {
                   className="bg-blue-500 text-white px-3 py-1 rounded-lg"
                 >
                   Editar
-                </button>
-
-                <button
-                  onClick={() => handleDelete(p.id, p.status)}
-                  className="bg-red-500 text-white px-3 py-1 rounded-lg"
-                >
-                  Eliminar
                 </button>
 
               </div>
