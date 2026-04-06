@@ -115,6 +115,22 @@ export default function CreateProperty() {
   };
 
   async function handleSubmit() {
+
+    setError(""); 
+    // 🔥 VALIDACIÓN
+    if (
+      !title ||
+      !address ||
+      !neighborhood ||
+      !price ||
+      !type ||
+      !description ||
+      images.length === 0
+    ) {
+      setError("Por favor completa todos los campos");
+      return;
+    }
+
     const formData = new FormData();
 
     formData.append("title", title);
@@ -129,12 +145,10 @@ export default function CreateProperty() {
 
     images.forEach((img) => formData.append("images", img));
 
-    // 🔥 NO PUBLICAR TODAVÍA
     setPendingProperty(formData);
-
-    // mostrar modal de pago
     setShowPaymentModal(true);
   }
+
 
   const progress = (step / 3) * 100;
 
