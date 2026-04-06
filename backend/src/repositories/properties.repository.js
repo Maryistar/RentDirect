@@ -212,3 +212,21 @@ export async function getAllWithImages() {
   return properties;
 }
 
+export async function incrementFreePublications(userId) {
+  await db.query(
+    `UPDATE users 
+     SET free_publications_used = free_publications_used + 1
+     WHERE id = ?`,
+    [userId]
+  );
+}
+export async function getUserById(userId) {
+  const [[user]] = await db.query(
+    `SELECT id, free_publications_used, is_premium, premium_until
+     FROM users
+     WHERE id = ?`,
+    [userId]
+  );
+
+  return user;
+}

@@ -115,6 +115,22 @@ export default function CreateProperty() {
   };
 
   async function handleSubmit() {
+
+    setError("");
+
+    if (
+      !title ||
+      !address ||
+      !neighborhood ||
+      !price ||
+      !type ||
+      !description ||
+      images.length === 0
+    ) {
+      setError("Por favor completa todos los campos");
+      return;
+    }
+
     const formData = new FormData();
 
     formData.append("title", title);
@@ -129,11 +145,23 @@ export default function CreateProperty() {
 
     images.forEach((img) => formData.append("images", img));
 
-    // 🔥 NO PUBLICAR TODAVÍA
-    setPendingProperty(formData);
+    try {
+      const result = await createProperty(formData);
 
-    // mostrar modal de pago
-    setShowPaymentModal(true);
+      // 🔥 SI NECESITA PAGO
+      if (result.requirePayment) {
+        setPendingProperty(formData);
+        setShowPaymentModal(true);
+        return;
+      }
+
+      // ✅ SI ES GRATIS
+      alert("Propiedad publicada gratis 🎉");
+      navigate("/my-properties");
+
+    } catch (err) {
+      setError("Error creando propiedad");
+    }
   }
 
   const progress = (step / 3) * 100;
@@ -319,9 +347,21 @@ export default function CreateProperty() {
                       return order.id;
                     }}
                     onApprove={async () => {
-                      alert("Pago exitoso 🔥");
+
+                      if (loading) return; // 🔥 EVITA DOBLE EJECUCIÓN
+                      setLoading(true);
+
 
                       try {
+
+                        // 🔥 cerrar todo
+                        setShowPaymentModal(false);
+                        setShowPremiumPaypal(false);
+
+                        alert("Pago exitoso 🔥");
+
+
+                        pendingProperty.append("isPaid", "true");
                         await createProperty(pendingProperty);
 
                         alert("Propiedad publicada ✅");
@@ -353,10 +393,32 @@ export default function CreateProperty() {
                       const order = await createPaypalOrder("premium"); // luego lo diferenciamos
                       return order.id;
                     }}
-                    onApprove={async (data) => {
-                      alert("Plan premium activado ⭐🔥");
+                    onApprove={async () => {
 
-                      // aquí luego activamos plan premium
+                      try {
+
+                        // 🔥 cerrar todo
+                        setShowPaymentModal(false);
+                        setShowPremiumPaypal(false);
+
+                        alert("Plan premium activado ⭐🔥");
+
+                        // 🔥 OPCIONAL: si venía de crear propiedad
+                        if (pendingProperty) {
+
+                          pendingProperty.append("isPaid", "true");
+
+                          await createProperty(pendingProperty);
+
+                          alert("Propiedad publicada con plan premium ✅");
+                        }
+
+                        // 🔥 redirigir
+                        navigate("/my-properties");
+
+                      } catch (err) {
+                        alert("Error después de activar premium");
+                      }
                     }}
                   />
                 </div>
