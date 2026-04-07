@@ -24,6 +24,8 @@ export async function createProperty(data, user, files) {
 
   const hasFree = realUser.free_publications_used < 1;
 
+  console.log("🔥 SERVICE EJECUTANDOSE");
+
   // ❌ SOLO BLOQUEAR SI:
   // - NO es premium
   // - NO tiene gratis
