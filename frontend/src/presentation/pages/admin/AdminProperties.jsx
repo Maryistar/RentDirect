@@ -77,7 +77,7 @@ export default function AdminProperties() {
     }
   };
 
-  // 💰 FORMATO COP
+
   const formatCOP = (value) => {
     return new Intl.NumberFormat("es-CO", {
       style: "currency",
@@ -85,7 +85,7 @@ export default function AdminProperties() {
     }).format(value);
   };
 
-  // 🌐 TRADUCCIÓN ESTADOS
+
   const translateStatus = (status) => {
     switch (status) {
       case "available":
@@ -99,7 +99,7 @@ export default function AdminProperties() {
     }
   };
 
-  // 🎨 ESTILOS
+  
   const statusStyles = {
     available: "bg-green-100 text-green-700",
     rented: "bg-red-100 text-red-600",

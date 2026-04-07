@@ -6,7 +6,7 @@ export default function Users() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
-  const [filter, setFilter] = useState("all"); // 🔥 filtro
+  const [filter, setFilter] = useState("all"); 
 
   const [formData, setFormData] = useState({
     name: "",
@@ -125,7 +125,7 @@ export default function Users() {
     return status === "active" ? "Activo" : "Suspendido";
   };
 
-  // 🔥 FILTRADO DINÁMICO
+ 
   const filteredUsers = users.filter((u) => {
     if (filter === "active") return u.status === "active";
     if (filter === "suspended") return u.status === "suspended";

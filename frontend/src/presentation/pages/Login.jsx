@@ -14,7 +14,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🔥 NUEVO: referencia para resetear captcha
+  //  referencia para resetear captcha
   const recaptchaRef = useRef(null);
 
   const { login, loginGoogle } = useAuth();
@@ -39,16 +39,16 @@ export default function Login() {
         captcha
       });
 
-      // 🔥 RESET CAPTCHA (IMPORTANTE)
+      //  RESET CAPTCHA (IMPORTANTE)
       recaptchaRef.current.reset();
       setCaptcha(null);
 
-      // 🔥 LEER USUARIO GUARDADO
+      //  LEER USUARIO GUARDADO
       const user = JSON.parse(localStorage.getItem("user"));
 
       console.log("USER LOGIN:", user); // 👈 verifica
 
-      // 🔥 REDIRECCIÓN INTELIGENTE
+      //  REDIRECCIÓN INTELIGENTE
       if (user?.role === "admin") {
         navigate("/admin");
       } else {
@@ -57,7 +57,7 @@ export default function Login() {
 
     } catch (err) {
 
-      // 🔥 TAMBIÉN RESET SI FALLA
+      //  TAMBIÉN RESET SI FALLA
       recaptchaRef.current.reset();
       setCaptcha(null);
 

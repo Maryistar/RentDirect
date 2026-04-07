@@ -78,7 +78,7 @@ export const captureOrder = async (req, res) => {
         invoicePath
       );
 
-      // ✅ Guardar en DB
+      //  Guardar en DB
       await db.query(
         `INSERT INTO invoices (user_id, property_data, total, status, paypal_order_id, created_at) 
          VALUES (?, ?, ?, ?, ?, ?)`,
@@ -93,7 +93,7 @@ export const captureOrder = async (req, res) => {
       );
 
     } catch (invoiceError) {
-      console.error("🔥 ERROR FACTURA:", invoiceError);
+      console.error(" ERROR FACTURA:", invoiceError);
     }
 
     // Marcar usuario premium si aplica
@@ -112,7 +112,7 @@ export const captureOrder = async (req, res) => {
     return res.json({ status: "COMPLETED" });
 
   } catch (err) {
-    console.error("🔥 ERROR CAPTURANDO ORDEN:", err);
+    console.error(" ERROR CAPTURANDO ORDEN:", err);
     res.status(500).json({ error: err.message });
   }
 };

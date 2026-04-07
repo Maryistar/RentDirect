@@ -103,7 +103,7 @@ function ContractForm() {
 
       alert("Contrato creado 🔥");
 
-      // 🔥 REDIRECCIÓN AL CHAT
+      
       navigate(`/chat/${id}`);
 
     } catch (error) {

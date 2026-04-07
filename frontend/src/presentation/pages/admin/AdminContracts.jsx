@@ -145,7 +145,7 @@ export default function AdminContracts() {
     }
   };
 
-  // 🔥 NUEVA FUNCIÓN PARA TRADUCIR
+  
   const getStatusText = (status) => {
     switch (status) {
       case "active":

@@ -9,7 +9,7 @@ export default function Admin() {
     users: 0,
     properties: 0,
     contracts: 0,
-    invoices: 0, // <-- nueva estadística
+    invoices: 0, 
   });
 
   useEffect(() => {

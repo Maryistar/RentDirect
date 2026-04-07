@@ -8,7 +8,7 @@ export default function InvoicesAdmin() {
     const fetchInvoices = async () => {
       try {
         const { data } = await axios.get("http://localhost:4000/api/v1/admin/invoices");
-        if(data.success) setFacturas(data.data);
+        if (data.success) setFacturas(data.data);
 
         console.log("Facturas recibidas:", data.data);
       } catch (error) {
@@ -18,46 +18,127 @@ export default function InvoicesAdmin() {
     fetchInvoices();
   }, []);
 
-  return (
-    <div>
-      <h2>Facturas Recientes</h2>
-      <table className="table-auto border-collapse border border-gray-300">
-        <thead>
-          <tr>
-            <th className="border px-4 py-2">ID</th>
-            <th className="border px-4 py-2">Usuario</th>
-            <th className="border px-4 py-2">Total</th>
-            <th className="border px-4 py-2">Fecha</th>
-            <th className="border px-4 py-2">Estado</th>
-            <th className="border px-4 py-2">Factura PDF</th>
-          </tr>
-        </thead>
-              <tbody>
-                  {facturas.map(f => (
-                      <tr key={f.id}>
-                          <td className="border px-4 py-2">{f.id}</td>
-                          <td className="border px-4 py-2">{f.usuario_id}</td>
-                          <td className="border px-4 py-2">${f.total}</td>
-                          <td className="border px-4 py-2">{new Date(f.created_at).toLocaleDateString()}</td>
-                          <td className="border px-4 py-2">{f.estado}</td>
+  
+  const statusConfig = {
+    paid: {
+      label: "Pagado",
+      style: "bg-green-200 text-green-800"
+    },
+    completed: {
+      label: "Pagado",
+      style: "bg-green-200 text-green-800"
+    },
+    pending: {
+      label: "Pendiente",
+      style: "bg-yellow-200 text-yellow-800"
+    },
+    failed: {
+      label: "Fallido",
+      style: "bg-red-200 text-red-800"
+    },
+  };
 
-                          {/* Nueva columna PDF_ */}
-                          <td className="border px-4 py-2">
-                              {f.property_data && (
-                                  <a
-                                      href={`http://localhost:4000/${JSON.parse(f.property_data).invoicePath}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:underline"
-                                  >
-                                      Ver PDF
-                                  </a>
-                              )}
-                          </td>
-                      </tr>
-                  ))}
-              </tbody>
-      </table>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 p-6">
+
+      {/* HEADER */}
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-800">
+          Facturación PayPal 💳
+        </h2>
+      </div>
+
+      {/* CONTENEDOR */}
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+
+            <thead className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs uppercase">
+              <tr>
+                <th className="px-6 py-4">ID</th>
+                <th className="px-6 py-4">Usuario</th>
+                <th className="px-6 py-4">Total</th>
+                <th className="px-6 py-4">Fecha</th>
+                <th className="px-6 py-4">Estado</th>
+                <th className="px-6 py-4 text-center">Factura</th>
+              </tr>
+            </thead>
+
+            <tbody className="divide-y">
+
+              {facturas.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-10 text-gray-400">
+                    No hay facturas disponibles
+                  </td>
+                </tr>
+              ) : (
+                facturas.map((f) => {
+                  const status = statusConfig[f.estado] || {
+                    label: f.estado,
+                    style: "bg-gray-200 text-gray-700"
+                  };
+
+                  return (
+                    <tr
+                      key={f.id}
+                      className="hover:bg-blue-50 transition duration-200"
+                    >
+
+                      <td className="px-6 py-4 font-bold text-gray-700">
+                        #{f.id}
+                      </td>
+
+                      <td className="px-6 py-4 text-gray-600">
+                        {f.usuario_id}
+                      </td>
+
+                      <td className="px-6 py-4 font-semibold text-blue-600">
+                        {new Intl.NumberFormat("es-CO", {
+                          style: "currency",
+                          currency: "COP",
+                        }).format(f.total)}
+                      </td>
+
+                      <td className="px-6 py-4 text-gray-500">
+                        {new Date(f.created_at).toLocaleDateString("es-CO")}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${status.style}`}
+                        >
+                          {status.label}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4 text-center">
+                        {f.property_data ? (
+                          <a
+                            href={`http://localhost:4000/${JSON.parse(f.property_data).invoicePath}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block bg-gradient-to-r from-blue-500 to-purple-500 hover:scale-105 text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition transform"
+                          >
+                            Ver PDF
+                          </a>
+                        ) : (
+                          <span className="text-gray-400 text-xs">
+                            No disponible
+                          </span>
+                        )}
+                      </td>
+
+                    </tr>
+                  );
+                })
+              )}
+
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
