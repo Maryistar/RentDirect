@@ -1,5 +1,10 @@
 import paypalClient from '../../services/paypal.service.js';
 import paypal from '@paypal/checkout-server-sdk';
+import { generateInvoice } from "../../services/invoice.service.js";
+import { sendInvoiceEmail } from "../../services/email.service.js";
+import { getUserById } from "../../repositories/users.repository.js";
+import db from '../../config/db.js';
+
 
 export const createOrder = async (req, res) => {
   try {
@@ -17,6 +22,7 @@ export const createOrder = async (req, res) => {
       description = "Plan Premium 🔥";
     }
 
+     // 🔥 ESTA LÍNEA FALTABA
     const request = new paypal.orders.OrdersCreateRequest();
 
     request.prefer("return=representation");
@@ -46,45 +52,69 @@ export const createOrder = async (req, res) => {
   }
 };
 
+
 export const captureOrder = async (req, res) => {
   try {
 
-    const { orderID } = req.body;
-
-    const request = new paypal.orders.OrdersCaptureRequest(orderID);
-    request.requestBody({});
-
-    const capture = await paypalClient.execute(request);
-
+    const { orderID, type } = req.body;
     const user = req.user;
-    const { type } = req.body;
 
-    // 🔥 PLAN PREMIUM
+    // 🔥 obtener usuario completo
+    const fullUser = await getUserById(user.id);
+
+    // 🔥 definir monto
+    let amount = type === "premium" ? "20.00" : "5.00";
+
+    // 🔥 generar factura
+    let invoicePath = null;
+
+    try {
+      invoicePath = await generateInvoice({
+        user: fullUser,
+        type,
+        orderID,
+        amount
+      });
+
+      const adminEmail = process.env.ADMIN_EMAIL || "tuemail@gmail.com";
+
+      await sendInvoiceEmail(
+        fullUser.email,
+        "Factura de tu pago 💳",
+        "Adjunto encontrarás tu factura.",
+        invoicePath
+      );
+
+      await sendInvoiceEmail(
+        adminEmail,
+        "Nueva factura generada 📄",
+        `El usuario ${fullUser.email} realizó un pago.`,
+        invoicePath
+      );
+
+    } catch (invoiceError) {
+      console.error("🔥 ERROR FACTURA:", invoiceError);
+    }
+
+    // 🔥 PREMIUM
     if (type === "premium") {
-
       const premiumUntil = new Date();
       premiumUntil.setDate(premiumUntil.getDate() + 30);
 
       await db.query(
         `UPDATE users 
-     SET is_premium = 1, premium_until = ? 
-     WHERE id = ?`,
+         SET is_premium = 1, premium_until = ? 
+         WHERE id = ?`,
         [premiumUntil, user.id]
       );
 
-      return res.json({
-        status: "COMPLETED",
-        message: "Plan premium activado"
-      });
+      return res.json({ status: "COMPLETED" });
     }
 
-    // 🔥 PAGO POR PUBLICACIÓN
-    return res.json({
-      status: "COMPLETED",
-      message: "Pago exitoso, ya puedes publicar"
-    });
+    return res.json({ status: "COMPLETED" });
 
   } catch (err) {
-    res.status(500).json({ error: "Error capturando pago" });
+    console.error("🔥 ERROR:", err);
+    res.status(500).json({ error: err.message });
   }
 };
