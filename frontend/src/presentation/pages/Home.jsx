@@ -15,8 +15,8 @@ export default function Home() {
   // EFECTO ZOOM AL SCROLL
   useEffect(() => {
     const handleScroll = () => {
-      const value = 1 + window.scrollY * 0.0005; // velocidad zoom
-      setScale(value > 1.15 ? 1.15 : value); // límite zoom
+      const value = 1 + window.scrollY * 0.0005;
+      setScale(value > 1.15 ? 1.15 : value);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -43,7 +43,6 @@ export default function Home() {
       {/* HERO PRO */}
       <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
 
-        {/* IMAGEN CON ZOOM */}
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-300"
           style={{
@@ -53,10 +52,8 @@ export default function Home() {
           }}
         />
 
-        {/* OVERLAY SUAVE (NO OPACO) */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/10"></div>
 
-        {/* CONTENIDO */}
         <div className="relative z-10 text-center text-white max-w-3xl px-4">
 
           <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
@@ -67,7 +64,6 @@ export default function Home() {
             Arrienda directamente con propietarios
           </p>
 
-          {/* BADGES */}
           <div className="flex justify-center gap-3 mb-6 text-sm flex-wrap">
             <span className="bg-white/20 px-3 py-1 rounded-full backdrop-blur">
               Sin intermediarios
@@ -80,7 +76,6 @@ export default function Home() {
             </span>
           </div>
 
-          
         </div>
       </section>
 
@@ -129,6 +124,16 @@ export default function Home() {
           </div>
 
         </div>
+
+        {/* 🔥 IMAGEN PAYPAL FINAL */}
+        <div className="flex justify-center mt-32">
+          <img
+            src="/paypal-plan.png"
+            alt="Planes PayPal"
+            className="w-[80%] max-w-xl rounded-2xl shadow-xl animate-[pulse_1.5s_ease-in-out_infinite]"
+          />
+        </div>
+
       </section>
 
       {/* COMO FUNCIONA */}
