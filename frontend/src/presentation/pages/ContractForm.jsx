@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function ContractForm() {
 
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     startDate: "",
@@ -18,7 +19,7 @@ function ContractForm() {
     noticeTime: ""
   });
 
-  // 🔥 datos automáticos
+  
   const [chatInfo, setChatInfo] = useState(null);
   useEffect(() => {
     console.log("CHAT INFO FRONT:", chatInfo);
@@ -26,7 +27,7 @@ function ContractForm() {
 
   const token = localStorage.getItem("token");
 
-  // 🔥 CARGAR INFO DEL CHAT (propiedad + usuarios)
+  
   useEffect(() => {
     const loadChatInfo = async () => {
       try {
@@ -101,6 +102,10 @@ function ContractForm() {
       );
 
       alert("Contrato creado 🔥");
+
+      // 🔥 REDIRECCIÓN AL CHAT
+      navigate(`/chat/${id}`);
+
     } catch (error) {
       console.error(error);
     }
@@ -115,14 +120,12 @@ function ContractForm() {
 
         <form onSubmit={handleSubmit} className="form">
 
-          {/* 👤 PARTES AUTOMÁTICAS */}
           <div className="section">
             <h3>👤 Partes</h3>
             <input value={chatInfo?.owner_name || "Propietario"} disabled />
             <input value={chatInfo?.tenant_name || "Inquilino"} disabled />
           </div>
 
-          {/* 📅 FECHAS */}
           <div className="section">
             <h3>📅 Fechas</h3>
 
@@ -130,7 +133,6 @@ function ContractForm() {
             <input type="date" name="endDate" onChange={handleChange} required />
           </div>
 
-          {/* 🏠 INMUEBLE AUTOMÁTICO */}
           <div className="section">
             <h3>🏠 Inmueble</h3>
 
@@ -153,7 +155,6 @@ function ContractForm() {
             <label><input type="checkbox" name="inventory" value="Cocina integral" onChange={handleCheckbox} /> Cocina integral</label>
           </div>
 
-          {/* 💰 PAGO */}
           <div className="section">
             <h3>💰 Pago</h3>
 
@@ -181,7 +182,6 @@ function ContractForm() {
             />
           </div>
 
-          {/* 🔌 SERVICIOS */}
           <div className="section">
             <h3>🔌 Servicios</h3>
 
@@ -191,7 +191,6 @@ function ContractForm() {
             <label><input type="checkbox" name="utilities" value="Administración" onChange={handleCheckbox} /> Administración</label>
           </div>
 
-          {/* 📝 SOLO OTROS TERMINOS */}
           <div className="section">
             <h3>📝 Otros términos</h3>
 
