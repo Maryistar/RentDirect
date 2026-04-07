@@ -15,7 +15,6 @@ import logo from "../../assets/logo.png";
 export default function Navbar() {
 
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef(null);
 
   const navigate = useNavigate();
@@ -35,18 +34,6 @@ export default function Navbar() {
 
   }, []);
 
-  useEffect(() => {
-
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-
-    return () => window.removeEventListener("scroll", handleScroll);
-
-  }, []);
-
   const handleLogout = () => {
 
     logout();
@@ -60,13 +47,11 @@ export default function Navbar() {
   return (
 
     <nav
-      className={`
-        fixed w-full top-0 left-0 z-50 transition-all duration-300
-        ${scrolled
-          ? "bg-white/80 backdrop-blur-md shadow-xl border-b border-gray-200"
-          : "bg-white shadow-lg"}
-        px-6 py-4
-      `}
+      className="
+        fixed w-full top-0 left-0 z-50
+        bg-gray-900 shadow-lg
+        px-6 py-5
+      "
     >
 
       <div className="flex justify-between items-center">
@@ -81,14 +66,15 @@ export default function Navbar() {
           <img
             src={logo}
             alt="RentDirect logo"
-            className="w-9 h-9 object-contain animate-logoIntro transition"
+            className="w-9 h-9 object-contain transition"
           />
 
           <span className="
             text-2xl md:text-3xl font-bold
-            text-blue-900
-            group-hover:text-blue-700
-            transition
+            text-white
+            transition duration-300
+            group-hover:text-white
+            group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]
           ">
             RentDirect
           </span>
@@ -101,7 +87,7 @@ export default function Navbar() {
 
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="text-2xl text-gray-700 hover:scale-110 transition"
+            className="text-2xl text-white hover:scale-110 transition"
           >
             ☰
           </button>

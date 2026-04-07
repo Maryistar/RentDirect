@@ -41,18 +41,18 @@ export default function Home() {
     <div className="w-full overflow-hidden">
 
       {/* HERO PRO */}
-      <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
-
+     <section className="relative h-[600px] flex items-center justify-center overflow-hidden -mt-[80px] pt-[80px]">
         <div
+        
           className="absolute inset-0 bg-cover bg-center transition-transform duration-300"
           style={{
             transform: `scale(${scale})`,
             backgroundImage:
-              "url('https://cdn.prod.website-files.com/6565c5a84d3ef6316fbf310e/67f7014c39f3441d2410fd48_MEdellin.jpg')",
+              "url('https://irp.cdn-website.com/md/pexels/dms3rep/multi/pexels-photo-4150119.jpeg')",
           }}
         />
 
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/10"></div>
+        <div className="absolute inset-0 bg-black/40"></div>
 
         <div className="relative z-10 text-center text-white max-w-3xl px-4">
 
@@ -60,18 +60,19 @@ export default function Home() {
             Encuentra tu próximo hogar
           </h1>
 
-          <p className="mb-6 text-lg text-gray-200">
-            Arrienda directamente con propietarios
-          </p>
+        
 
           <div className="flex justify-center gap-3 mb-6 text-sm flex-wrap">
-            <span className="bg-white/20 px-3 py-1 rounded-full backdrop-blur">
+             <span className="bg-white/40 px-3 py-1 rounded-full backdrop-blur">
+              Arrienda directamente con propietarios
+            </span>
+            <span className="bg-white/40 px-3 py-1 rounded-full backdrop-blur">
               Sin intermediarios
             </span>
-            <span className="bg-white/20 px-3 py-1 rounded-full backdrop-blur">
+            <span className="bg-white/40 px-3 py-1 rounded-full backdrop-blur">
               Sin comisiones
             </span>
-            <span className="bg-white/20 px-3 py-1 rounded-full backdrop-blur">
+            <span className="bg-white/40 px-3 py-1 rounded-full backdrop-blur">
               Rápido y seguro
             </span>
           </div>
@@ -125,7 +126,7 @@ export default function Home() {
 
         </div>
 
-        {/* 🔥 IMAGEN PAYPAL FINAL */}
+        
         <div className="flex justify-center mt-32">
           <img
             src="/paypal-plan.png"
