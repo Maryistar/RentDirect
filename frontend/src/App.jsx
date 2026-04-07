@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./application/context/AuthContext";
-
 import Navbar from "./presentation/components/Navbar";
 import Footer from "./presentation/components/Footer";
 
@@ -27,6 +26,7 @@ import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 import AdminProperties from "./presentation/pages/admin/AdminProperties";
 import AdminContracts from "./presentation/pages/admin/AdminContracts";
+import InvoicesAdmin from "./presentation/pages/admin/InvoicesAdmin";
 import Terms from "./presentation/pages/Terms";
 import Privacy from "./presentation/pages/Privacy";
 
@@ -109,6 +109,7 @@ export default function App() {
 
           <Route path="/admin/properties" element={<AdminProperties />} />
           <Route path="/admin/contracts" element={<AdminContracts />} />
+          <Route path="/admin/invoices" element={<InvoicesAdmin />} />
 
 
 
@@ -142,6 +143,7 @@ export default function App() {
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
 
+          
 
         </Routes>
       </div>

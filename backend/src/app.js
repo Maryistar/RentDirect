@@ -54,7 +54,7 @@ app.use(bodyParser.json());
 // ================================
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use("/uploads", express.static(path.resolve("uploads")));
-
+app.use('/uploads', express.static('uploads')); 
 // ================================
 // RUTAS
 // ================================

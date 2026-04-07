@@ -5,6 +5,12 @@ import path from "path";
 export function generateInvoice({ user, type, orderID, amount }) {
   return new Promise((resolve, reject) => {
     try {
+
+      // Crear carpeta uploads/invoices si no existe
+      const invoicesDir = path.join('uploads', 'invoices');
+      if (!fs.existsSync(invoicesDir)) {
+        fs.mkdirSync(invoicesDir, { recursive: true });
+      }
       const doc = new PDFDocument();
 
       const fileName = `invoice_${orderID}.pdf`;

@@ -5,15 +5,12 @@ import { sendInvoiceEmail } from "../../services/email.service.js";
 import { getUserById } from "../../repositories/users.repository.js";
 import db from '../../config/db.js';
 
-
+// Crear orden PayPal
 export const createOrder = async (req, res) => {
   try {
-
-    // 🔥 NUEVO (recibir tipo)
     const { type } = req.body;
     console.log("TIPO:", type);
 
-    // 🔥 NUEVO (definir precio dinámico)
     let value = "5.00";
     let description = "Publicación de propiedad";
 
@@ -22,52 +19,39 @@ export const createOrder = async (req, res) => {
       description = "Plan Premium 🔥";
     }
 
-     // 🔥 ESTA LÍNEA FALTABA
     const request = new paypal.orders.OrdersCreateRequest();
-
     request.prefer("return=representation");
-
     request.requestBody({
       intent: "CAPTURE",
       purchase_units: [
         {
-          amount: {
-            currency_code: "USD",
-            value: value, // 👈 dinámico
-          },
-          description: description, // 👈 opcional pero PRO
+          amount: { currency_code: "USD", value },
+          description,
         },
       ],
     });
 
     const order = await paypalClient.execute(request);
 
-    res.json({
-      id: order.result.id
-    });
+    res.json({ id: order.result.id });
 
   } catch (err) {
-    console.error(err);
+    console.error("Error creando orden:", err);
     res.status(500).json({ error: "Error creando orden" });
   }
 };
 
-
+// Capturar orden y guardar factura
 export const captureOrder = async (req, res) => {
   try {
-
     const { orderID, type } = req.body;
     const user = req.user;
 
-    // 🔥 obtener usuario completo
     const fullUser = await getUserById(user.id);
-
-    // 🔥 definir monto
     let amount = type === "premium" ? "20.00" : "5.00";
 
-    // 🔥 generar factura
+    // Generar factura
     let invoicePath = null;
-
     try {
       invoicePath = await generateInvoice({
         user: fullUser,
@@ -76,8 +60,9 @@ export const captureOrder = async (req, res) => {
         amount
       });
 
-      const adminEmail = process.env.ADMIN_EMAIL || "tuemail@gmail.com";
+      const adminEmail = process.env.ADMIN_EMAIL || "admin@example.com";
 
+      // Enviar al usuario
       await sendInvoiceEmail(
         fullUser.email,
         "Factura de tu pago 💳",
@@ -85,6 +70,7 @@ export const captureOrder = async (req, res) => {
         invoicePath
       );
 
+      // Enviar al admin
       await sendInvoiceEmail(
         adminEmail,
         "Nueva factura generada 📄",
@@ -92,11 +78,25 @@ export const captureOrder = async (req, res) => {
         invoicePath
       );
 
+      // ✅ Guardar en DB
+      await db.query(
+        `INSERT INTO invoices (user_id, property_data, total, status, paypal_order_id, created_at) 
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          user.id,
+          JSON.stringify({ type, amount, invoicePath }),
+          amount,
+          "completed",
+          orderID,
+          new Date()
+        ]
+      );
+
     } catch (invoiceError) {
       console.error("🔥 ERROR FACTURA:", invoiceError);
     }
 
-    // 🔥 PREMIUM
+    // Marcar usuario premium si aplica
     if (type === "premium") {
       const premiumUntil = new Date();
       premiumUntil.setDate(premiumUntil.getDate() + 30);
@@ -107,14 +107,12 @@ export const captureOrder = async (req, res) => {
          WHERE id = ?`,
         [premiumUntil, user.id]
       );
-
-      return res.json({ status: "COMPLETED" });
     }
 
     return res.json({ status: "COMPLETED" });
 
   } catch (err) {
-    console.error("🔥 ERROR:", err);
+    console.error("🔥 ERROR CAPTURANDO ORDEN:", err);
     res.status(500).json({ error: err.message });
   }
 };
