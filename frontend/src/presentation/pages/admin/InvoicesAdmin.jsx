@@ -41,7 +41,7 @@ export default function InvoicesAdmin() {
                           <td className="border px-4 py-2">{new Date(f.created_at).toLocaleDateString()}</td>
                           <td className="border px-4 py-2">{f.estado}</td>
 
-                          {/* Nueva columna PDF */}
+                          {/* Nueva columna PDF_ */}
                           <td className="border px-4 py-2">
                               {f.property_data && (
                                   <a
