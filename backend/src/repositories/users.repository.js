@@ -101,10 +101,24 @@ export async function insertDocument(userId, type, url) {
 
 export const getUserById = async (id) => {
   const [rows] = await db.query(
-    "SELECT id, name, email, role, phone, status FROM users WHERE id = ?",
+    `SELECT 
+      id,
+      email,
+      name,
+      last_name,
+      cedula,
+      role,
+      score,
+      status,
+      phone,
+      avatar,
+      description,
+      created_at
+     FROM users 
+     WHERE id = ?`,
     [id]
   );
-  return rows[0]; // retorna un usuario
+  return rows[0];
 };
 
 export const updateUser = async (id, data) => {

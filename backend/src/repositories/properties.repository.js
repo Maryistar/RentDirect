@@ -230,3 +230,12 @@ export async function getUserById(userId) {
 
   return user;
 }
+
+export async function getAllProperties() {
+  const [rows] = await db.query(
+    `SELECT * FROM properties 
+     ORDER BY created_at DESC`
+  );
+
+  return rows;
+}

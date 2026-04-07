@@ -25,7 +25,7 @@ export default function AdminProperties() {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-        "http://localhost:4000/api/v1/properties",
+        "http://localhost:4000/api/v1/properties/admin",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -37,31 +37,6 @@ export default function AdminProperties() {
       alert("Error cargando propiedades");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleDelete = async (id, status) => {
-    if (status === "rented") {
-      alert("No se puede eliminar una propiedad arrendada");
-      return;
-    }
-
-    if (!window.confirm("¿Eliminar esta propiedad?")) return;
-
-    try {
-      const token = localStorage.getItem("token");
-
-      await axios.delete(
-        `http://localhost:4000/api/v1/properties/${id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      loadProperties();
-    } catch (err) {
-      console.error(err);
-      alert("Error eliminando propiedad");
     }
   };
 
@@ -102,7 +77,7 @@ export default function AdminProperties() {
     }
   };
 
-  //FORMATO COP
+  // 💰 FORMATO COP
   const formatCOP = (value) => {
     return new Intl.NumberFormat("es-CO", {
       style: "currency",
@@ -110,17 +85,25 @@ export default function AdminProperties() {
     }).format(value);
   };
 
-  //  IMAGEN DESDE property_images
-  const getImage = (p) => {
-    if (p.images && p.images.length > 0) {
-      const img = p.images[0].url;
-
-      return img.startsWith("http")
-        ? img
-        : `http://localhost:4000/${img}`;
+  // 🌐 TRADUCCIÓN ESTADOS
+  const translateStatus = (status) => {
+    switch (status) {
+      case "available":
+        return "Disponible";
+      case "rented":
+        return "Arrendada";
+      case "pending":
+        return "Pendiente";
+      default:
+        return status;
     }
+  };
 
-    return "https://via.placeholder.com/400x200";
+  // 🎨 ESTILOS
+  const statusStyles = {
+    available: "bg-green-100 text-green-700",
+    rented: "bg-red-100 text-red-600",
+    pending: "bg-yellow-100 text-yellow-700",
   };
 
   if (loading) {
@@ -139,8 +122,6 @@ export default function AdminProperties() {
         {properties.map((p) => (
           <div key={p.id} className="bg-white rounded-2xl shadow overflow-hidden">
 
-            
-
             <div className="p-4">
 
               <h2 className="font-semibold text-lg">{p.title}</h2>
@@ -150,17 +131,14 @@ export default function AdminProperties() {
                 {formatCOP(p.price)}
               </p>
 
-              <span className={`px-3 py-1 rounded-full text-sm ${
-                p.status === "available"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}>
-                {p.status}
+              <span
+                className={`px-3 py-1 rounded-full text-sm ${statusStyles[p.status]}`}
+              >
+                {translateStatus(p.status)}
               </span>
 
               <div className="flex gap-2 mt-4 flex-wrap">
 
-                {/* 🔥 RUTA CORRECTA */}
                 <button
                   onClick={() =>
                     navigate(`/properties/${p.id}`, {
@@ -177,13 +155,6 @@ export default function AdminProperties() {
                   className="bg-blue-500 text-white px-3 py-1 rounded-lg"
                 >
                   Editar
-                </button>
-
-                <button
-                  onClick={() => handleDelete(p.id, p.status)}
-                  className="bg-red-500 text-white px-3 py-1 rounded-lg"
-                >
-                  Eliminar
                 </button>
 
               </div>
@@ -234,6 +205,7 @@ export default function AdminProperties() {
             >
               <option value="available">Disponible</option>
               <option value="rented">Arrendada</option>
+              <option value="pending">Pendiente</option>
             </select>
 
             <div className="flex justify-end gap-2 mt-4">

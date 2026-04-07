@@ -3,25 +3,20 @@ import * as userService from "../../services/users.service.js";
 import multer from "multer";
 import pool from "../../config/db.js";
 
-
 const upload = multer({ storage: multer.memoryStorage() });
 
 /* =========================
-   OBTENER PERFIL
+   OBTENER PERFIL (PROPIO)
 ========================= */
 export async function getMe(req, res, next) {
   try {
-    console.log("REQ.USER:", req.user);
-
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         message: "No autorizado - token inválido",
       });
     }
 
-    const user = await userService.getUserById(req.user.id);
-
-    console.log("USER SERVICE:", user);
+    const user = await usersRepository.findById(req.user.id);
 
     if (!user) {
       return res.status(404).json({
@@ -29,24 +24,36 @@ export async function getMe(req, res, next) {
       });
     }
 
-    return res.json({
-      id: user.id,
-      name: user.name,
-      last_name: user.last_name,
-      email: user.email,
-      role: user.role,
-      avatar: user.avatar,
-      phone: user.phone,
-      description: user.description,
-      score: user.score || 0,
-      status: user.status,
-      created_at: user.created_at,
-    });
+    return res.json(user);
+
   } catch (err) {
     console.error("ERROR getMe:", err);
     next(err);
   }
 }
+
+/* =========================
+   OBTENER USUARIO POR ID (ADMIN / PUBLIC)
+========================= */
+export const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await usersRepository.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Usuario no encontrado",
+      });
+    }
+
+    res.json(user);
+
+  } catch (error) {
+    console.error("GET USER BY ID ERROR:", error);
+    res.status(500).json({ message: "Error del servidor" });
+  }
+};
 
 /* =========================
    ACTUALIZAR PERFIL
@@ -55,7 +62,7 @@ export async function updateMe(req, res, next) {
   try {
     await userService.updateUser(req.user.id, req.body);
 
-    const updatedUser = await userService.getUserById(req.user.id);
+    const updatedUser = await usersRepository.findById(req.user.id);
 
     res.json(updatedUser);
   } catch (err) {
@@ -89,9 +96,6 @@ export function uploadDocumentHandler(req, res, next) {
 ========================= */
 export const uploadAvatar = async (req, res) => {
   try {
-    console.log("REQ.FILE:", req.file);
-    console.log("REQ.USER:", req.user);
-
     if (!req.file) {
       return res.status(400).json({ message: "No se envió archivo" });
     }
@@ -101,6 +105,7 @@ export const uploadAvatar = async (req, res) => {
     await usersRepository.updateUserAvatar(req.user.id, imageUrl);
 
     res.json({ url: imageUrl });
+
   } catch (error) {
     console.error("ERROR REAL:", error);
     res.status(500).json({ message: "Error al subir imagen" });
@@ -121,31 +126,9 @@ export const deleteAvatar = async (req, res) => {
   }
 };
 
-
-export const getUserById = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const [rows] = await db.query(
-      `SELECT id, name, last_name, email, role, avatar, score 
-       FROM users 
-       WHERE id = ?`,
-      [id]
-    );
-
-    if (!rows.length) {
-      return res.status(404).json({
-        message: "Usuario no encontrado",
-      });
-    }
-
-    res.json(rows[0]);
-  } catch (error) {
-    console.error("GET USER BY ID ERROR:", error);
-    res.status(500).json({ message: "Error del servidor" });
-  }
-};
-
+/* =========================
+   LISTAR USUARIOS (ADMIN)
+========================= */
 export const getUsers = async (req, res) => {
   try {
     const [rows] = await pool.query(`
@@ -161,24 +144,30 @@ export const getUsers = async (req, res) => {
   }
 };
 
+/* =========================
+   ACTUALIZAR USUARIO (ADMIN)
+========================= */
 export const updateUserByAdmin = async (req, res, next) => {
   try {
     const userId = req.params.id;
     const { name, email, role, phone, status } = req.body;
 
-    // Validar que exista usuario
-    const user = await usersRepository.getUserById(userId);
+    const user = await usersRepository.findById(userId);
     if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
     await usersRepository.updateUser(userId, { name, email, role, phone, status });
 
-    const updatedUser = await usersRepository.getUserById(userId);
+    const updatedUser = await usersRepository.findById(userId);
+
     res.json(updatedUser);
   } catch (err) {
     next(err);
   }
 };
 
+/* =========================
+   CAMBIAR STATUS (ADMIN)
+========================= */
 export async function toggleStatus(req, res) {
   try {
     const { id } = req.params;

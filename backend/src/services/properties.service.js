@@ -55,7 +55,7 @@ export async function createProperty(data, user, files) {
     thumbnail
   });
 
-  // 🔹 Guardar imágenes
+ 
   if (files && files.length > 0) {
     for (let i = 0; i < files.length; i++) {
       await repo.createPropertyImage({
@@ -66,7 +66,7 @@ export async function createProperty(data, user, files) {
     }
   }
 
-  // 🔥 SOLO SI ES GRATIS → SUMAR
+ 
   if (hasFree && !isPremiumActive && !isPaid) {
     await repo.incrementFreePublications(user.id);
   }
@@ -171,4 +171,8 @@ export async function deleteProperty(propertyId, user) {
   await propertyRepo.deleteProperty(propertyId);
 
   return { message: 'Propiedad eliminada correctamente' };
+}
+
+export async function listAllProperties() {
+  return await propertyRepository.getAllProperties();
 }

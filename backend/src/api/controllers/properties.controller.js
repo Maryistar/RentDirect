@@ -81,3 +81,4 @@ export async function listAllProperties(req, res, next) {
     next(err);
   }
 }
+

@@ -1,4 +1,3 @@
-import * as controller from "../controllers/properties.controller.js";
 import express from 'express';
 import multer from 'multer';
 import {
@@ -7,11 +6,17 @@ import {
   getProperty,
   createProperty,
   updateProperty,
-  deleteProperty
+  deleteProperty,
+  listAllProperties
 } from '../controllers/properties.controller.js';
+
 import { authenticate, authorize } from '../../middlewares/auth.middleware.js';
 
 const router = express.Router();
+
+/* =========================
+   MULTER
+========================= */
 const storage = multer.diskStorage({
   destination: 'uploads/',
   filename: (req, file, cb) => {
@@ -22,12 +27,22 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 /* =========================
+   ADMIN (⚠️ SIEMPRE ARRIBA)
+========================= */
+router.get(
+  "/admin",
+  authenticate,
+  authorize(["admin"]),
+  listAllProperties
+);
+
+/* =========================
    PUBLIC
 ========================= */
 router.get('/', listAvailableProperties);
 
 /* =========================
-   OWNER (⚠️ ANTES de /:id)
+   OWNER / ADMIN
 ========================= */
 router.get(
   '/my',
@@ -42,7 +57,7 @@ router.get(
 router.get('/:id', getProperty);
 
 /* =========================
-   OWNER CRUD
+   CRUD
 ========================= */
 router.post(
   '/',
@@ -66,7 +81,5 @@ router.delete(
   authorize(['owner', 'admin']),
   deleteProperty
 );
-
-router.get("/admin", authenticate, controller.listAllProperties);
 
 export default router;

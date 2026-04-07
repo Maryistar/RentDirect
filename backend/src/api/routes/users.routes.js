@@ -38,24 +38,6 @@ router.put("/:id/toggle", authenticate, controller.toggleStatus);
 /* =========================
    RUTA PERFIL POR ID
 ========================= */
-router.get("/:id", authenticate, async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const [users] = await db.query(
-      "SELECT id, name, email, avatar, role, score FROM users WHERE id = ?",
-      [id]
-    );
-
-    if (users.length === 0) {
-      return res.status(404).json({ message: "Usuario no encontrado" });
-    }
-
-    res.json(users[0]);
-  } catch (err) {
-    console.error("ERROR GET USER BY ID:", err);
-    res.status(500).json({ message: "Error al obtener perfil" });
-  }
-});
+router.get("/:id", authenticate, controller.getUserById);
 
 export default router;
