@@ -120,7 +120,7 @@ function Chat() {
       const normalizedMessage = {
         ...message,
         sender_id: message.sender_id || message.senderId || message.userId,
-        isNew: true // 🔥 AGREGAMOS ESTO
+        isNew: true
       };
 
       if (normalizedMessage.chatId == id) {
@@ -134,14 +134,13 @@ function Chat() {
         });
       }
 
-      // 🔥 ACTUALIZAR LISTA DE CHATS
       setChats(prev =>
         prev.map(chat =>
           chat.id == normalizedMessage.chatId
             ? {
               ...chat,
               lastMessage: normalizedMessage.message,
-              hasNew: normalizedMessage.sender_id !== user?.id // 👈 clave
+              hasNew: normalizedMessage.sender_id !== user?.id
             }
             : chat
         )
@@ -160,9 +159,6 @@ function Chat() {
   const sendMessage = (e) => {
     e.preventDefault();
     if (!text.trim()) return;
-
-    // 🔥 FIX: Eliminamos el setMessages manual de aquí.
-    // El mensaje aparecerá en pantalla cuando el socket lo reciba y lo devuelva a través de 'handleMessage'.
 
     socket.emit("sendMessage", {
       chatId: id,
@@ -207,7 +203,7 @@ function Chat() {
   return (
     <div style={{ display: "flex", height: "100vh", paddingTop: "90px", background: "#eef2f7" }}>
       <div style={{ width: "300px", background: "#fff", borderRight: "1px solid #ddd", padding: "15px", overflowY: "auto" }}>
-        <h3>Chats</h3>
+        <h3 style={{ color: "#4B0082" }}>Chats</h3>
         {chats.map(chat => {
           const displayName =
             chat.name ||
@@ -219,13 +215,13 @@ function Chat() {
           return (
             <Link key={chat.id} to={`/chat/${chat.id}`} style={{ textDecoration: "none" }}>
               <div style={{ padding: "10px", borderRadius: "10px", marginBottom: "10px", transition: "0.2s", color: "#000" }}
-                onMouseEnter={e => e.currentTarget.style.background = "#f1f1f1"}
+                onMouseEnter={e => e.currentTarget.style.background = "#f0f0ff"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               >
                 <strong>{displayName}</strong><br />
                 <span style={{
                   fontSize: "12px",
-                  color: chat.hasNew ? "green" : "gray",
+                  color: chat.hasNew ? "#6a0dad" : "gray",
                   fontWeight: chat.hasNew ? "bold" : "normal"
                 }}>
                   {chat.lastMessage || "Sin mensajes"}
@@ -247,15 +243,15 @@ function Chat() {
                   : chatInfo?.owner_name || "Propietario"}
               </h3>
               {isOwner && chatInfo?.applicationStatus === "in_review" && (
-                <button onClick={handleAgree} style={btnGreen}>Aceptar inquilino</button>
+                <button onClick={handleAgree} style={btnGradientPurple}>Aceptar inquilino</button>
               )}
               {isOwner && chatInfo?.applicationStatus === "agreed" && (
-                <button onClick={() => window.location.href = `/contract/${id}`} style={btnBlue}>Crear contrato</button>
+                <button onClick={() => window.location.href = `/contract/${id}`} style={btnGradientBlue}>Crear contrato</button>
               )}
               {!isOwner && contract && (
                 <div>
-                  <h4 style={{ cursor: "pointer", color: "#2196F3" }} onClick={() => window.open(`http://localhost:4000/api/v1/contracts/${contract.id}/pdf`)}>📄 Descargar contrato</h4>
-                  <button onClick={handleAcceptContract} style={btnGreen}>Aceptar contrato</button>
+                  <h4 style={{ cursor: "pointer", color: "#6a0dad" }} onClick={() => window.open(`http://localhost:4000/api/v1/contracts/${contract.id}/pdf`)}>📄 Descargar contrato</h4>
+                  <button onClick={handleAcceptContract} style={btnGradientPurple}>Aceptar contrato</button>
                 </div>
               )}
             </div>
@@ -263,10 +259,6 @@ function Chat() {
             <div style={{ flex: 1, overflowY: "auto", padding: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
               {messages.map((msg, index) => {
                 const isMe = Number(msg.sender_id) === Number(user?.id);
-                console.log("USER ID:", user?.id);
-                console.log("MSG sender:", msg.sender_id);
-                console.log("IS ME:", isMe);
-
                 return (
                   <div
                     key={msg.id || index}
@@ -278,7 +270,7 @@ function Chat() {
                   >
                     <div
                       style={{
-                        background: isMe ? "#4CAF50" : "#fff",
+                        background: isMe ? "linear-gradient(135deg, #6a0dad, #2196F3)" : "#fff",
                         color: isMe ? "#fff" : "#000",
                         padding: "10px 15px",
                         borderRadius: "15px",
@@ -301,19 +293,41 @@ function Chat() {
             <form onSubmit={sendMessage} style={{ display: "flex", padding: "10px", background: "#fff", borderTop: "1px solid #ddd" }}>
               <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Escribe un mensaje..."
                 style={{ flex: 1, padding: "10px", borderRadius: "20px", border: "1px solid #ccc" }} />
-              <button type="submit" style={btnGreen}>Enviar</button>
+              <button type="submit" style={btnGradientPurple}>Enviar</button>
             </form>
           </>
         ) : (
-          <p style={{ padding: "20px" }}>Selecciona un chat</p>
+          <p style={{ padding: "20px", color: "#6a0dad" }}>Selecciona un chat</p>
         )}
       </div>
+
       <style>{` @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } } `}</style>
     </div>
   );
 }
 
-const btnGreen = { background: "#4CAF50", color: "#fff", border: "none", padding: "8px 12px", borderRadius: "8px", cursor: "pointer", marginTop: "5px" };
-const btnBlue = { background: "#2196F3", color: "#fff", border: "none", padding: "8px 12px", borderRadius: "8px", cursor: "pointer", marginTop: "5px" };
+const btnGradientPurple = {
+  background: "linear-gradient(135deg, #6a0dad, #9b30ff)",
+  color: "#fff",
+  border: "none",
+  padding: "8px 12px",
+  borderRadius: "12px",
+  cursor: "pointer",
+  marginTop: "5px",
+  transition: "0.3s",
+  fontWeight: "bold"
+};
+
+const btnGradientBlue = {
+  background: "linear-gradient(135deg, #2196F3, #6a5acd)",
+  color: "#fff",
+  border: "none",
+  padding: "8px 12px",
+  borderRadius: "12px",
+  cursor: "pointer",
+  marginTop: "5px",
+  transition: "0.3s",
+  fontWeight: "bold"
+};
 
 export default Chat;
