@@ -89,9 +89,7 @@ export default function AdminContracts() {
       );
 
       alert("Contrato eliminado 🗑️");
-
       setContracts(contracts.filter((c) => c.id !== id));
-
     } catch (err) {
       console.error(err);
       alert("Error eliminando contrato");
@@ -123,7 +121,6 @@ export default function AdminContracts() {
       } else {
         const text = await res.data.text();
         const json = JSON.parse(text);
-
         alert(json.message);
       }
     } catch (err) {
@@ -135,17 +132,16 @@ export default function AdminContracts() {
   const getStatusStyle = (status) => {
     switch (status) {
       case "active":
-        return "bg-green-100 text-green-700";
+        return "bg-gradient-to-r from-green-200 to-green-400 text-green-800";
       case "pending":
-        return "bg-yellow-100 text-yellow-700";
+        return "bg-gradient-to-r from-yellow-200 to-yellow-400 text-yellow-800";
       case "rejected":
-        return "bg-red-100 text-red-700";
+        return "bg-gradient-to-r from-red-200 to-red-400 text-red-800";
       default:
         return "bg-gray-100 text-gray-600";
     }
   };
 
-  
   const getStatusText = (status) => {
     switch (status) {
       case "active":
@@ -203,14 +199,14 @@ export default function AdminContracts() {
                   <>
                     <button
                       onClick={() => handleAccept(c.id)}
-                      className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-lg text-sm"
+                      className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white px-3 py-1 rounded-lg text-sm font-semibold transition"
                     >
                       Aceptar
                     </button>
 
                     <button
                       onClick={() => handleReject(c.id)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm"
+                      className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-3 py-1 rounded-lg text-sm font-semibold transition"
                     >
                       Rechazar
                     </button>
@@ -220,7 +216,7 @@ export default function AdminContracts() {
                 {c.status === "active" && (
                   <button
                     onClick={() => handleDownload(c.id)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg text-sm"
+                    className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-3 py-1 rounded-lg text-sm font-semibold transition"
                   >
                     PDF
                   </button>
@@ -228,7 +224,7 @@ export default function AdminContracts() {
 
                 <button
                   onClick={() => handleDelete(c.id)}
-                  className="bg-gray-800 hover:bg-black text-white px-3 py-1 rounded-lg text-sm"
+                  className="bg-gradient-to-r from-gray-700 to-gray-900 hover:from-black hover:to-gray-800 text-white px-3 py-1 rounded-lg text-sm font-semibold transition"
                 >
                   Eliminar
                 </button>
