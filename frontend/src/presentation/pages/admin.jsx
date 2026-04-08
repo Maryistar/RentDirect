@@ -84,7 +84,7 @@ export default function Admin() {
           </p>
         </div>
 
-        {/* Contratos */}
+        {/* Contratos. */}
         <div className="bg-white/80 backdrop-blur-md p-6 rounded-3xl shadow-lg hover:shadow-2xl transition">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-gray-500 text-sm">Contratos</h2>
