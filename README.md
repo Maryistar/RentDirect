@@ -17,4 +17,5 @@ Instrucciones rápidas:
    - npm install
    - npm run dev
 
-Si quieres, puedo crear también un archivo docker-compose.yml que levante backend y MySQL en contenedores.
+Bases de Datos:
+se encuentra para descargar en src del backend
